@@ -33,7 +33,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            max-width: 1150px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 15px;
             transition: background 0.3s, color 0.3s;
@@ -105,54 +105,74 @@
         .btn-snapshot { background-color: #0891b2; }
         .btn-clear { background-color: #ef4444; }
 
+        /* --- Table Styling Fix --- */
         .table-container { 
-            overflow-x: auto; 
+            overflow: hidden; /* Removes the scrollbar entirely on wide screens */
             background: var(--card-bg); 
             border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
 
-        table { width: 100%; border-collapse: collapse; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: fixed; /* Forces the table to stay within 100% width */
+        }
+
         th, td { 
             text-align: left; 
-            padding: 12px 15px; 
+            padding: 10px 12px; 
             border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap; /* Keeps technical info clean */
+            font-size: 0.9em;
         }
         
-        td.notes-cell {
-            white-space: normal;
+        /* Set specific widths for columns */
+        th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
+        th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
+        th:nth-child(3), td:nth-child(3) { width: 90px; }  /* Band */
+        th:nth-child(4), td:nth-child(4) { width: 130px; } /* Radio */
+        th:nth-child(5), td:nth-child(5) { width: 80px; }  /* Antenna */
+        th:nth-child(6), td:nth-child(6) { width: 70px; }  /* Mode */
+        
+        /* Allow Station and Note to expand and wrap */
+        th:nth-child(7), td:nth-child(7),
+        th:nth-child(8), td:nth-child(8) { 
+            width: auto; 
+            white-space: normal; 
             word-wrap: break-word;
-            min-width: 180px;
         }
+        
+        th:nth-child(9), td:nth-child(9) { width: 100px; text-align: center; } /* Actions */
 
         th { 
             background-color: var(--primary); 
             color: white; 
-            font-size: 0.85em; 
+            font-size: 0.8em; 
             text-transform: uppercase; 
             cursor: pointer;
             user-select: none;
             position: relative;
-            padding-right: 25px;
         }
         th:hover { background-color: #1d4ed8; }
 
-        th::after { content: ' ↕'; opacity: 0.5; font-size: 0.9em; position: absolute; right: 8px; }
+        th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; margin-left: 4px; }
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
 
         tr:hover { background-color: var(--table-hover); }
 
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8em; color: white; font-weight: bold; display: inline-block; }
+        .badge { padding: 3px 8px; border-radius: 15px; font-size: 0.75em; color: white; font-weight: bold; }
         .badge-sw { background-color: var(--sw-color); }
         .badge-vhf { background-color: var(--vhf-color); }
         
-        .action-btns { display: flex; gap: 5px; }
-        .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-        .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .action-btns { display: flex; gap: 4px; justify-content: center; }
+        .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         
-        .footer-stats { margin-top: 15px; font-size: 0.9em; color: var(--text-sub); text-align: right; }
+        .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
 
         #scrollTopBtn {
             display: none;
@@ -164,11 +184,17 @@
             background-color: var(--primary);
             color: white;
             cursor: pointer;
-            padding: 15px;
+            padding: 10px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Mobile specific: Bring back scroll ONLY if screen is very small */
+        @media screen and (max-width: 800px) {
+            .table-container { overflow-x: auto; }
+            table { table-layout: auto; }
         }
     </style>
 </head>
@@ -228,7 +254,6 @@
                 <option value="Static / QRM">Static / QRM</option>
                 <option value="CUSTOM_VALUE">-- Type Custom Note... --</option>
             </select>
-            <input type="hidden" id="customNoteStore">
         </div>
         <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
     </div>
@@ -253,10 +278,10 @@
             <thead>
                 <tr>
                     <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
-                    <th onclick="sortTable('freq', this)">Freq (MHz)</th>
+                    <th onclick="sortTable('freq', this)">Freq</th>
                     <th onclick="sortTable('type', this)">Band</th>
                     <th onclick="sortTable('radio', this)">Radio</th>
-                    <th onclick="sortTable('antenna', this)">Antenna</th>
+                    <th onclick="sortTable('antenna', this)">Ant</th>
                     <th onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
                     <th onclick="sortTable('notes', this)">Note</th>
@@ -276,14 +301,13 @@
             if (select.value === "CUSTOM_VALUE") {
                 const customText = prompt("Enter your custom signal note:");
                 if (customText) {
-                    // Create a temporary option so it shows in the dropdown
                     const newOpt = document.createElement("option");
                     newOpt.value = customText;
                     newOpt.text = customText;
                     select.add(newOpt, select.options[select.length - 1]);
                     select.value = customText;
                 } else {
-                    select.selectedIndex = 0; // Reset if cancelled
+                    select.selectedIndex = 0;
                 }
             }
         }
@@ -397,7 +421,6 @@
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station;
 
-            // Handle custom notes during edit
             const notesSelect = document.getElementById('notesInput');
             let found = false;
             for (let i = 0; i < notesSelect.options.length; i++) {
@@ -474,7 +497,7 @@
                     <td>${log.antenna || ""}</td>
                     <td>${log.mode || ""}</td>
                     <td>${log.station || ""}</td>
-                    <td class="notes-cell">${log.notes || ""}</td>
+                    <td>${log.notes || ""}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit(${log.id})">Edit</button>
                         <button class="delete-btn" onclick="deleteLog(${log.id})">Del</button>
