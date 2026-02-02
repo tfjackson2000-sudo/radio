@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Logger</title>
+    <title>Radio Logger Pro</title>
     <style>
         :root {
             --bg-color: #f4f4f9;
@@ -12,28 +12,51 @@
             --edit-color: #7c3aed;
             --sw-color: #10b981;
             --other-color: #f59e0b;
-            --text-dark: #1f2937;
+            --text-main: #1f2937;
+            --text-sub: #555555;
+            --border-color: #dddddd;
+            --table-hover: #f9fafb;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --primary: #3b82f6;
+            --edit-color: #a78bfa;
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --border-color: #374151;
+            --table-hover: #2d3748;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-dark);
+            color: var(--text-main);
             max-width: 1000px;
             margin: 0 auto;
             padding: 15px;
+            transition: background 0.3s, color 0.3s;
         }
 
-        h1 { text-align: center; color: var(--primary); font-size: 1.5rem; margin-bottom: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { margin: 0; color: var(--primary); font-size: 1.5rem; }
 
-        .search-container { margin-bottom: 15px; display: flex; gap: 10px; }
-        #searchInput { flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; }
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
 
         .input-card {
             background: var(--card-bg);
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
@@ -41,17 +64,19 @@
             border: 2px solid transparent;
         }
         
-        .editing-mode { border: 2px solid var(--edit-color); background: #fdfaff; }
+        .editing-mode { border: 2px solid var(--edit-color); }
+        [data-theme="dark"] .editing-mode { background: #2e263d; }
 
         .form-group { display: flex; flex-direction: column; }
-        label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #555; }
+        label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-sub); }
         
         input, select {
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 16px;
-            background-color: #fff;
+            background-color: var(--card-bg);
+            color: var(--text-main);
         }
 
         .btn-main {
@@ -69,17 +94,21 @@
         
         .btn-save { background-color: var(--edit-color) !important; }
 
+        .search-container { margin-bottom: 15px; display: flex; gap: 10px; }
+        #searchInput { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
+
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .btn-group { display: flex; gap: 8px; }
 
-        .btn-secondary { background-color: #4b5563; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+        .btn-secondary { background-color: #4b5563; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
         .btn-import { background-color: #059669; }
         .btn-clear { background-color: #ef4444; }
 
         .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; }
-        th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #e5e7eb; }
+        th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
         th { background-color: var(--primary); color: white; font-size: 0.85em; text-transform: uppercase; }
+        tr:hover { background-color: var(--table-hover); }
 
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8em; color: white; font-weight: bold; display: inline-block; }
         .badge-sw { background-color: var(--sw-color); }
@@ -90,9 +119,12 @@
         .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-    <h1>📡 Radio Logger</h1>
+    <header>
+        <h1>📡 Radio Logger</h1>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
+    </header>
 
     <div id="formCard" class="input-card">
         <input type="hidden" id="editId">
@@ -103,8 +135,7 @@
         <div class="form-group">
             <label>Antenna</label>
             <select id="antennaInput">
-                <option value="Whip">Whip</option>
-                <option value="GA800">GA800</option>
+                <option value="GA800" selected>GA800</option> <option value="Whip">Whip</option>
                 <option value="X30N">X30N</option>
             </select>
         </div>
@@ -129,7 +160,7 @@
     </div>
 
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search by Frequency, Antenna, Station..." onkeyup="renderTable()">
+        <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
     </div>
 
     <div class="controls">
@@ -154,8 +185,23 @@
     </div>
 
     <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const current = document.body.getAttribute('data-theme');
+            const target = current === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', target);
+            document.getElementById('themeBtn').innerText = target === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+            localStorage.setItem('radioTheme', target);
+        }
+
+        const savedTheme = localStorage.getItem('radioTheme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.body.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+
         document.addEventListener('DOMContentLoaded', renderTable);
 
+        // Logic
         function handleSubmit() {
             const editId = document.getElementById('editId').value;
             const freqVal = document.getElementById('freqInput').value;
@@ -206,7 +252,7 @@
 
             document.getElementById('editId').value = log.id;
             document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
-            document.getElementById('antennaInput').value = log.antenna || "Whip";
+            document.getElementById('antennaInput').value = log.antenna; // Sets to saved antenna
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station;
             document.getElementById('notesInput').value = log.notes;
@@ -228,6 +274,7 @@
             document.getElementById('freqInput').value = '';
             document.getElementById('stationInput').value = '';
             document.getElementById('notesInput').value = '';
+            document.getElementById('antennaInput').value = "GA800"; // Revert to default
         }
 
         function renderTable() {
@@ -238,8 +285,7 @@
 
             logs.forEach(log => {
                 const freqDisplay = parseFloat(log.freq).toFixed(3);
-                const antennaText = log.antenna || "Whip";
-                
+                const antennaText = log.antenna || "GA800";
                 const matches = freqDisplay.includes(searchTerm) || 
                                 antennaText.toLowerCase().includes(searchTerm) ||
                                 log.station.toLowerCase().includes(searchTerm) || 
@@ -268,7 +314,7 @@
         }
 
         function deleteLog(id) {
-            if(confirm("Delete this entry?")) {
+            if(confirm("Delete entry?")) {
                 let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
                 logs = logs.filter(log => log.id !== id);
                 localStorage.setItem('radioLogs', JSON.stringify(logs));
@@ -308,14 +354,9 @@
                     const cols = rows[i].split(",");
                     if(cols.length >= 7) {
                         logs.unshift({ 
-                            id: Date.now()+i, 
-                            date: cols[0], 
-                            freq: parseFloat(cols[1]), 
-                            type: cols[2], 
-                            antenna: cols[3],
-                            mode: cols[4], 
-                            station: cols[5], 
-                            notes: cols[6] 
+                            id: Date.now()+i, date: cols[0], freq: parseFloat(cols[1]), 
+                            type: cols[2], antenna: cols[3], mode: cols[4], 
+                            station: cols[5], notes: cols[6] 
                         });
                     }
                 }
