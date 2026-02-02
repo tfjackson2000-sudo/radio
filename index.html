@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Frequency Manager</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --sw-color: #10b981;  /* Green for Shortwave */
+            --other-color: #f59e0b; /* Orange for Other */
+            --text-dark: #1f2937;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px; /* Slightly reduced padding for mobile */
+        }
+
+        h1 { 
+            text-align: center; 
+            color: var(--primary); 
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        /* --- Input Form Styling (Mobile Grid) --- */
+        .input-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px; /* Softer corners */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: grid;
+            /* Stacks on mobile, side-by-side on desktop */
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #555; }
+        
+        input, select {
+            padding: 12px; /* Larger touch target */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px; /* Prevents auto-zoom on iPhone */
+            background-color: #fff;
+        }
+
+        button#addBtn {
+            grid-column: 1 / -1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button#addBtn:active { background-color: #1d4ed8; transform: scale(0.98); }
+
+        /* --- Controls Section --- */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap; /* Allows buttons to stack if screen is tiny */
+            gap: 10px;
+        }
+
+        .controls h2 { margin: 0; font-size: 1.2rem; }
+        
+        .btn-group { display: flex; gap: 8px; }
+
+        .btn-secondary {
+            background-color: #4b5563;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        /* --- Mobile Friendly Table Styling --- */
+        .table-container {
+            /* This enables horizontal scrolling ONLY on the table */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap; /* Keeps rows on one line so they scroll */
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th { 
+            background-color: var(--primary); 
+            color: white; 
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        tr:last-child td { border-bottom: none; }
+
+        /* --- Badges & Actions --- */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            color: white;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .badge-sw { background-color: var(--sw-color); }
+        .badge-other { background-color: var(--other-color); }
+        
+        .delete-btn {
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: bold;
+            border: 1px solid #ef4444;
+            background: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .delete-btn:hover { background: #fee2e2; }
+
+    </style>
+</head>
+<body>
+
+    <h1>📡 Radio Logger</h1>
+
+    <div class="input-card">
+        <div class="form-group">
+            <label>Frequency (MHz)</label>
+            <input type="number" id="freqInput" step="0.001" placeholder="e.g. 14.255" inputmode="decimal">
+        </div>
+        <div class="form-group">
+            <label>Mode</label>
+            <select id="modeInput">
+                <option value="AM">AM</option>
+                <option value="FM">FM</option>
+                <option value="USB">USB</option>
+                <option value="LSB">LSB</option>
+                <option value="CW">CW</option>
+                <option value="FT8">FT8</option>
+                <option value="DMR">DMR</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Station / Callsign</label>
+            <input type="text" id="stationInput" placeholder="Who are they?">
+        </div>
+        <div class="form-group">
+            <label>Notes</label>
+            <input type="text" id="notesInput" placeholder="Signal report, etc.">
+        </div>
+        <button id="addBtn" onclick="addLog()">Add to Log</button>
+    </div>
+
+    <div class="controls">
+        <h2>Your Logs</h2>
+        <div class="btn-group">
+            <button class="btn-secondary" onclick="exportData()">⬇ CSV</button>
+            <button class="btn-secondary" style="background:#ef4444" onclick="clearData()">Clear</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="logTable">
+            <thead>
+                <tr>
+                    <th>UTC Time</th>
+                    <th>Freq (MHz)</th>
+                    <th>Band</th>
+                    <th>Mode</th>
+                    <th>Station</th>
+                    <th>Notes</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadLogs);
+
+        function addLog() {
+            const freq = parseFloat(document.getElementById('freqInput').value);
+            const mode = document.getElementById('modeInput').value;
+            const station = document.getElementById('stationInput').value;
+            const notes = document.getElementById('notesInput').value;
+
+            if (!freq) {
+                alert("Please enter a frequency.");
+                return;
+            }
+
+            // Auto-Calculate Band Type
+            const bandType = (freq <= 30) ? "Shortwave" : "Other";
+
+            const logEntry = {
+                id: Date.now(),
+                // Format date nicely: YYYY-MM-DD HH:MM
+                date: new Date().toISOString().replace('T', ' ').substring(0, 16), 
+                freq: freq,
+                type: bandType,
+                mode: mode,
+                station: station,
+                notes: notes
+            };
+
+            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+            logs.unshift(logEntry); // Add to top
+            localStorage.setItem('radioLogs', JSON.stringify(logs));
+
+            renderTable();
+            
+            // Clear inputs
+            document.getElementById('freqInput').value = '';
+            document.getElementById('stationInput').value = '';
+            document.getElementById('notesInput').value = '';
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('#logTable tbody');
+            tbody.innerHTML = '';
+            const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                const badgeClass = log.type === "Shortwave" ? "badge-sw" : "badge-other";
+
+                row.innerHTML = `
+                    <td>${log.date}</td>
+                    <td><strong>${log.freq}</strong></td>
+                    <td><span class="badge ${badgeClass}">${log.type}</span></td>
+                    <td>${log.mode}</td>
+                    <td>${log.station}</td>
+                    <td>${log.notes}</td>
+                    <td><button class="delete-btn" onclick="deleteLog(${log.id})">Del</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function deleteLog(id) {
+            if(confirm("Delete this entry?")) {
+                let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+                logs = logs.filter(log => log.id !== id);
+                localStorage.setItem('radioLogs', JSON.stringify(logs));
+                renderTable();
+            }
+        }
+
+        function loadLogs() {
+            renderTable();
+        }
+
+        function clearData() {
+            if(confirm("Are you sure you want to delete ALL logs? This cannot be undone.")) {
+                localStorage.removeItem('radioLogs');
+                renderTable();
+            }
+        }
+
+        function exportData() {
+            const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+            if (logs.length === 0) {
+                alert("No logs to export!");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Date(UTC),Frequency,Type,Mode,Station,Notes\n"; 
+            logs.forEach(log => {
+                const row = `${log.date},${log.freq},${log.type},${log.mode},${log.station},${log.notes}`;
+                csvContent += row + "\n";
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "radio_logs.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+    </script>
+</body>
+</html>
