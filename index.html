@@ -19,26 +19,15 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
-            max-width: 950px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 15px;
         }
 
         h1 { text-align: center; color: var(--primary); font-size: 1.5rem; margin-bottom: 20px; }
 
-        /* --- Search Bar Styling --- */
-        .search-container {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        #searchInput {
-            flex-grow: 1;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-        }
+        .search-container { margin-bottom: 15px; display: flex; gap: 10px; }
+        #searchInput { flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; }
 
         .input-card {
             background: var(--card-bg);
@@ -46,7 +35,7 @@
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
             border: 2px solid transparent;
@@ -112,6 +101,14 @@
             <input type="text" id="freqInput" placeholder="e.g. 14.250" inputmode="decimal">
         </div>
         <div class="form-group">
+            <label>Antenna</label>
+            <select id="antennaInput">
+                <option value="Whip">Whip</option>
+                <option value="GA800">GA800</option>
+                <option value="X30N">X30N</option>
+            </select>
+        </div>
+        <div class="form-group">
             <label>Mode</label>
             <select id="modeInput">
                 <option value="AM">AM</option><option value="FM">FM</option>
@@ -132,7 +129,7 @@
     </div>
 
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search by Frequency, Station, or Mode..." onkeyup="renderTable()">
+        <input type="text" id="searchInput" placeholder="Search by Frequency, Antenna, Station..." onkeyup="renderTable()">
     </div>
 
     <div class="controls">
@@ -149,7 +146,7 @@
         <table id="logTable">
             <thead>
                 <tr>
-                    <th>UTC Time</th><th>Freq (MHz)</th><th>Band</th><th>Mode</th><th>Station</th><th>Notes</th><th>Actions</th>
+                    <th>UTC Time</th><th>Freq (MHz)</th><th>Band</th><th>Antenna</th><th>Mode</th><th>Station</th><th>Notes</th><th>Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -162,6 +159,7 @@
         function handleSubmit() {
             const editId = document.getElementById('editId').value;
             const freqVal = document.getElementById('freqInput').value;
+            const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
             const station = document.getElementById('stationInput').value.replace(/,/g, ";");
             const notes = document.getElementById('notesInput').value.replace(/,/g, ";");
@@ -176,6 +174,7 @@
                 if (index !== -1) {
                     logs[index].freq = freqNum;
                     logs[index].type = (freqNum <= 30) ? "Shortwave" : "Other";
+                    logs[index].antenna = antenna;
                     logs[index].mode = mode;
                     logs[index].station = station;
                     logs[index].notes = notes;
@@ -187,6 +186,7 @@
                     date: new Date().toISOString().replace('T', ' ').substring(0, 16), 
                     freq: freqNum,
                     type: (freqNum <= 30) ? "Shortwave" : "Other",
+                    antenna: antenna,
                     mode: mode,
                     station: station,
                     notes: notes
@@ -205,8 +205,8 @@
             if (!log) return;
 
             document.getElementById('editId').value = log.id;
-            // When editing, show the fixed decimal in the input
             document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
+            document.getElementById('antennaInput').value = log.antenna || "Whip";
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station;
             document.getElementById('notesInput').value = log.notes;
@@ -238,9 +238,10 @@
 
             logs.forEach(log => {
                 const freqDisplay = parseFloat(log.freq).toFixed(3);
+                const antennaText = log.antenna || "Whip";
                 
-                // Search logic
                 const matches = freqDisplay.includes(searchTerm) || 
+                                antennaText.toLowerCase().includes(searchTerm) ||
                                 log.station.toLowerCase().includes(searchTerm) || 
                                 log.mode.toLowerCase().includes(searchTerm) ||
                                 log.notes.toLowerCase().includes(searchTerm);
@@ -253,6 +254,7 @@
                     <td>${log.date}</td>
                     <td><strong>${freqDisplay}</strong></td>
                     <td><span class="badge ${badgeClass}">${log.type}</span></td>
+                    <td>${antennaText}</td>
                     <td>${log.mode}</td>
                     <td>${log.station}</td>
                     <td>${log.notes}</td>
@@ -284,10 +286,10 @@
         function exportData() {
             const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
             if (logs.length === 0) return alert("Nothing to export");
-            let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Mode,Station,Notes\n"; 
+            let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Antenna,Mode,Station,Notes\n"; 
             logs.forEach(l => {
                 const freqExp = parseFloat(l.freq).toFixed(3);
-                csvContent += `${l.date},${freqExp},${l.type},${l.mode},${l.station},${l.notes}\n`;
+                csvContent += `${l.date},${freqExp},${l.type},${l.antenna},${l.mode},${l.station},${l.notes}\n`;
             });
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
@@ -304,15 +306,16 @@
                 let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].split(",");
-                    if(cols.length >= 6) {
+                    if(cols.length >= 7) {
                         logs.unshift({ 
                             id: Date.now()+i, 
                             date: cols[0], 
                             freq: parseFloat(cols[1]), 
                             type: cols[2], 
-                            mode: cols[3], 
-                            station: cols[4], 
-                            notes: cols[5] 
+                            antenna: cols[3],
+                            mode: cols[4], 
+                            station: cols[5], 
+                            notes: cols[6] 
                         });
                     }
                 }
