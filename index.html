@@ -108,7 +108,21 @@
         .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; }
         th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
-        th { background-color: var(--primary); color: white; font-size: 0.85em; text-transform: uppercase; }
+        
+        /* Sortable Header Styling */
+        th { 
+            background-color: var(--primary); 
+            color: white; 
+            font-size: 0.85em; 
+            text-transform: uppercase; 
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        th:hover { background-color: #1d4ed8; }
+        th.sort-asc::after { content: ' ▲'; font-size: 0.7em; }
+        th.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
+
         tr:hover { background-color: var(--table-hover); }
 
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8em; color: white; font-weight: bold; display: inline-block; }
@@ -190,7 +204,15 @@
         <table id="logTable">
             <thead>
                 <tr>
-                    <th>UTC Time</th><th>Freq (MHz)</th><th>Band</th><th>Radio</th><th>Antenna</th><th>Mode</th><th>Station</th><th>Notes</th><th>Actions</th>
+                    <th onclick="sortTable('date', this)">UTC Time</th>
+                    <th onclick="sortTable('freq', this)">Freq (MHz)</th>
+                    <th onclick="sortTable('type', this)">Band</th>
+                    <th onclick="sortTable('radio', this)">Radio</th>
+                    <th onclick="sortTable('antenna', this)">Antenna</th>
+                    <th onclick="sortTable('mode', this)">Mode</th>
+                    <th>Station</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -200,6 +222,8 @@
     <div class="footer-stats" id="logCounter">Total Logs: 0</div>
 
     <script id="mainScript">
+        let currentSort = { key: 'id', desc: true };
+
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
             const target = current === 'light' ? 'dark' : 'light';
@@ -214,6 +238,22 @@
         document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
 
         document.addEventListener('DOMContentLoaded', renderTable);
+
+        // Sorting Logic
+        function sortTable(key, element) {
+            if (currentSort.key === key) {
+                currentSort.desc = !currentSort.desc;
+            } else {
+                currentSort.key = key;
+                currentSort.desc = false;
+            }
+
+            // Update UI arrows
+            document.querySelectorAll('th').forEach(th => th.className = '');
+            element.className = currentSort.desc ? 'sort-desc' : 'sort-asc';
+
+            renderTable();
+        }
 
         function handleSubmit() {
             const editId = document.getElementById('editId').value;
@@ -299,9 +339,24 @@
             const tbody = document.querySelector('#logTable tbody');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
-            const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
-            let count = 0;
+            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
 
+            // Apply Sorting
+            logs.sort((a, b) => {
+                let valA = a[currentSort.key];
+                let valB = b[currentSort.key];
+                
+                // Special handling for frequency numeric sort
+                if (currentSort.key === 'freq') {
+                    return currentSort.desc ? valB - valA : valA - valB;
+                }
+
+                if (valA < valB) return currentSort.desc ? 1 : -1;
+                if (valA > valB) return currentSort.desc ? -1 : 1;
+                return 0;
+            });
+
+            let count = 0;
             logs.forEach(log => {
                 const freqDisplay = parseFloat(log.freq).toFixed(3);
                 const antennaText = log.antenna || "GA800";
