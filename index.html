@@ -105,9 +105,8 @@
         .btn-snapshot { background-color: #0891b2; }
         .btn-clear { background-color: #ef4444; }
 
-        /* --- Table Styling Fix --- */
         .table-container { 
-            overflow: hidden; /* Removes the scrollbar entirely on wide screens */
+            overflow: hidden;
             background: var(--card-bg); 
             border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
@@ -116,7 +115,7 @@
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            table-layout: fixed; /* Forces the table to stay within 100% width */
+            table-layout: fixed;
         }
 
         th, td { 
@@ -125,19 +124,17 @@
             border-bottom: 1px solid var(--border-color);
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap; /* Keeps technical info clean */
+            white-space: nowrap;
             font-size: 0.9em;
         }
         
-        /* Set specific widths for columns */
-        th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
-        th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
-        th:nth-child(3), td:nth-child(3) { width: 90px; }  /* Band */
-        th:nth-child(4), td:nth-child(4) { width: 130px; } /* Radio */
-        th:nth-child(5), td:nth-child(5) { width: 80px; }  /* Antenna */
-        th:nth-child(6), td:nth-child(6) { width: 70px; }  /* Mode */
+        th:nth-child(1), td:nth-child(1) { width: 140px; }
+        th:nth-child(2), td:nth-child(2) { width: 90px; }
+        th:nth-child(3), td:nth-child(3) { width: 90px; }
+        th:nth-child(4), td:nth-child(4) { width: 130px; }
+        th:nth-child(5), td:nth-child(5) { width: 80px; }
+        th:nth-child(6), td:nth-child(6) { width: 70px; }
         
-        /* Allow Station and Note to expand and wrap */
         th:nth-child(7), td:nth-child(7),
         th:nth-child(8), td:nth-child(8) { 
             width: auto; 
@@ -145,7 +142,7 @@
             word-wrap: break-word;
         }
         
-        th:nth-child(9), td:nth-child(9) { width: 100px; text-align: center; } /* Actions */
+        th:nth-child(9), td:nth-child(9) { width: 100px; text-align: center; }
 
         th { 
             background-color: var(--primary); 
@@ -191,7 +188,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
-        /* Mobile specific: Bring back scroll ONLY if screen is very small */
         @media screen and (max-width: 800px) {
             .table-container { overflow-x: auto; }
             table { table-layout: auto; }
@@ -245,13 +241,10 @@
         <div class="form-group">
             <label>Signal Note</label>
             <select id="notesInput" onchange="checkCustomNote(this)">
-                <option value="Strong / Clear">Strong / Clear</option>
-                <option value="One side clear / Other unhearable">One side clear / Other unhearable</option>
                 <option value="Both sides clear">Both sides clear</option>
-                <option value="Weak / Readable">Weak / Readable</option>
+                <option value="One side clear">One side clear</option>
                 <option value="Weak / Noisy">Weak / Noisy</option>
-                <option value="Fading (QSB)">Fading (QSB)</option>
-                <option value="Static / QRM">Static / QRM</option>
+                <option value="Fading / Static">Fading / Static</option>
                 <option value="CUSTOM_VALUE">-- Type Custom Note... --</option>
             </select>
         </div>
