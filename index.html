@@ -121,7 +121,6 @@
         }
         th:hover { background-color: #1d4ed8; }
 
-        /* Sort Indicator Styles */
         th::after { content: ' ↕'; opacity: 0.5; font-size: 0.9em; position: absolute; right: 8px; }
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
@@ -137,9 +136,32 @@
         .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
         
         .footer-stats { margin-top: 15px; font-size: 0.9em; color: var(--text-sub); text-align: right; }
+
+        /* Floating Jump to Top Button */
+        #scrollTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            width: 50px;
+            height: 50px;
+            line-height: 20px;
+        }
     </style>
 </head>
 <body data-theme="light">
+
+    <button onclick="topFunction()" id="scrollTopBtn" title="Go to top">↑</button>
 
     <header>
         <h1>📡 Radio Logger</h1>
@@ -227,6 +249,20 @@
     <script id="mainScript">
         let currentSort = { key: 'date', desc: true };
 
+        // Scroll Button Logic
+        let mybutton = document.getElementById("scrollTopBtn");
+        window.onscroll = function() {scrollFunction()};
+        function scrollFunction() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                mybutton.style.display = "block";
+            } else {
+                mybutton.style.display = "none";
+            }
+        }
+        function topFunction() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
             const target = current === 'light' ? 'dark' : 'light';
@@ -242,7 +278,6 @@
 
         document.addEventListener('DOMContentLoaded', renderTable);
 
-        // Date Formatting Helper: Day Month Year Time
         function formatRadioDate(isoString) {
             const date = new Date(isoString);
             const day = String(date.getDate()).padStart(2, '0');
@@ -261,10 +296,8 @@
                 currentSort.key = key;
                 currentSort.desc = false;
             }
-
             document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
             element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc');
-
             renderTable();
         }
 
@@ -297,7 +330,7 @@
             } else {
                 const logEntry = {
                     id: Date.now(),
-                    date: new Date().toISOString(), // Keep ISO for internal sorting
+                    date: new Date().toISOString(),
                     freq: freqNum,
                     type: (freqNum <= 30) ? "Shortwave" : "VHF/UHF",
                     radio: radio,
@@ -366,19 +399,15 @@
             let count = 0;
             logs.forEach(log => {
                 const freqDisplay = parseFloat(log.freq).toFixed(3);
-                const antennaText = log.antenna || "GA800";
-                const radioText = log.radio || "Malahit DSP2";
                 const formattedDate = formatRadioDate(log.date);
-                
                 const matches = freqDisplay.includes(searchTerm) || 
-                                radioText.toLowerCase().includes(searchTerm) ||
-                                antennaText.toLowerCase().includes(searchTerm) ||
-                                log.station.toLowerCase().includes(searchTerm) || 
-                                log.mode.toLowerCase().includes(searchTerm) ||
-                                log.notes.toLowerCase().includes(searchTerm);
+                                (log.radio || "").toLowerCase().includes(searchTerm) ||
+                                (log.antenna || "").toLowerCase().includes(searchTerm) ||
+                                (log.station || "").toLowerCase().includes(searchTerm) || 
+                                (log.mode || "").toLowerCase().includes(searchTerm) ||
+                                (log.notes || "").toLowerCase().includes(searchTerm);
 
                 if (!matches && searchTerm !== "") return;
-
                 count++;
                 const row = document.createElement('tr');
                 const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
@@ -386,11 +415,11 @@
                     <td>${formattedDate}</td>
                     <td><strong>${freqDisplay}</strong></td>
                     <td><span class="badge ${badgeClass}">${log.type}</span></td>
-                    <td>${radioText}</td>
-                    <td>${antennaText}</td>
-                    <td>${log.mode}</td>
-                    <td>${log.station}</td>
-                    <td>${log.notes}</td>
+                    <td>${log.radio || ""}</td>
+                    <td>${log.antenna || ""}</td>
+                    <td>${log.mode || ""}</td>
+                    <td>${log.station || ""}</td>
+                    <td>${log.notes || ""}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit(${log.id})">Edit</button>
                         <button class="delete-btn" onclick="deleteLog(${log.id})">Del</button>
