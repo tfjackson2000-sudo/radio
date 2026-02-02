@@ -11,7 +11,7 @@
             --primary: #2563eb;
             --edit-color: #7c3aed;
             --sw-color: #10b981;
-            --other-color: #f59e0b;
+            --vhf-color: #f59e0b;
             --text-main: #1f2937;
             --text-sub: #555555;
             --border-color: #dddddd;
@@ -33,7 +33,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 15px;
             transition: background 0.3s, color 0.3s;
@@ -58,7 +58,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
             border: 2px solid transparent;
@@ -102,6 +102,7 @@
 
         .btn-secondary { background-color: #4b5563; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
         .btn-import { background-color: #059669; }
+        .btn-snapshot { background-color: #0891b2; }
         .btn-clear { background-color: #ef4444; }
 
         .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -112,11 +113,13 @@
 
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8em; color: white; font-weight: bold; display: inline-block; }
         .badge-sw { background-color: var(--sw-color); }
-        .badge-other { background-color: var(--other-color); }
+        .badge-vhf { background-color: var(--vhf-color); }
         
         .action-btns { display: flex; gap: 5px; }
         .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
         .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        
+        .footer-stats { margin-top: 15px; font-size: 0.9em; color: var(--text-sub); text-align: right; }
     </style>
 </head>
 <body data-theme="light">
@@ -133,9 +136,18 @@
             <input type="text" id="freqInput" placeholder="e.g. 14.250" inputmode="decimal">
         </div>
         <div class="form-group">
+            <label>Radio</label>
+            <select id="radioInput">
+                <option value="Malahit DSP2" selected>Malahit DSP2</option>
+                <option value="Realistic Pro 2006">Realistic Pro 2006</option>
+                <option value="Baofeng DM1701">Baofeng DM1701</option>
+            </select>
+        </div>
+        <div class="form-group">
             <label>Antenna</label>
             <select id="antennaInput">
-                <option value="GA800" selected>GA800</option> <option value="Whip">Whip</option>
+                <option value="GA800" selected>GA800</option>
+                <option value="Whip">Whip</option>
                 <option value="X30N">X30N</option>
             </select>
         </div>
@@ -168,7 +180,8 @@
         <div class="btn-group">
             <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="processImport()">
             <button class="btn-secondary btn-import" onclick="document.getElementById('csvFileInput').click()">⬆ Import</button>
-            <button class="btn-secondary" onclick="exportData()">⬇ Export</button>
+            <button class="btn-secondary" onclick="exportData()">⬇ Export CSV</button>
+            <button class="btn-secondary btn-snapshot" onclick="downloadFullSnapshot()">📸 Snapshot</button>
             <button class="btn-secondary btn-clear" onclick="clearData()">Clear</button>
         </div>
     </div>
@@ -177,15 +190,16 @@
         <table id="logTable">
             <thead>
                 <tr>
-                    <th>UTC Time</th><th>Freq (MHz)</th><th>Band</th><th>Antenna</th><th>Mode</th><th>Station</th><th>Notes</th><th>Actions</th>
+                    <th>UTC Time</th><th>Freq (MHz)</th><th>Band</th><th>Radio</th><th>Antenna</th><th>Mode</th><th>Station</th><th>Notes</th><th>Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
-    <script>
-        // Theme Toggle
+    <div class="footer-stats" id="logCounter">Total Logs: 0</div>
+
+    <script id="mainScript">
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
             const target = current === 'light' ? 'dark' : 'light';
@@ -201,10 +215,10 @@
 
         document.addEventListener('DOMContentLoaded', renderTable);
 
-        // Logic
         function handleSubmit() {
             const editId = document.getElementById('editId').value;
             const freqVal = document.getElementById('freqInput').value;
+            const radio = document.getElementById('radioInput').value;
             const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
             const station = document.getElementById('stationInput').value.replace(/,/g, ";");
@@ -219,7 +233,8 @@
                 const index = logs.findIndex(l => l.id == editId);
                 if (index !== -1) {
                     logs[index].freq = freqNum;
-                    logs[index].type = (freqNum <= 30) ? "Shortwave" : "Other";
+                    logs[index].type = (freqNum <= 30) ? "Shortwave" : "VHF/UHF";
+                    logs[index].radio = radio;
                     logs[index].antenna = antenna;
                     logs[index].mode = mode;
                     logs[index].station = station;
@@ -231,7 +246,8 @@
                     id: Date.now(),
                     date: new Date().toISOString().replace('T', ' ').substring(0, 16), 
                     freq: freqNum,
-                    type: (freqNum <= 30) ? "Shortwave" : "Other",
+                    type: (freqNum <= 30) ? "Shortwave" : "VHF/UHF",
+                    radio: radio,
                     antenna: antenna,
                     mode: mode,
                     station: station,
@@ -252,7 +268,8 @@
 
             document.getElementById('editId').value = log.id;
             document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
-            document.getElementById('antennaInput').value = log.antenna; // Sets to saved antenna
+            document.getElementById('radioInput').value = log.radio || "Malahit DSP2";
+            document.getElementById('antennaInput').value = log.antenna || "GA800";
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station;
             document.getElementById('notesInput').value = log.notes;
@@ -274,7 +291,8 @@
             document.getElementById('freqInput').value = '';
             document.getElementById('stationInput').value = '';
             document.getElementById('notesInput').value = '';
-            document.getElementById('antennaInput').value = "GA800"; // Revert to default
+            document.getElementById('radioInput').value = "Malahit DSP2";
+            document.getElementById('antennaInput').value = "GA800";
         }
 
         function renderTable() {
@@ -282,24 +300,32 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
             const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+            let count = 0;
 
             logs.forEach(log => {
                 const freqDisplay = parseFloat(log.freq).toFixed(3);
                 const antennaText = log.antenna || "GA800";
+                const radioText = log.radio || "Malahit DSP2";
+                const bandText = log.type || (parseFloat(log.freq) <= 30 ? "Shortwave" : "VHF/UHF");
+                
                 const matches = freqDisplay.includes(searchTerm) || 
+                                radioText.toLowerCase().includes(searchTerm) ||
                                 antennaText.toLowerCase().includes(searchTerm) ||
+                                bandText.toLowerCase().includes(searchTerm) ||
                                 log.station.toLowerCase().includes(searchTerm) || 
                                 log.mode.toLowerCase().includes(searchTerm) ||
                                 log.notes.toLowerCase().includes(searchTerm);
 
                 if (!matches && searchTerm !== "") return;
 
+                count++;
                 const row = document.createElement('tr');
-                const badgeClass = log.type === "Shortwave" ? "badge-sw" : "badge-other";
+                const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
                 row.innerHTML = `
                     <td>${log.date}</td>
                     <td><strong>${freqDisplay}</strong></td>
-                    <td><span class="badge ${badgeClass}">${log.type}</span></td>
+                    <td><span class="badge ${badgeClass}">${bandText}</span></td>
+                    <td>${radioText}</td>
                     <td>${antennaText}</td>
                     <td>${log.mode}</td>
                     <td>${log.station}</td>
@@ -311,6 +337,7 @@
                 `;
                 tbody.appendChild(row);
             });
+            document.getElementById('logCounter').innerText = "Total Logs: " + count;
         }
 
         function deleteLog(id) {
@@ -332,10 +359,11 @@
         function exportData() {
             const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
             if (logs.length === 0) return alert("Nothing to export");
-            let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Antenna,Mode,Station,Notes\n"; 
+            let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Radio,Antenna,Mode,Station,Notes\n"; 
             logs.forEach(l => {
                 const freqExp = parseFloat(l.freq).toFixed(3);
-                csvContent += `${l.date},${freqExp},${l.type},${l.antenna},${l.mode},${l.station},${l.notes}\n`;
+                const bType = (parseFloat(l.freq) <= 30) ? "Shortwave" : "VHF/UHF";
+                csvContent += `${l.date},${freqExp},${bType},${l.radio},${l.antenna},${l.mode},${l.station},${l.notes}\n`;
             });
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
@@ -352,11 +380,11 @@
                 let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].split(",");
-                    if(cols.length >= 7) {
+                    if(cols.length >= 8) {
                         logs.unshift({ 
                             id: Date.now()+i, date: cols[0], freq: parseFloat(cols[1]), 
-                            type: cols[2], antenna: cols[3], mode: cols[4], 
-                            station: cols[5], notes: cols[6] 
+                            type: cols[2], radio: cols[3], antenna: cols[4], 
+                            mode: cols[5], station: cols[6], notes: cols[7] 
                         });
                     }
                 }
@@ -365,6 +393,22 @@
                 alert("Imported!");
             };
             reader.readAsText(file);
+        }
+
+        function downloadFullSnapshot() {
+            const logs = localStorage.getItem('radioLogs') || "[]";
+            const theme = document.body.getAttribute('data-theme') || "light";
+            let htmlContent = document.documentElement.outerHTML;
+            const dataInjector = `
+            <script>
+                localStorage.setItem('radioLogs', JSON.stringify(${logs}));
+                localStorage.setItem('radioTheme', '${theme}');
+            <\/script>`;
+            const blob = new Blob([htmlContent + dataInjector], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `RadioLogger_Snapshot_${new Date().toISOString().substring(0,10)}.html`;
+            link.click();
         }
     </script>
 </body>
