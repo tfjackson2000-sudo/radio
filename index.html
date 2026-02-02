@@ -105,10 +105,34 @@
         .btn-snapshot { background-color: #0891b2; }
         .btn-clear { background-color: #ef4444; }
 
-        .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
-        th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+        /* --- Updated Table Styling to Remove Scrollbar on Desktop --- */
+        .table-container { 
+            overflow-x: auto; 
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: auto; 
+        }
+
+        th, td { 
+            text-align: left; 
+            padding: 12px 15px; 
+            border-bottom: 1px solid var(--border-color);
+            /* This allows Station and Notes to wrap, preventing the long horizontal bar */
+            white-space: normal; 
+            word-wrap: break-word;
+        }
         
+        /* Keep technical data on one line */
+        td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
+            white-space: nowrap;
+        }
+
         th { 
             background-color: var(--primary); 
             color: white; 
@@ -118,6 +142,7 @@
             user-select: none;
             position: relative;
             padding-right: 25px;
+            white-space: nowrap;
         }
         th:hover { background-color: #1d4ed8; }
 
@@ -137,7 +162,6 @@
         
         .footer-stats { margin-top: 15px; font-size: 0.9em; color: var(--text-sub); text-align: right; }
 
-        /* Floating Jump to Top Button */
         #scrollTopBtn {
             display: none;
             position: fixed;
@@ -145,17 +169,14 @@
             right: 20px;
             z-index: 99;
             border: none;
-            outline: none;
             background-color: var(--primary);
             color: white;
             cursor: pointer;
             padding: 15px;
             border-radius: 50%;
-            font-size: 18px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             width: 50px;
             height: 50px;
-            line-height: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -249,7 +270,6 @@
     <script id="mainScript">
         let currentSort = { key: 'date', desc: true };
 
-        // Scroll Button Logic
         let mybutton = document.getElementById("scrollTopBtn");
         window.onscroll = function() {scrollFunction()};
         function scrollFunction() {
