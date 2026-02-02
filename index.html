@@ -105,7 +105,6 @@
         .btn-snapshot { background-color: #0891b2; }
         .btn-clear { background-color: #ef4444; }
 
-        /* --- Updated Table Styling to Remove Scrollbar on Desktop --- */
         .table-container { 
             overflow-x: auto; 
             background: var(--card-bg); 
@@ -113,24 +112,19 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
 
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            table-layout: auto; 
-        }
-
+        table { width: 100%; border-collapse: collapse; }
         th, td { 
             text-align: left; 
             padding: 12px 15px; 
             border-bottom: 1px solid var(--border-color);
-            /* This allows Station and Notes to wrap, preventing the long horizontal bar */
-            white-space: normal; 
-            word-wrap: break-word;
+            white-space: nowrap;
         }
         
-        /* Keep technical data on one line */
-        td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
-            white-space: nowrap;
+        /* Specific wrap for notes to prevent overspill */
+        td.notes-cell {
+            white-space: normal;
+            word-wrap: break-word;
+            min-width: 150px;
         }
 
         th { 
@@ -142,7 +136,6 @@
             user-select: none;
             position: relative;
             padding-right: 25px;
-            white-space: nowrap;
         }
         th:hover { background-color: #1d4ed8; }
 
@@ -225,8 +218,15 @@
             <input type="text" id="stationInput" placeholder="Who are they?">
         </div>
         <div class="form-group">
-            <label>Notes</label>
-            <input type="text" id="notesInput" placeholder="Signal report, etc.">
+            <label>Signal Note</label>
+            <select id="notesInput">
+                <option value="Strong / Clear">Strong / Clear</option>
+                <option value="Weak / Readable">Weak / Readable</option>
+                <option value="Weak / Noisy">Weak / Noisy</option>
+                <option value="Fading (QSB)">Fading (QSB)</option>
+                <option value="Static / QRM">Static / QRM</option>
+                <option value="599 / 59">599 / 59 (Perfect)</option>
+            </select>
         </div>
         <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
     </div>
@@ -256,8 +256,8 @@
                     <th onclick="sortTable('radio', this)">Radio</th>
                     <th onclick="sortTable('antenna', this)">Antenna</th>
                     <th onclick="sortTable('mode', this)">Mode</th>
-                    <th>Station</th>
-                    <th>Notes</th>
+                    <th onclick="sortTable('station', this)">Station</th>
+                    <th onclick="sortTable('notes', this)">Note</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -328,7 +328,7 @@
             const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
             const station = document.getElementById('stationInput').value.replace(/,/g, ";");
-            const notes = document.getElementById('notesInput').value.replace(/,/g, ";");
+            const notes = document.getElementById('notesInput').value;
 
             if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
             
@@ -396,9 +396,9 @@
         function resetForm() {
             document.getElementById('freqInput').value = '';
             document.getElementById('stationInput').value = '';
-            document.getElementById('notesInput').value = '';
             document.getElementById('radioInput').value = "Malahit DSP2";
             document.getElementById('antennaInput').value = "GA800";
+            document.getElementById('notesInput').value = "Strong / Clear";
         }
 
         function renderTable() {
@@ -439,7 +439,7 @@
                     <td>${log.antenna || ""}</td>
                     <td>${log.mode || ""}</td>
                     <td>${log.station || ""}</td>
-                    <td>${log.notes || ""}</td>
+                    <td class="notes-cell">${log.notes || ""}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit(${log.id})">Edit</button>
                         <button class="delete-btn" onclick="deleteLog(${log.id})">Del</button>
