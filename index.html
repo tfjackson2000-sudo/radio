@@ -9,9 +9,9 @@
             --bg-color: #f4f4f9;
             --card-bg: #ffffff;
             --primary: #2563eb;
-            --edit-color: #7c3aed; /* Purple for Edit */
-            --sw-color: #10b981;  /* Green for Shortwave */
-            --other-color: #f59e0b; /* Orange for Other */
+            --edit-color: #7c3aed;
+            --sw-color: #10b981;
+            --other-color: #f59e0b;
             --text-dark: #1f2937;
         }
 
@@ -26,6 +26,20 @@
 
         h1 { text-align: center; color: var(--primary); font-size: 1.5rem; margin-bottom: 20px; }
 
+        /* --- Search Bar Styling --- */
+        .search-container {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        #searchInput {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+        }
+
         .input-card {
             background: var(--card-bg);
             padding: 20px;
@@ -38,7 +52,6 @@
             border: 2px solid transparent;
         }
         
-        /* Highlight form when editing */
         .editing-mode { border: 2px solid var(--edit-color); background: #fdfaff; }
 
         .form-group { display: flex; flex-direction: column; }
@@ -93,9 +106,10 @@
     <h1>📡 Radio Logger</h1>
 
     <div id="formCard" class="input-card">
-        <input type="hidden" id="editId"> <div class="form-group">
+        <input type="hidden" id="editId">
+        <div class="form-group">
             <label>Frequency (MHz)</label>
-            <input type="number" id="freqInput" step="0.001" placeholder="e.g. 14.255" inputmode="decimal">
+            <input type="text" id="freqInput" placeholder="e.g. 14.250" inputmode="decimal">
         </div>
         <div class="form-group">
             <label>Mode</label>
@@ -115,6 +129,10 @@
             <input type="text" id="notesInput" placeholder="Signal report, etc.">
         </div>
         <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search by Frequency, Station, or Mode..." onkeyup="renderTable()">
     </div>
 
     <div class="controls">
@@ -143,33 +161,32 @@
 
         function handleSubmit() {
             const editId = document.getElementById('editId').value;
-            const freq = parseFloat(document.getElementById('freqInput').value);
+            const freqVal = document.getElementById('freqInput').value;
             const mode = document.getElementById('modeInput').value;
             const station = document.getElementById('stationInput').value.replace(/,/g, ";");
             const notes = document.getElementById('notesInput').value.replace(/,/g, ";");
 
-            if (!freq) return alert("Enter a frequency");
-
+            if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
+            
+            const freqNum = parseFloat(freqVal);
             let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
 
             if (editId) {
-                // Update existing
                 const index = logs.findIndex(l => l.id == editId);
                 if (index !== -1) {
-                    logs[index].freq = freq;
-                    logs[index].type = (freq <= 30) ? "Shortwave" : "Other";
+                    logs[index].freq = freqNum;
+                    logs[index].type = (freqNum <= 30) ? "Shortwave" : "Other";
                     logs[index].mode = mode;
                     logs[index].station = station;
                     logs[index].notes = notes;
                 }
-                cancelEdit(); // Reset form
+                cancelEdit();
             } else {
-                // Add new
                 const logEntry = {
                     id: Date.now(),
                     date: new Date().toISOString().replace('T', ' ').substring(0, 16), 
-                    freq: freq,
-                    type: (freq <= 30) ? "Shortwave" : "Other",
+                    freq: freqNum,
+                    type: (freqNum <= 30) ? "Shortwave" : "Other",
                     mode: mode,
                     station: station,
                     notes: notes
@@ -187,14 +204,13 @@
             const log = logs.find(l => l.id == id);
             if (!log) return;
 
-            // Fill form
             document.getElementById('editId').value = log.id;
-            document.getElementById('freqInput').value = log.freq;
+            // When editing, show the fixed decimal in the input
+            document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station;
             document.getElementById('notesInput').value = log.notes;
 
-            // Update UI
             document.getElementById('submitBtn').innerText = "Save Changes";
             document.getElementById('submitBtn').classList.add('btn-save');
             document.getElementById('formCard').classList.add('editing-mode');
@@ -216,15 +232,26 @@
 
         function renderTable() {
             const tbody = document.querySelector('#logTable tbody');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
             const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
 
             logs.forEach(log => {
+                const freqDisplay = parseFloat(log.freq).toFixed(3);
+                
+                // Search logic
+                const matches = freqDisplay.includes(searchTerm) || 
+                                log.station.toLowerCase().includes(searchTerm) || 
+                                log.mode.toLowerCase().includes(searchTerm) ||
+                                log.notes.toLowerCase().includes(searchTerm);
+
+                if (!matches && searchTerm !== "") return;
+
                 const row = document.createElement('tr');
                 const badgeClass = log.type === "Shortwave" ? "badge-sw" : "badge-other";
                 row.innerHTML = `
                     <td>${log.date}</td>
-                    <td><strong>${log.freq}</strong></td>
+                    <td><strong>${freqDisplay}</strong></td>
                     <td><span class="badge ${badgeClass}">${log.type}</span></td>
                     <td>${log.mode}</td>
                     <td>${log.station}</td>
@@ -258,7 +285,10 @@
             const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
             if (logs.length === 0) return alert("Nothing to export");
             let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Mode,Station,Notes\n"; 
-            logs.forEach(l => csvContent += `${l.date},${l.freq},${l.type},${l.mode},${l.station},${l.notes}\n`);
+            logs.forEach(l => {
+                const freqExp = parseFloat(l.freq).toFixed(3);
+                csvContent += `${l.date},${freqExp},${l.type},${l.mode},${l.station},${l.notes}\n`;
+            });
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
             link.setAttribute("download", "radio_logs.csv");
@@ -275,7 +305,15 @@
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].split(",");
                     if(cols.length >= 6) {
-                        logs.unshift({ id: Date.now()+i, date: cols[0], freq: cols[1], type: cols[2], mode: cols[3], station: cols[4], notes: cols[5] });
+                        logs.unshift({ 
+                            id: Date.now()+i, 
+                            date: cols[0], 
+                            freq: parseFloat(cols[1]), 
+                            type: cols[2], 
+                            mode: cols[3], 
+                            station: cols[4], 
+                            notes: cols[5] 
+                        });
                     }
                 }
                 localStorage.setItem('radioLogs', JSON.stringify(logs));
