@@ -164,7 +164,7 @@
 
         tr:hover { background-color: var(--table-hover); }
 
-        /* Fixed the Badge stretching here */
+        /* THE BADGE FIX */
         .badge { 
             padding: 3px 8px; 
             border-radius: 15px; 
@@ -172,8 +172,8 @@
             color: white; 
             font-weight: bold; 
             display: inline-block;
-            width: fit-content; 
-            justify-self: start; 
+            width: fit-content;       /* Prevents stretching */
+            justify-self: start;      /* Keeps it left-aligned in grid */
         }
         .badge-sw { background-color: var(--sw-color); }
         .badge-vhf { background-color: var(--vhf-color); }
@@ -190,10 +190,10 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (One-Line Grid Fix)               */
+        /* MOBILE CARD LAYOUT (Restored One-Line Layout!)       */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
-            .search-container { flex-direction: column; gap: 10px; width: 100%; }
+            .search-container { flex-direction: column; gap: 10px; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
@@ -210,13 +210,15 @@
             }
 
             td {
-                display: grid !important;
+                display: grid;
                 grid-template-columns: 105px 1fr;
                 gap: 10px;
-                align-items: center; 
-                text-align: left !important;
+                align-items: center; /* Centers short text vertically with its label */
+                text-align: left;
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
+                
+                /* RESTORED: STRICTLY ONE LINE FOR STANDARD FIELDS */
                 white-space: nowrap !important; 
                 overflow: hidden !important;
                 text-overflow: ellipsis;
@@ -233,6 +235,7 @@
 
             td:nth-child(8) { text-align: left; } 
             
+            /* Only allow Station and Notes to wrap if they are long */
             td:nth-child(7), td.notes-cell {
                 white-space: normal !important;
                 overflow: visible !important;
@@ -240,12 +243,12 @@
             }
 
             td.notes-cell { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr; /* Label and text stack */
                 gap: 4px;
             }
 
             td:last-child { 
-                display: flex !important;
+                display: flex;
                 border-bottom: none; 
                 justify-content: center; 
                 padding-top: 15px; 
