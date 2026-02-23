@@ -2,1004 +2,574 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V89</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Football Tracker">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#333333">
-
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 style=%22background:white;%22><rect width=%22100%22 height=%22100%22 fill=%22white%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2270%22>⚽</text></svg>">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Logger Pro</title>
     <style>
-        :root { 
-            --bg: linear-gradient(180deg, #dcfce7 0%, #f0fdf4 100%);
-            --card: #ffffff; 
-            --text: #1f1f1f; 
-            --text-muted: #666;
-            --border: #d1d5db; 
-            --primary: #333; 
-            --primary-tint: #f8f9fa; 
-            --text-on-primary: #fff;
-            --success: #28a745;
-            --danger: #dc3545;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --tourn-color: #6f42c1;
-        }
-        
-        [data-theme="dark"] { 
-            --bg: #121212; 
-            --card: #1e1e1e; 
-            --text: #e4e6eb; 
-            --text-muted: #b0b3b8;
-            --border: #383838; 
-            --primary-tint: #252525;
-            --shadow: 0 4px 12px rgba(0,0,0,0.4);
-            --tourn-color: #a76dff;
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --edit-color: #7c3aed;
+            --sw-color: #10b981;
+            --vhf-color: #f59e0b;
+            --text-main: #1f2937;
+            --text-sub: #555555;
+            --border-color: #dddddd;
+            --table-hover: #f9fafb;
         }
 
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background: var(--bg); 
-            background-attachment: fixed; 
-            color: var(--text); 
-            margin: 0; 
-            padding-bottom: 40px; 
-            padding-top: env(safe-area-inset-top);
-            transition: background 0.3s, color 0.3s; 
-            -webkit-tap-highlight-color: transparent;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        [data-theme="dark"] {
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --primary: #3b82f6;
+            --edit-color: #a78bfa;
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --border-color: #374151;
+            --table-hover: #2d3748;
         }
 
-        /* HEADER */
-        .app-header {
-            text-align: center;
-            padding: 10px 15px 15px 15px;
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: nowrap;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+            transition: background 0.3s, color 0.3s;
         }
 
-        .logo-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: relative;
-        }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { margin: 0; color: var(--primary); font-size: 1.5rem; }
 
-        .logo-text {
-            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            font-weight: 900;
-            font-size: 1.5rem;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--primary) 0%, #888 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
-        }
-        
-        .football-icon {
-            width: 24px;
-            height: 24px;
-            fill: var(--primary);
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
-        }
-
-        /* STICKERS */
-        .sticker {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 800;
-            font-size: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border: 2px solid #fff;
-            white-space: nowrap;
-            display: inline-block;
-        }
-
-        .season-sticker {
-            background: linear-gradient(135deg, #FFD700, #DAA520);
-            color: #000;
-            transform: rotate(-3deg);
-            margin-left: 10px;
-        }
-
-        .player-sticker {
-            position: absolute;
-            top: -10px;
-            left: -15px;
-            background: linear-gradient(135deg, #ff6b6b, #ee5253);
-            color: white;
-            transform: rotate(-8deg);
-            z-index: 10;
-            font-size: 0.7rem;
-        }
-
-        .clubs-sticker {
-            background: var(--primary);
-            color: var(--text-on-primary);
-            margin-right: 10px;
-            transform: rotate(2deg);
-        }
-
-        /* ADMIN ICON */
-        .admin-icon-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 1.4rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            padding: 0;
-            line-height: 1;
-        }
-
-        /* NAV STRUCTURE */
-        .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        .nav-row { 
-            display: flex; 
-            align-items: center; 
-            padding: 10px 15px; 
-            border-bottom: 1px solid var(--border);
-        }
-        
-        /* CLUBS ROW */
-        .clubs-row {
-            overflow-x: auto;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        /* CAREER ROW */
-        .career-row {
-            justify-content: center;
-            background: var(--primary-tint);
-            padding: 8px 15px;
-        }
-
-        .nav-secondary { display: flex; padding: 0 15px; background: var(--card); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
-
-        /* BUTTONS */
-        .nav-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.85rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; background: var(--bg); color: var(--text); }
-        .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        .career-btn { 
-            width: 100%; text-align: center; border: 2px solid #ffd700; color: #b8860b; background: transparent; font-size: 1rem; padding: 10px; border-radius: 10px; font-weight: 800;
-        }
-        .career-btn.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
-
-        .tab-btn { padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); border-bottom: 3px solid transparent; opacity: 0.7; transition: 0.2s; }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); opacity: 1; font-weight: 700; }
-
-        .container { max-width: 800px; margin: 25px auto; padding: 0 15px; flex-grow: 1; width: 100%; box-sizing: border-box; }
-        
-        /* FOOTER */
-        .app-footer {
-            margin-top: auto;
-            padding: 20px 15px 40px 15px;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            opacity: 0.6;
-        }
-        .app-footer button {
-            background: none;
-            border: 1px solid var(--border);
-            padding: 8px 16px;
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
             border-radius: 20px;
-            font-weight: 600;
-            color: var(--text);
             cursor: pointer;
+            font-size: 0.85em;
         }
 
-        /* CARD STYLES */
-        .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
-        .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--primary); border-bottom: 1px solid var(--border); }
-        .neutral-card .card-header { background: #f0f2f5 !important; color: #333 !important; }
-        [data-theme="dark"] .neutral-card .card-header { background: #2a2a2a !important; color: #eee !important; }
-        .card-body { padding: 20px; }
+        .input-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            border: 2px solid transparent;
+        }
         
-        details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
-        details > summary::after { content: ' ▼'; float: right; font-size: 0.8em; opacity: 0.5; }
-        details[open] > summary::after { transform: rotate(180deg); }
+        .editing-mode { border: 2px solid var(--edit-color); }
+        [data-theme="dark"] .editing-mode { background: #2e263d; }
 
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
-        .stat-item { background: var(--bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-        .stat-item strong { font-size: 1.5rem; color: var(--primary); display: block; line-height: 1; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-sub); }
         
-        .form-group { margin-bottom: 20px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        select, input, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); box-sizing: border-box; }
-        .flex-row { display: flex; gap: 10px; align-items: center; }
-        .flex-grow { flex: 1; min-width: 0; }
-        .color-picker { width: 50px; padding: 2px; height: 45px; cursor: pointer; border-radius: 8px; border: 1px solid var(--border); }
+        input, select {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+        }
 
-        .history-group { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; background: var(--card); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-        .group-header { background: var(--primary-tint); padding: 12px 15px; border-bottom: 1px solid var(--border); }
-        .gh-top { display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px; }
-        .gh-date { font-size: 1rem; font-weight: 800; color: var(--primary); }
-        .gh-awards { font-size: 0.85rem; color: var(--text-muted); background: var(--bg); padding: 8px; border-radius: 8px; margin-top: 5px; border: 1px solid var(--border); }
+        .btn-main {
+            grid-column: 1 / -1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
         
-        .aw-tag { display: inline-block; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-right: 5px; margin-bottom: 2px; }
+        .btn-save { background-color: var(--edit-color) !important; }
+
+        .search-container { margin-bottom: 15px; display: flex; gap: 10px; }
+        #searchInput { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
+
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .btn-group { display: flex; gap: 8px; }
+
+        .btn-secondary { background-color: #4b5563; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
+        .btn-import { background-color: #059669; }
+        .btn-snapshot { background-color: #0891b2; }
+        .btn-clear { background-color: #ef4444; }
+
+        .table-container { 
+            overflow: hidden;
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: fixed;
+        }
+
+        th, td { 
+            text-align: left; 
+            padding: 10px 12px; 
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.9em;
+        }
         
-        .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; background: var(--card); gap: 12px; }
-        .match-row:last-child { border-bottom: none; }
-        .match-info { flex: 1; }
+        th:nth-child(1), td:nth-child(1) { width: 140px; }
+        th:nth-child(2), td:nth-child(2) { width: 90px; }
+        th:nth-child(3), td:nth-child(3) { width: 90px; }
+        th:nth-child(4), td:nth-child(4) { width: 130px; }
+        th:nth-child(5), td:nth-child(5) { width: 80px; }
+        th:nth-child(6), td:nth-child(6) { width: 70px; }
         
-        .detail-grid { display: grid; grid-template-columns: 70px 1fr; gap: 4px 10px; margin-top: 8px; font-size: 0.85rem; }
-        .dt-label { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; align-self: center; }
-        .dt-val { font-weight: 500; }
-
-        .result-badge { padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; min-width: 45px; text-align: center; }
-        .res-w { background: rgba(40, 167, 69, 0.15); color: #28a745; }
-        .res-l { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
-        .res-d { background: rgba(255, 193, 7, 0.15); color: #d39e00; }
-
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-add { background: var(--primary); color: var(--text-on-primary); }
-        .btn-save { background: var(--success); color: white; }
-        .btn-del { background: transparent; color: var(--danger); font-size: 1.1rem; border: none; cursor:pointer; }
-        .btn-edit { background: transparent; color: #3b82f6; font-size: 1.2rem; border: none; cursor:pointer; }
-        .btn-sm { font-size: 0.8rem; padding: 4px 8px; height: auto; width: auto; font-weight: 600; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
-        .btn-google { background: #4285F4; color: white; margin-bottom: 10px; }
-        .btn-guest { background: transparent; border: 2px solid var(--border); color: var(--text); }
+        th:nth-child(7), td:nth-child(7),
+        th:nth-child(8), td:nth-child(8) { 
+            width: auto; 
+            white-space: normal; 
+            word-wrap: break-word;
+        }
         
-        .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
-        th { background: var(--primary-tint); color: var(--primary); padding: 12px 8px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); text-align: left; }
-        td { padding: 12px 8px; border-bottom: 1px solid var(--border); text-align: left; }
-        .num-col { text-align: center; font-weight: bold; }
-        .is-me { background: var(--primary-tint); font-weight: bold; }
+        th:nth-child(9), td:nth-child(9) { width: 100px; text-align: center; }
 
-        .hidden { display: none !important; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .modal-box { background: var(--card); padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
+        th { 
+            background-color: var(--primary); 
+            color: white; 
+            font-size: 0.8em; 
+            text-transform: uppercase; 
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        th:hover { background-color: #1d4ed8; }
+
+        th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; margin-left: 4px; }
+        th.sort-asc::after { content: ' ▲'; opacity: 1; }
+        th.sort-desc::after { content: ' ▼'; opacity: 1; }
+
+        tr:hover { background-color: var(--table-hover); }
+
+        .badge { padding: 3px 8px; border-radius: 15px; font-size: 0.75em; color: white; font-weight: bold; }
+        .badge-sw { background-color: var(--sw-color); }
+        .badge-vhf { background-color: var(--vhf-color); }
         
-        .version-tag { text-align: center; margin-top: 30px; font-size: 0.75rem; color: var(--text-muted); opacity: 0.5; font-weight: bold; }
+        .action-btns { display: flex; gap: 4px; justify-content: center; }
+        .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        
+        .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
 
-        #toast { visibility: hidden; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        #toast.visible { visibility: visible; opacity: 1; pointer-events: all; }
-        #toast button { background: transparent; border: none; color: #4dabf7; font-weight: bold; cursor: pointer; padding: 0; font-size: 0.95rem; }
+        #scrollTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
 
-        #authOverlay, #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; padding: 20px; text-align: center; }
-        .auth-card { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 400px; width: 100%; border: 1px solid var(--border); }
+        @media screen and (max-width: 800px) {
+            .table-container { overflow-x: auto; }
+            table { table-layout: auto; }
+        }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-<svg style="display: none;">
-    <symbol id="icon-football" viewBox="0 0 512 512">
-        <path d="M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm87,41.93-22,66.57a32,32,0,0,1-19.33,20L236,198.17l-35.33-60.67a32,32,0,0,1,3.48-36.93l46.12-58.42A175.76,175.76,0,0,1,343,89.93ZM165.74,103.52l40.41,69.41a32,32,0,0,1-3.49,36.93L153.25,272H80.12a176.69,176.69,0,0,1,85.62-168.48ZM80,288h79.56a32,32,0,0,1,30.31,21.82L213.63,380,166,419.64a32,32,0,0,1-38.65,1.72l-46.6-30.82A174.4,174.4,0,0,1,80,288Zm261.25,120.48-46.12-58.42a32,32,0,0,1,3.48-36.93l35.33-60.67,65.65,21.67a32,32,0,0,1,19.33,20L441.88,340A176.69,176.69,0,0,1,341.25,408.48ZM392.74,272H319.56a32,32,0,0,1-30.31-21.82L265.63,180l47.63-39.64a32,32,0,0,1,38.65-1.72l46.6,30.82A174.4,174.4,0,0,1,432,272ZM256,432a175,175,0,0,1-66.7-13.13l52.56-66.58a32,32,0,0,1,40.44-8.85l75.31,31.32A175.38,175.38,0,0,1,256,432Z"/>
-    </symbol>
-</svg>
+    <button onclick="topFunction()" id="scrollTopBtn" title="Go to top">↑</button>
 
-<div id="loadingOverlay">
-    <div style="display:flex; align-items:center; gap:10px;">
-        <svg class="football-icon"><use href="#icon-football"></use></svg>
-        <h2 class="logo-text" style="font-size: 2rem;">Football Tracker</h2>
-        <svg class="football-icon"><use href="#icon-football"></use></svg>
-    </div>
-    <p style="margin-top:10px;">☁️ Syncing...</p>
-</div>
+    <header>
+        <h1>📡 Radio Logger</h1>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
+    </header>
 
-<div id="authOverlay" class="hidden">
-    <div class="auth-card">
-        <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:10px;">
-            <svg class="football-icon"><use href="#icon-football"></use></svg>
-            <h2 style="margin:0;" class="logo-text">Football Tracker</h2>
-            <svg class="football-icon"><use href="#icon-football"></use></svg>
-        </div>
-        <p style="color:var(--text-muted); margin-bottom:20px;">Please sign in to manage your data.</p>
-        <button id="btnLogin" class="btn btn-google">Sign in with Google</button>
-        <button id="btnGuest" class="btn btn-guest" onclick="app.enterAsGuest()">Guest View</button>
-    </div>
-</div>
-
-<div id="toast"><span id="toastMsg">Deleted</span><button onclick="app.performUndo()">UNDO</button></div>
-
-<div class="nav-container hidden" id="mainNav">
-    <div class="app-header">
-        <div class="logo-wrapper">
-            <div id="playerSticker" class="sticker player-sticker"></div>
-            
-            <svg class="football-icon"><use href="#icon-football"></use></svg>
-            <span class="logo-text">Football Tracker</span>
-            <svg class="football-icon"><use href="#icon-football"></use></svg>
-            
-            <div id="headerSeasonBadge" class="sticker season-sticker"></div>
-        </div>
-        <button class="admin-icon-btn protected-area" onclick="ui.switchContext('Admin')">⚙️</button>
-    </div>
-    
-    <div class="nav-row">
-        <div class="sticker clubs-sticker">My Clubs</div>
-        <div id="navRowTeams" class="clubs-row"></div>
-    </div>
-    
-    <div class="nav-row career-row">
-        <div id="btnCareer" class="career-btn" onclick="ui.switchContext('Career')">🌟 My Career</div>
-    </div>
-
-    <div class="nav-secondary hidden" id="navSecondary">
-        <div class="tab-btn" id="tabStats" onclick="ui.switchSubTab('Stats')">Stats & Input</div>
-        <div class="tab-btn" id="tabTourn" onclick="ui.switchSubTab('Tournaments')">Tournaments</div>
-    </div>
-</div>
-
-<div class="container hidden" id="mainApp">
-    <div id="viewMatchDay" class="hidden">
-        <div class="card">
-            <div class="card-header"><span>📊 <span id="teamStatTitle">Stats</span></span></div>
-            <div class="card-body">
-                <div class="stat-grid">
-                    <div class="stat-item"><span>Games</span><strong id="st-p">0</strong></div>
-                    <div class="stat-item"><span>Wins</span><strong id="st-w">0</strong></div>
-                    <div class="stat-item"><span>Goals</span><strong id="st-g">0</strong></div>
-                    <div class="stat-item"><span>Awards</span><strong id="st-a">N/A</strong></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <details>
-                <summary class="card-header">👟 Top Scorers</summary>
-                <div class="card-body" style="padding:0;">
-                    <table id="topScorerTable"><thead><tr><th>Player</th><th class="num-col">Goals</th></tr></thead><tbody></tbody></table>
-                </div>
-            </details>
-        </div>
-
-        <div class="card protected-area">
-            <details>
-                <summary class="card-header">⚽ Match Day Input</summary>
-                <div class="card-body">
-                    <div class="form-group"><label>Date:</label><input type="date" id="mDate"></div>
-                    <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
-                    <div class="form-row"><div><label>Opponent:</label><select id="mOpp"></select></div><div><label>Manager:</label><select id="mCoach"></select></div></div>
-                    <div class="form-row"><div><label>Us:</label><input type="number" id="mOur" value="0" oninput="ui.renderScorers('m')"></div><div><label>Them:</label><input type="number" id="mTheir" value="0"></div></div>
-                    <div id="mScorerList" class="form-group"></div>
-                    <div class="form-group"><label>Notes:</label><textarea id="mNotes" rows="2"></textarea></div>
-                    <button type="button" class="btn btn-add" onclick="app.addToQueue()">+ Add Game to Queue</button>
-                    <div id="matchQueue" style="margin-top:15px; padding-top:15px; border-top:1px solid var(--border);"></div>
-                    <button type="button" id="btnFinalize" class="btn btn-save hidden" onclick="app.saveSession()">💾 Save Session</button>
-                </div>
-            </details>
-        </div>
-        
-        <div class="card">
-            <details open>
-                <summary class="card-header">🏆 League Table</summary>
-                <div class="card-body" style="padding:0;">
-                    <table id="teamLeagueTable"><thead><tr><th>Team</th><th class="num-col">P</th><th class="num-col">W</th><th class="num-col">D</th><th class="num-col">L</th><th class="num-col">GD</th><th class="num-col">Pts</th></tr></thead><tbody></tbody></table>
-                </div>
-            </details>
-        </div>
-        
-        <div class="card">
-            <details>
-                <summary class="card-header">🕒 Match History</summary>
-                <div class="card-body" id="teamHistoryList" style="padding:10px;"></div>
-            </details>
-        </div>
-    </div>
-
-    <div id="viewTournaments" class="hidden">
-        <div class="card" style="border-color: var(--tourn-color);">
-            <div class="card-header" style="color: var(--tourn-color); background:rgba(111, 66, 193, 0.05);">🏆 Tournament Hub
-                <button type="button" class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem;" onclick="document.getElementById('addTournModal').classList.remove('hidden')">+ New</button>
-            </div>
-            <div class="card-body">
-                <div class="form-group"><label>Select Tournament:</label><select id="tournSelector" onchange="ui.renderTournamentView()"></select></div>
-                <div id="tournStatsArea" class="hidden">
-                    <div class="stat-grid">
-                        <div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div>
-                        <div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div>
-                        <div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div>
-                        <div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div>
-                    </div>
-                    <div class="protected-area" style="margin-top:20px; text-align:right;"><button type="button" class="btn-edit" style="width:auto;" onclick="app.openEditActiveTourn()">⚙️ Manage</button></div>
-                    <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);">
-                        <label>🏆 Tournament Winner:</label>
-                        <div class="flex-row"><input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button></div>
-                    </div>
-                    <h3 style="margin-top:25px; border-bottom:2px solid var(--border);">🕒 Fixtures</h3>
-                    <div id="tournHistoryList"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="viewCareer" class="hidden">
-        <div class="card" style="border-color: #DAA520;">
-            <div class="card-header" style="color: #B8860B; background:rgba(218, 165, 32, 0.1);"><span>🌟 Career Overview</span><select id="careerSeasonFilter" onchange="ui.renderCareer()" style="width:auto;"><option value="All Time">All Time</option></select></div>
-            <div class="card-body">
-                <div class="stat-grid"><div class="stat-item"><span>Games</span><strong id="c-p">0</strong></div><div class="stat-item"><span>Wins</span><strong id="c-w">0</strong></div><div class="stat-item"><span>Goals</span><strong id="c-g">0</strong></div><div class="stat-item"><span>Awards</span><strong id="c-a">0</strong></div></div>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header" style="color:#B8860B; background:rgba(218, 165, 32, 0.1);">🏆 Your Clubs Comparison</div>
-            <div class="card-body" style="padding:0;">
-                <table id="masterTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody></tbody></table>
-            </div>
-        </div>
-    </div>
-
-    <div id="viewAdmin" class="hidden protected-area">
-        <h2 style="margin-bottom:20px;">⚙️ Admin</h2>
-        <div class="card">
-            <div class="card-header">🛠 Select Team</div>
-            <div class="card-body">
-                <div class="flex-row">
-                    <select id="admTeamSelect" onchange="ui.renderAdminDetails()" class="flex-grow"></select>
-                    <button type="button" class="btn-edit" style="font-size:0.9rem; width:auto;" onclick="app.renameTeamPrompt()">Rename</button>
-                </div>
-            </div>
-        </div>
-        <div class="card"><div class="card-header">📅 Season</div><div class="card-body"><div class="flex-row"><select id="admActiveSeason" onchange="app.switchActiveSeason()" class="flex-grow"></select><button type="button" class="btn-del" style="width:auto;" onclick="app.deleteSeason()">🗑</button></div><button type="button" class="btn btn-save" onclick="document.getElementById('newSeasonModal').classList.remove('hidden')">➕ New Season</button></div></div>
-        <div class="card"><div class="card-header">🏃‍♂️ Squad</div><div class="card-body"><div class="form-group flex-row"><input type="text" id="admNewPlayer" placeholder="Add Player" class="flex-grow"><button type="button" class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('players', 'admNewPlayer')">Add</button></div><ul id="admPlayerList" class="admin-list"></ul></div></div>
-        <div class="card"><div class="card-header">🛡 Opponents</div><div class="card-body"><div class="form-group flex-row"><input type="text" id="admNewOpp" placeholder="Add Opponent" class="flex-grow"><button type="button" class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('opps', 'admNewOpp')">Add</button></div><ul id="admOppList" class="admin-list"></ul></div></div>
-        <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
-        <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body">
-            <label style="display:block; margin-bottom:5px;">Profile Name (Select from Squad):</label>
-            <div class="flex-row" style="margin-bottom:20px;">
-                <select id="adminProfileName" class="flex-grow"></select>
-                <button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button>
-            </div>
-            
-            <label style="display:block; margin-bottom:5px;">Add Club:</label>
-            <div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div>
-            
-            <label style="display:block; margin-bottom:5px;">Manage Clubs:</label>
-            <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
-        </div></div>
-    </div>
-    <div class="version-tag">V89</div>
-</div>
-
-<footer class="app-footer" id="appFooter">
-    <button onclick="(() => { globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', globalData.settings.theme); saveToCloud(); })()">🌓 Theme</button>
-    <button onclick="app.doSignOut()">🚪 Log Out</button>
-</footer>
-
-<div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
-<div id="newSeasonModal" class="modal-overlay hidden"><div class="modal-box"><h3>New Season</h3><input type="text" id="newSeasonNameInput" placeholder="YYYY/YY"><button class="btn btn-save" onclick="app.startNewSeason()">Start</button><button class="btn" onclick="document.getElementById('newSeasonModal').classList.add('hidden')">Cancel</button></div></div>
-
-<div id="daySummaryModal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <h3>Edit Awards & Honors</h3>
-        <input type="hidden" id="dsDate">
-        <p id="dsDateDisplay" style="color:var(--text-muted); font-weight:bold; margin-bottom:15px;"></p>
-        <div class="form-group" style="border-top:1px solid var(--border); padding-top:15px;">
-            <label>🏅 Awards (For this day)</label>
-            <div id="dsAwardList"></div>
-            <button class="btn-sm" style="margin-top:5px;" onclick="window.app.addDayAwardRow()">+ Add Award</button>
-        </div>
-        <button class="btn btn-save" onclick="app.saveDaySummary()">Save Group Info</button>
-        <button class="btn" onclick="document.getElementById('daySummaryModal').classList.add('hidden')">Cancel</button>
-    </div>
-</div>
-
-<div id="editModal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <h3>Edit Match</h3>
+    <div id="formCard" class="input-card">
         <input type="hidden" id="editId">
-        <div class="form-group"><label>Date (Change to move Group)</label><input type="date" id="eDate"></div>
-        <div class="form-group"><label>Tournament</label><select id="eTourn"></select></div>
-        <div class="form-row"><div><label>Opponent</label><select id="eOpp"></select></div><div><label>Manager</label><select id="eCoach"></select></div></div>
-        <div class="form-row"><div><label>Us</label><input type="number" id="eOur" oninput="ui.renderScorers('e')"></div><div><label>Them</label><input type="number" id="eTheir"></div></div>
-        <div id="eScorerList"></div>
-        <div class="form-group"><label>Notes</label><textarea id="eNotes"></textarea></div>
-        <button class="btn btn-save" onclick="app.saveEditedMatch()">Save</button>
-        <button class="btn" onclick="document.getElementById('editModal').classList.add('hidden')">Cancel</button>
+        <div class="form-group">
+            <label>Frequency (MHz)</label>
+            <input type="text" id="freqInput" placeholder="e.g. 14.250" inputmode="decimal">
+        </div>
+        <div class="form-group">
+            <label>Radio</label>
+            <select id="radioInput">
+                <option value="Malahit DSP2" selected>Malahit DSP2</option>
+                <option value="Realistic Pro 2006">Realistic Pro 2006</option>
+                <option value="Baofeng DM1701">Baofeng DM1701</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Antenna</label>
+            <select id="antennaInput">
+                <option value="GA800" selected>GA800</option>
+                <option value="Whip">Whip</option>
+                <option value="X30N">X30N</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Mode</label>
+            <select id="modeInput">
+                <option value="AM">AM</option><option value="FM">FM</option>
+                <option value="USB">USB</option><option value="LSB">LSB</option>
+                <option value="CW">CW</option><option value="FT8">FT8</option>
+                <option value="DMR">DMR</option><option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Station / Callsign</label>
+            <input type="text" id="stationInput" placeholder="Who are they?">
+        </div>
+        <div class="form-group">
+            <label>Signal Note</label>
+            <select id="notesInput" onchange="checkCustomNote(this)">
+                <option value="Both sides clear">Both sides clear</option>
+                <option value="One side clear">One side clear</option>
+                <option value="Weak / Noisy">Weak / Noisy</option>
+                <option value="Fading / Static">Fading / Static</option>
+                <option value="CUSTOM_VALUE">-- Type Custom Note... --</option>
+            </select>
+        </div>
+        <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
+    </div>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAkhLB-XkffuTny8yJOw_FCtZSRIo5qQLE",
-        authDomain: "joeyfootball-875eb.firebaseapp.com",
-        databaseURL: "https://joeyfootball-875eb-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "joeyfootball-875eb",
-        storageBucket: "joeyfootball-875eb.firebasestorage.app",
-        messagingSenderId: "647816306796",
-        appId: "1:647816306796:web:686918e1d1c82b8a17f849",
-        measurementId: "G-PX5PH27CES"
-    };
+    <div class="controls">
+        <h2>Your Logs</h2>
+        <div class="btn-group">
+            <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="processImport()">
+            <button class="btn-secondary btn-import" onclick="document.getElementById('csvFileInput').click()">⬆ Import</button>
+            <button class="btn-secondary" onclick="exportData()">⬇ Export CSV</button>
+            <button class="btn-secondary btn-snapshot" onclick="downloadFullSnapshot()">📸 Snapshot</button>
+            <button class="btn-secondary btn-clear" onclick="clearData()">Clear</button>
+        </div>
+    </div>
 
-    const ALLOWED_UIDS = ["QC6D1Smr9SVgpITffUTrRZSTQEq1", "Np9ZXcd2wNWvwsYA3X1QTcFpSIB3"];
-    let fbApp, db, auth, rtdb, globalData, activeContext = "Llanelli Town", activeSubTab = "Stats", sessionQueue = [], currentUser = null, isGuest = false;
-    let lastDeleted = null; let undoTimer = null;
-    let lastActiveTeam = "Llanelli Town"; // TRACKS LAST TEAM VIEWED
+    <div class="table-container">
+        <table id="logTable">
+            <thead>
+                <tr>
+                    <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
+                    <th onclick="sortTable('freq', this)">Freq</th>
+                    <th onclick="sortTable('type', this)">Band</th>
+                    <th onclick="sortTable('radio', this)">Radio</th>
+                    <th onclick="sortTable('antenna', this)">Ant</th>
+                    <th onclick="sortTable('mode', this)">Mode</th>
+                    <th onclick="sortTable('station', this)">Station</th>
+                    <th onclick="sortTable('notes', this)">Note</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-    try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
-    catch (e) { document.getElementById('loadingOverlay').innerHTML = "<h2>⚠️ Error</h2><p>Firebase Config Failed</p>"; }
+    <div class="footer-stats" id="logCounter">Total Logs: 0</div>
 
-    const btnLogin = document.getElementById('btnLogin');
-    btnLogin.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+    <script id="mainScript">
+        let currentSort = { key: 'date', desc: true };
 
-    window.app = window.app || {};
-    window.app.enterAsGuest = () => { isGuest = true; currentUser = { uid: "GUEST" }; document.getElementById('authOverlay').classList.add('hidden'); document.getElementById('loadingOverlay').classList.remove('hidden'); document.body.classList.add('read-only-mode'); listenToData(); };
-    window.app.doSignOut = () => { isGuest = false; signOut(auth).then(() => window.location.reload()); };
-
-    onAuthStateChanged(auth, (user) => {
-        if (isGuest) return;
-        currentUser = user;
-        if (user) {
-            document.getElementById('authOverlay').classList.add('hidden');
-            if (ALLOWED_UIDS.includes(user.uid)) { document.body.classList.remove('read-only-mode'); document.querySelectorAll('.protected-area').forEach(el => el.classList.remove('hidden')); }
-            else { document.body.classList.add('read-only-mode'); document.querySelectorAll('.protected-area').forEach(el => el.classList.add('hidden')); }
-            listenToData();
-        } else {
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            document.getElementById('authOverlay').classList.remove('hidden');
-            document.getElementById('mainNav').classList.add('hidden'); document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('appFooter').classList.add('hidden');
-        }
-    });
-
-    function listenToData() {
-        const dataRef = ref(rtdb, 'joey_v38');
-        onValue(dataRef, (snapshot) => {
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            document.getElementById('mainNav').classList.remove('hidden'); document.getElementById('mainApp').classList.remove('hidden'); document.getElementById('appFooter').classList.remove('hidden');
-            const val = snapshot.val();
-            if (val) { globalData = val; initUI(); }
-            else { globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], daySummaries: {}, settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"], profileName: "Joey" } }; if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData); initUI(); }
-        });
-    }
-
-    function saveToCloud() { if (!ALLOWED_UIDS.includes(currentUser?.uid) || isGuest) return alert("Read Only Mode"); return set(ref(rtdb, 'joey_v38'), globalData); }
-
-    function initUI() {
-        if(!globalData.daySummaries) globalData.daySummaries = {};
-        if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
-        
-        // Prevent reset if we are in Admin or Career mode
-        const isSystemPage = (activeContext === 'Admin' || activeContext === 'Career');
-        
-        // Only reset activeContext if we are looking at a team that no longer exists
-        if(!isSystemPage && globalData && globalData.teams && !globalData.teams[activeContext]) {
-             activeContext = Object.keys(globalData.teams)[0] || 'Career';
-        }
-        
-        if(globalData && !globalData.history) globalData.history = [];
-        
-        ui.switchContext(activeContext);
-        document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
-    }
-    
-    function showToast(msg) {
-        const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('visible');
-        if(undoTimer) clearTimeout(undoTimer); undoTimer = setTimeout(() => { t.classList.remove('visible'); lastDeleted = null; }, 5000);
-    }
-
-    const fmtDate = (ds) => {
-        if(!ds) return "";
-        const d = new Date(ds);
-        const day = d.getDate(); const m = d.toLocaleString('en-GB', { month: 'short' }); const y = d.getFullYear();
-        const s = ["th", "st", "nd", "rd"]; const v = day % 100; const suffix = s[(v - 20) % 10] || s[v] || s[0];
-        return `${day}${suffix} ${m} ${y}`;
-    };
-
-    function hexToRgb(hex) {
-        let r = 0, g = 0, b = 0;
-        if (hex.length === 4) { r = "0x" + hex[1] + hex[1]; g = "0x" + hex[2] + hex[2]; b = "0x" + hex[3] + hex[3]; } 
-        else if (hex.length === 7) { r = "0x" + hex[1] + hex[2]; g = "0x" + hex[3] + hex[4]; b = "0x" + hex[5] + hex[6]; }
-        return `rgba(${+r},${+g},${+b}, 0.08)`;
-    }
-
-    Object.assign(window.app, {
-        saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud().then(()=>{ui.renderQueue(); alert("Saved!");}); },
-        addToQueue: () => {
-            const opp = document.getElementById('mOpp').value; if(!opp) return alert("Select Opponent");
-            let dVal = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
-            sessionQueue.push({ id: Date.now()+Math.random(), date:dVal, team:activeContext, opp:opp, tourn:document.getElementById('mTourn').value, our:parseInt(document.getElementById('mOur').value)||0, their:parseInt(document.getElementById('mTheir').value)||0, coach:document.getElementById('mCoach').value, scorers:Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), notes:document.getElementById('mNotes').value, season:globalData.settings.currentSeason });
-            ui.renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
-        },
-        saveProfileName: () => {
-             const newName = document.getElementById('adminProfileName').value;
-             if(newName) {
-                 globalData.settings.profileName = newName;
-                 saveToCloud().then(() => { alert("Profile updated to " + newName); ui.renderMainView(); });
-             }
-        },
-        openDaySummary: (date) => {
-            document.getElementById('dsDate').value = date;
-            document.getElementById('dsDateDisplay').innerText = fmtDate(date);
-            const sum = globalData.daySummaries[date] || {};
-            
-            const awContainer = document.getElementById('dsAwardList');
-            awContainer.innerHTML = '';
-            
-            const currentAwards = sum.awards || [];
-            
-            // Auto-Import Legacy Awards for Editing
-            const matches = globalData.history.filter(m => m.date === date && m.team === activeContext);
-            matches.forEach(m => {
-               if(m.awards && m.awards.length > 0) {
-                   m.awards.forEach(a => currentAwards.push(a));
-               } 
-            });
-            
-            const uniqueAwards = currentAwards.filter((a, index, self) =>
-                index === self.findIndex((t) => (
-                    t.name === a.name && t.player === a.player
-                ))
-            );
-
-            uniqueAwards.forEach(a => window.app.addDayAwardRow(a.name, a.player));
-            document.getElementById('daySummaryModal').classList.remove('hidden');
-        },
-        
-        addDayAwardRow: (selAward, selPlayer) => {
-            const container = document.getElementById('dsAwardList');
-            const t = globalData.teams[activeContext];
-            const div = document.createElement('div');
-            div.className = 'flex-row';
-            div.style.marginBottom = '5px';
-            
-            const s1 = document.createElement('select');
-            s1.className = 'ds-aw-name flex-grow';
-            s1.add(new Option("-- Award --", ""));
-            
-            const awardsList = t.awards || [];
-            awardsList.forEach(a => s1.add(new Option(a.name, a.name)));
-            if(selAward && !awardsList.some(a=>a.name===selAward)) s1.add(new Option(selAward, selAward));
-            if(selAward) s1.value = selAward;
-
-            const s2 = document.createElement('select');
-            s2.className = 'ds-aw-player flex-grow';
-            s2.add(new Option("-- Player --", ""));
-            
-            const playerList = t.players || [];
-            playerList.forEach(p => s2.add(new Option(p, p)));
-            if(selPlayer && !playerList.includes(selPlayer)) s2.add(new Option(selPlayer, selPlayer));
-            if(selPlayer) s2.value = selPlayer;
-
-            const btn = document.createElement('button');
-            btn.className = 'btn-del';
-            btn.innerHTML = '✕';
-            btn.onclick = () => div.remove();
-
-            div.appendChild(s1);
-            div.appendChild(s2);
-            div.appendChild(btn);
-            container.appendChild(div);
-        },
-
-        saveDaySummary: () => {
-            const date = document.getElementById('dsDate').value;
-            const names = document.querySelectorAll('.ds-aw-name');
-            const players = document.querySelectorAll('.ds-aw-player');
-            let awards = [];
-            names.forEach((n, i) => {
-                if(n.value && players[i].value) {
-                    awards.push({ name: n.value, player: players[i].value });
-                }
-            });
-
-            globalData.daySummaries[date] = { awards: awards };
-            
-            // Clean up legacy match awards since they are now in Summary
-            globalData.history.forEach(m => {
-                if(m.date === date && m.team === activeContext) {
-                    m.awards = []; 
-                }
-            });
-
-            saveToCloud().then(() => {
-                document.getElementById('daySummaryModal').classList.add('hidden');
-                ui.renderMainView();
-            });
-        },
-
-        // Deletes/Undo
-        admDel: (k, i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t][k][i]; lastDeleted = { type: 'adminItem', key: k, index: i, data: item, team: t }; globalData.teams[t][k].splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Item Deleted"); }); },
-        admDelAw: (i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t].awards[i]; lastDeleted = { type: 'award', index: i, data: item, team: t }; globalData.teams[t].awards.splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Award Deleted"); }); },
-        admDelClub: (name) => {
-            if(Object.keys(globalData.teams).length <= 1) return alert("Cannot delete the last team.");
-            if(name === activeContext) return alert("Cannot delete the active club. Switch to another club first.");
-            if(confirm(`Delete club ${name}? This cannot be undone.`)) {
-                delete globalData.teams[name];
-                saveToCloud().then(() => { ui.renderAdminDetails(); showToast("Club Deleted"); });
-            }
-        },
-        deleteTeam: () => {
-            // Deprecated button kept for legacy, redirects logic
-            app.admDelClub(document.getElementById('admTeamSelect').value);
-        },
-        deleteMatch: (id) => { if(confirm("Delete this match?")) { const m = globalData.history.find(x => x.id == id); lastDeleted = { type: 'match', data: m }; globalData.history = globalData.history.filter(x => x.id != id); saveToCloud().then(()=>{ ui.renderMainView(); showToast("Match Deleted"); }); } },
-        performUndo: () => { if(!lastDeleted) return; const ld = lastDeleted; if(ld.type === 'match') { globalData.history.push(ld.data); } else if (ld.type === 'adminItem') { globalData.teams[ld.team][ld.key].splice(ld.index, 0, ld.data); } else if (ld.type === 'award') { globalData.teams[ld.team].awards.splice(ld.index, 0, ld.data); } saveToCloud().then(() => { ui.renderMainView(); document.getElementById('toast').classList.remove('visible'); lastDeleted = null; alert("Restored!"); }); },
-
-        // Admin
-        adminAddItem: (k, id) => { const t = document.getElementById('admTeamSelect').value, v = document.getElementById(id).value.trim(); if(v) { globalData.teams[t][k].push(v); document.getElementById(id).value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
-        addAwardConfig: () => { const t = document.getElementById('admTeamSelect').value, n = document.getElementById('newAwardName').value, m = parseInt(document.getElementById('newAwardMax').value) || 1; if(n) { globalData.teams[t].awards.push({name:n, max:m}); document.getElementById('newAwardName').value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
-        addTeam: () => { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n && !globalData.teams[n]) { globalData.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; saveToCloud().then(()=>ui.renderNav()); } },
-        startNewSeason: () => { const n = document.getElementById('newSeasonNameInput').value; if(n) { globalData.settings.seasons.push(n); globalData.settings.currentSeason = n; saveToCloud().then(()=>{document.getElementById('newSeasonModal').classList.add('hidden')}); } },
-        switchActiveSeason: () => { globalData.settings.currentSeason = document.getElementById('admActiveSeason').value; saveToCloud().then(()=>{ui.renderNav(); ui.renderMainView();}); },
-        createTournamentFromHub: () => { const n = document.getElementById('newTournNameModal').value; if(n) { if(!globalData.teams[activeContext].tournaments) globalData.teams[activeContext].tournaments = []; globalData.teams[activeContext].tournaments.push({name:n, active:true, winner:""}); saveToCloud().then(()=>{document.getElementById('addTournModal').classList.add('hidden'); ui.renderTournamentView();}); } },
-        saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud().then(()=>alert("Saved")); } },
-        openEditActiveTourn: () => { alert("Use Admin panel to edit."); },
-        deleteSeason: () => { if(confirm("Delete current season?")) { const c = globalData.settings.currentSeason; globalData.history = globalData.history.filter(m=>m.season!==c); globalData.settings.seasons = globalData.settings.seasons.filter(s=>s!==c); globalData.settings.currentSeason = globalData.settings.seasons[0] || "2025/26"; saveToCloud().then(()=>ui.renderMainView()); } },
-        saveEditedMatch: () => { const id=document.getElementById('editId').value, i=globalData.history.findIndex(x=>x.id==id); if(i===-1)return; globalData.history[i]={ ...globalData.history[i], date:document.getElementById('eDate').value, opp:document.getElementById('eOpp').value, tourn:document.getElementById('eTourn').value, coach:document.getElementById('eCoach').value, our:parseInt(document.getElementById('eOur').value)||0, their:parseInt(document.getElementById('eTheir').value)||0, scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), notes:document.getElementById('eNotes').value }; saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden'); ui.renderMainView();}); },
-        renameTeamPrompt: () => { const oldName = document.getElementById('admTeamSelect').value; const newName = prompt(`Rename "${oldName}" to:`, oldName); if(newName && newName !== oldName && newName.trim() !== "") { if(globalData.teams[newName]) return alert("Team name already exists!"); globalData.teams[newName] = globalData.teams[oldName]; delete globalData.teams[oldName]; globalData.history.forEach(m => { if(m.team === oldName) m.team = newName; }); activeContext = newName; saveToCloud().then(()=>{ alert("Renamed successfully"); ui.initUI(); }); } }
-    });
-
-    window.ui = {
-        renderNav: () => {
-            // RENDER SEASON BADGE
-            document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
-            document.getElementById('playerSticker').innerText = globalData.settings.profileName || "Player";
-
-            const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
-            
-            // 1. TEAMS
-            Object.keys(globalData.teams).forEach(t => { 
-                const b = document.createElement('div'); 
-                b.className=`nav-btn ${activeContext===t?'active':''}`; 
-                b.innerText=t; 
-                b.onclick=()=>{ui.switchContext(t);}; 
-                r1.appendChild(b); 
-            });
-
-            const btnCareer = document.getElementById('btnCareer');
-            btnCareer.className = `career-btn ${activeContext==='Career'?'active':''}`;
-
-            if(activeContext==='Career'||activeContext==='Admin') document.getElementById('navSecondary').classList.add('hidden'); else document.getElementById('navSecondary').classList.remove('hidden');
-        },
-        updateSecondaryNav: () => {
-            const tabStats = document.getElementById('tabStats');
-            const tabTourn = document.getElementById('tabTourn');
-            
-            // Rename tabs dynamically
-            if(activeContext !== 'Career' && activeContext !== 'Admin') {
-                tabStats.innerText = `${activeContext} Stats & Input`;
-                tabTourn.innerText = `${activeContext} Tournaments`;
-            }
-
-            tabStats.classList.toggle('active', activeSubTab === 'Stats');
-            tabTourn.classList.toggle('active', activeSubTab === 'Tournaments');
-        },
-        switchContext: (c) => { 
-            // TRACK LAST ACTIVE TEAM
-            if (globalData.teams[c]) {
-                lastActiveTeam = c;
-            }
-
-            activeContext = c; 
-            if(c === 'Career') { document.documentElement.style.setProperty('--primary', '#444'); document.documentElement.style.setProperty('--primary-tint', 'rgba(100, 100, 100, 0.08)'); document.documentElement.style.setProperty('--text-on-primary', '#fff'); } 
-            else if (c === 'Admin') { document.documentElement.style.setProperty('--primary', '#333'); document.documentElement.style.setProperty('--primary-tint', '#f0f2f5'); document.documentElement.style.setProperty('--text-on-primary', '#fff'); } 
-            else if(globalData.teams[c]) { const color = globalData.teams[c].color; document.documentElement.style.setProperty('--primary', color); document.documentElement.style.setProperty('--primary-tint', hexToRgb(color)); document.documentElement.style.setProperty('--text-on-primary', '#fff'); }
-            ui.renderNav(); ui.renderMainView(); 
-        },
-        switchSubTab: (t) => { activeSubTab = t; ui.updateSecondaryNav(); ui.renderMainView(); },
-        renderMainView: () => {
-            ui.updateSecondaryNav();
-            ['viewMatchDay','viewTournaments','viewAdmin','viewCareer'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-            if(activeContext === 'Career') { 
-                document.getElementById('viewCareer').classList.remove('hidden');
-                
-                // POPULATE CAREER SEASONS DYNAMICALLY
-                const cs = document.getElementById('careerSeasonFilter');
-                const currentVal = cs.value;
-                cs.innerHTML = '<option value="All Time">All Time</option>';
-                globalData.settings.seasons.forEach(s => {
-                    cs.add(new Option(s, s));
-                });
-                cs.value = currentVal; // Restore selection
-
-                ui.renderCareer(); 
-            } 
-            else if(activeContext === 'Admin') { 
-                document.getElementById('viewAdmin').classList.remove('hidden'); 
-                const sel = document.getElementById('admTeamSelect'); 
-                sel.innerHTML=''; 
-                Object.keys(globalData.teams).forEach(t=>sel.add(new Option(t,t))); 
-                
-                // AUTO-SELECT LAST ACTIVE TEAM
-                if(lastActiveTeam && globalData.teams[lastActiveTeam]) {
-                    sel.value = lastActiveTeam;
-                }
-                
-                const sSel = document.getElementById('admActiveSeason'); sSel.innerHTML=''; globalData.settings.seasons.forEach(s=>sSel.add(new Option(s,s))); sSel.value = globalData.settings.currentSeason; ui.renderAdminDetails(); 
-            } 
-            else { 
-                if(activeSubTab === 'Stats') { document.getElementById('viewMatchDay').classList.remove('hidden'); document.getElementById('teamStatTitle').innerText = activeContext; ui.renderMatchDayInputs(); ui.renderTeamStats(); ui.renderLeagueTable(); ui.renderTopScorers(); ui.renderHistory(globalData.history.filter(m=>m.team===activeContext && m.season===globalData.settings.currentSeason)); } 
-                else { document.getElementById('viewTournaments').classList.remove('hidden'); ui.renderTournHub(); } 
-            }
-        },
-        renderMatchDayInputs: () => { const t = globalData.teams[activeContext]; const fill = (id, arr) => {const el=document.getElementById(id); el.innerHTML=""; arr.forEach(x=>el.add(new Option(x,x)))}; fill('mOpp', t.opps || []); fill('mCoach', t.coaches || []); const te = document.getElementById('mTourn'); te.innerHTML='<option value="League">League</option>'; if(t.tournaments) t.tournaments.forEach(tr => { if(tr.active) te.add(new Option("🏆 " + tr.name, tr.name)); }); document.getElementById('mDate').value = new Date().toISOString().split('T')[0]; ui.renderScorers('m'); },
-        renderScorers: (p) => { const c = parseInt(document.getElementById(p + 'Our').value) || 0; const d = document.getElementById(p + 'ScorerList'); d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; const pl = globalData.teams[activeContext].players; for(let i=0; i<c; i++) { const s = document.createElement('select'); s.className = p + '-sc-input'; s.style.marginBottom='5px'; pl.forEach(x => s.add(new Option(x,x))); d.appendChild(s); } },
-        renderQueue: () => { const q=document.getElementById('matchQueue'); q.innerHTML=sessionQueue.map((g,i)=>`<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" onclick="sessionQueue.splice(${i},1);ui.renderQueue()">✕</button></div>`).join(''); document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length===0); },
-        
-        renderHistory: (data) => { 
-            const list = document.getElementById('teamHistoryList'); 
-            if(!data.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">No matches yet</div>'; return; }
-            data.sort((a,b) => b.id - a.id); 
-            let html = ''; let currentDay = null;
-            data.forEach((m) => {
-                const day = fmtDate(m.date);
-                if(day !== currentDay) {
-                    if(currentDay !== null) html += '</div>'; 
-                    currentDay = day;
-                    const sum = globalData.daySummaries[m.date] || {};
-                    let awardsHtml = '';
-                    if(sum.awards && sum.awards.length > 0) {
-                        awardsHtml += `<div class="gh-awards">`;
-                        sum.awards.forEach(a => { awardsHtml += `<span class="aw-tag">${a.name}: ${a.player}</span>`; });
-                        awardsHtml += `</div>`;
-                    }
-                    const legacyAwards = data.filter(mx => mx.date === m.date && mx.awards && mx.awards.length > 0);
-                    if(legacyAwards.length > 0 && (!sum.awards || sum.awards.length === 0)) {
-                        awardsHtml += `<div class="gh-awards" style="opacity:0.7">`;
-                        legacyAwards.forEach(mx => mx.awards.forEach(a => { awardsHtml += `<span class="aw-tag">${a.name}: ${a.player}</span>`; }));
-                        awardsHtml += `</div>`;
-                    }
-
-                    html += `<div class="history-group">
-                        <div class="group-header">
-                            <div class="gh-top">
-                                <span class="gh-date">📅 ${day}</span>
-                                <button class="btn-sm protected-area" onclick="window.app.openDaySummary('${m.date}')">Edit Awards</button>
-                            </div>
-                            ${awardsHtml}
-                        </div>`;
-                }
-
-                html += `
-                <div class="match-row">
-                    <div class="match-info">
-                        ${m.notes?'🗒️ ':''}<strong>vs ${m.opp}</strong> <span style="font-size:0.8em">${m.tourn}</span>
-                        <div class="detail-grid">
-                            ${m.coach ? `<div class="dt-label">Manager</div><div class="dt-val">${m.coach}</div>` : ''}
-                            ${(m.scorers||[]).length ? `<div class="dt-label">Goals</div><div class="dt-val">${(m.scorers||[]).join(', ')}</div>` : ''}
-                        </div>
-                    </div>
-                    <div class="match-actions">
-                        <div class="result-badge ${m.our>m.their?'res-w':m.our<m.their?'res-l':'res-d'}">${m.our}-${m.their}</div>
-                        <div class="protected-area flex-row" style="gap:5px;">
-                            <button class="btn-edit" onclick="ui.openEditModal('${m.id}')">✎</button>
-                            <button class="btn-del" onclick="app.deleteMatch('${m.id}')">🗑</button>
-                        </div>
-                    </div>
-                </div>`;
-            });
-            html += '</div>'; list.innerHTML = html;
-            if(!ALLOWED_UIDS.includes(currentUser?.uid) || isGuest) document.querySelectorAll('.protected-area').forEach(el=>el.classList.add('hidden')); 
-        },
-
-        renderTopScorers: () => {
-            const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason);
-            const counts = {};
-            matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1));
-            const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
-            const tbl = document.querySelector('#topScorerTable tbody');
-            tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>';
-        },
-
-        renderLeagueTable: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; matches.forEach(m => { my.p++; my.gf += m.our; my.ga += m.their; if(m.our > m.their) { my.w++; my.pts+=3; } else if(m.our < m.their) { my.l++; my.pts+=0; } else { my.d++; my.pts+=1; } }); let opp = { p: my.p, w: my.l, d: my.d, l: my.w, gf: my.ga, ga: my.gf, pts: (my.l * 3) + (my.d * 1) }; let data = [{ name: activeContext, ...my, isMe: true }, { name: "Opponents", ...opp, isMe: false }]; data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga))); document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join(''); },
-        
-        renderTeamStats: () => { 
-            const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
-            const uniqueDates = [...new Set(h.map(m => m.date))];
-            const maxAwards = uniqueDates.length;
-            const profile = globalData.settings.profileName;
-            
-            let awardCount = 0;
-            uniqueDates.forEach(d => {
-                const sum = globalData.daySummaries[d];
-                // 1. Check New Day Summary
-                if(sum && sum.awards && sum.awards.length > 0) {
-                    awardCount += sum.awards.filter(a => a.player === profile).length;
+        function checkCustomNote(select) {
+            if (select.value === "CUSTOM_VALUE") {
+                const customText = prompt("Enter your custom signal note:");
+                if (customText) {
+                    const newOpt = document.createElement("option");
+                    newOpt.value = customText;
+                    newOpt.text = customText;
+                    select.add(newOpt, select.options[select.length - 1]);
+                    select.value = customText;
                 } else {
-                    // 2. Fallback to Legacy
-                    const matchesOnDay = h.filter(m => m.date === d);
-                    let legacyAwardsOnDay = 0;
-                    matchesOnDay.forEach(m => {
-                        if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length;
-                    });
-                    awardCount += legacyAwardsOnDay;
+                    select.selectedIndex = 0;
                 }
-            });
-
-            document.getElementById('st-p').innerText = h.length; 
-            document.getElementById('st-w').innerText = h.filter(m=>m.our>m.their).length; 
-            document.getElementById('st-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
-            
-            if (awardCount === 0) {
-                document.getElementById('st-a').innerText = "N/A";
-            } else {
-                document.getElementById('st-a').innerText = `${awardCount} / ${maxAwards}`;
             }
-        },
-        
-        renderCareer: () => { 
-            const f = document.getElementById('careerSeasonFilter').value; let h = globalData.history; 
-            if(f !== 'All Time') h = h.filter(m => m.season === f); 
-            const profile = globalData.settings.profileName;
+        }
 
-            document.getElementById('c-p').innerText = h.length; document.getElementById('c-w').innerText = h.filter(m=>m.our>m.their).length; document.getElementById('c-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
+        let mybutton = document.getElementById("scrollTopBtn");
+        window.onscroll = function() {scrollFunction()};
+        function scrollFunction() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                mybutton.style.display = "block";
+            } else {
+                mybutton.style.display = "none";
+            }
+        }
+        function topFunction() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function toggleTheme() {
+            const current = document.body.getAttribute('data-theme');
+            const target = current === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', target);
+            document.getElementById('themeBtn').innerText = target === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+            localStorage.setItem('radioTheme', target);
+        }
+
+        const savedTheme = localStorage.getItem('radioTheme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.body.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+
+        document.addEventListener('DOMContentLoaded', renderTable);
+
+        function formatRadioDate(isoString) {
+            const date = new Date(isoString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames[date.getMonth()];
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day} ${month} ${year} ${hours}:${minutes}`;
+        }
+
+        function sortTable(key, element) {
+            if (currentSort.key === key) {
+                currentSort.desc = !currentSort.desc;
+            } else {
+                currentSort.key = key;
+                currentSort.desc = false;
+            }
+            document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+            element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc');
+            renderTable();
+        }
+
+        function handleSubmit() {
+            const editId = document.getElementById('editId').value;
+            const freqVal = document.getElementById('freqInput').value;
+            const radio = document.getElementById('radioInput').value;
+            const antenna = document.getElementById('antennaInput').value;
+            const mode = document.getElementById('modeInput').value;
+            const station = document.getElementById('stationInput').value.replace(/,/g, ";");
+            const notes = document.getElementById('notesInput').value;
+
+            if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
             
-            // Career Stats Calculation for Awards
-            const uniqueDates = [...new Set(h.map(m => m.date))];
-            const maxAwards = uniqueDates.length; // Total unique days in career filter
-            let cAwardCount = 0;
-            
-            uniqueDates.forEach(d => {
-                const sum = globalData.daySummaries[d];
-                if(sum && sum.awards) cAwardCount += sum.awards.filter(a => a.player === profile).length;
-                else {
-                     h.filter(m=>m.date===d).forEach(m=>{
-                         if(m.awards) cAwardCount += m.awards.filter(a => a.player === profile).length;
-                     });
+            const freqNum = parseFloat(freqVal);
+            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+
+            if (editId) {
+                const index = logs.findIndex(l => l.id == editId);
+                if (index !== -1) {
+                    logs[index].freq = freqNum;
+                    logs[index].type = (freqNum <= 30) ? "Shortwave" : "VHF/UHF";
+                    logs[index].radio = radio;
+                    logs[index].antenna = antenna;
+                    logs[index].mode = mode;
+                    logs[index].station = station;
+                    logs[index].notes = notes;
                 }
-            });
-            
-            if (cAwardCount === 0) {
-                document.getElementById('c-a').innerText = "N/A";
+                cancelEdit();
             } else {
-                document.getElementById('c-a').innerText = `${cAwardCount} / ${maxAwards}`;
+                const logEntry = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    freq: freqNum,
+                    type: (freqNum <= 30) ? "Shortwave" : "VHF/UHF",
+                    radio: radio,
+                    antenna: antenna,
+                    mode: mode,
+                    station: station,
+                    notes: notes
+                };
+                logs.unshift(logEntry);
             }
-            
-            let stats={}; h.forEach(m=>{const u=(n,gf,ga)=>{if(!stats[n])stats[n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};const st=stats[n];st.p++;st.gf+=gf;st.ga+=ga;if(gf>ga){st.w++;st.pts+=3;}else if(gf<ga){st.l++;st.pts+=0;}else{st.d++;st.pts+=1;}};u(m.team,m.our,m.their);}); 
-            const d = Object.values(stats).filter(t => globalData.teams[t.name] !== undefined).sort((a,b)=>b.pts-a.pts); 
-            document.querySelector('#masterTable tbody').innerHTML=d.map((t,i)=>{ const color = globalData.teams[t.name].color; return `<tr class="is-me"><td class="t-left" style="color:${color}">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf-t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>`; }).join(''); 
-        },
-        renderAdminDetails: () => { 
-            const t=globalData.teams[document.getElementById('admTeamSelect').value]; 
-            if(!t) return; 
-            document.documentElement.style.setProperty('--primary', t.color); 
-            document.documentElement.style.setProperty('--primary-tint', hexToRgb(t.color)); 
-            
-            const l=(id,k)=>document.getElementById(id).innerHTML=t[k].map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('${k}',${i})">🗑</button></li>`).join(''); 
-            l('admPlayerList', 'players'); 
-            l('admOppList', 'opps'); 
-            
-            document.getElementById('admAwardList').innerHTML = t.awards.map((a,i)=>`<li>${a.name} (Max:${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join(''); 
 
-            // POPULATE PROFILE DROPDOWN
-            const profSel = document.getElementById('adminProfileName');
-            profSel.innerHTML = '';
-            t.players.forEach(p => {
-                profSel.add(new Option(p, p));
+            localStorage.setItem('radioLogs', JSON.stringify(logs));
+            renderTable();
+            resetForm();
+        }
+
+        function startEdit(id) {
+            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+            const log = logs.find(l => l.id == id);
+            if (!log) return;
+
+            document.getElementById('editId').value = log.id;
+            document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
+            document.getElementById('radioInput').value = log.radio || "Malahit DSP2";
+            document.getElementById('antennaInput').value = log.antenna || "GA800";
+            document.getElementById('modeInput').value = log.mode;
+            document.getElementById('stationInput').value = log.station;
+
+            const notesSelect = document.getElementById('notesInput');
+            let found = false;
+            for (let i = 0; i < notesSelect.options.length; i++) {
+                if (notesSelect.options[i].value === log.notes) {
+                    notesSelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                const newOpt = document.createElement("option");
+                newOpt.value = log.notes;
+                newOpt.text = log.notes;
+                notesSelect.add(newOpt, notesSelect.options[notesSelect.length - 1]);
+                notesSelect.value = log.notes;
+            }
+
+            document.getElementById('submitBtn').innerText = "Save Changes";
+            document.getElementById('submitBtn').classList.add('btn-save');
+            document.getElementById('formCard').classList.add('editing-mode');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            document.getElementById('editId').value = "";
+            document.getElementById('submitBtn').innerText = "Add to Log";
+            document.getElementById('submitBtn').classList.remove('btn-save');
+            document.getElementById('formCard').classList.remove('editing-mode');
+        }
+
+        function resetForm() {
+            document.getElementById('freqInput').value = '';
+            document.getElementById('stationInput').value = '';
+            document.getElementById('radioInput').value = "Malahit DSP2";
+            document.getElementById('antennaInput').value = "GA800";
+            document.getElementById('notesInput').selectedIndex = 0;
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('#logTable tbody');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            tbody.innerHTML = '';
+            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+
+            logs.sort((a, b) => {
+                let valA = a[currentSort.key];
+                let valB = b[currentSort.key];
+                if (currentSort.key === 'freq') return currentSort.desc ? valB - valA : valA - valB;
+                if (valA < valB) return currentSort.desc ? 1 : -1;
+                if (valA > valB) return currentSort.desc ? -1 : 1;
+                return 0;
             });
-            if(globalData.settings.profileName) {
-                profSel.value = globalData.settings.profileName;
-            }
 
-            // POPULATE CLUB LIST
-            const clubList = document.getElementById('admClubList');
-            clubList.innerHTML = Object.keys(globalData.teams).map(teamName => {
-                const isCurrent = teamName === activeContext;
-                const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`;
-                return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`;
-            }).join('');
-        },
-        renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(sel.options.length <= 1) { sel.innerHTML = '<option value="">-- Select --</option>'; if(globalData.teams[tName].tournaments) globalData.teams[tName].tournaments.forEach(tr => { if(tr.active) sel.add(new Option(tr.name, tr.name)); }); } const val = sel.value; if(!val) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === val && m.team === tName && m.season === globalData.settings.currentSeason); const profile = globalData.settings.profileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
-        openEditModal: (id) => { const m = globalData.history.find(x => x.id == id); document.getElementById('editId').value = id; document.getElementById('eDate').value = m.date; document.getElementById('eOur').value = m.our; document.getElementById('eTheir').value = m.their; document.getElementById('eNotes').value = m.notes || ""; const t = globalData.teams[m.team]; const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; ui.renderScorers('e'); document.getElementById('editModal').classList.remove('hidden'); }
-    };
-</script>
+            let count = 0;
+            logs.forEach(log => {
+                const freqDisplay = parseFloat(log.freq).toFixed(3);
+                const formattedDate = formatRadioDate(log.date);
+                const matches = freqDisplay.includes(searchTerm) || 
+                                (log.radio || "").toLowerCase().includes(searchTerm) ||
+                                (log.antenna || "").toLowerCase().includes(searchTerm) ||
+                                (log.station || "").toLowerCase().includes(searchTerm) || 
+                                (log.mode || "").toLowerCase().includes(searchTerm) ||
+                                (log.notes || "").toLowerCase().includes(searchTerm);
+
+                if (!matches && searchTerm !== "") return;
+                count++;
+                const row = document.createElement('tr');
+                const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
+                row.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td><strong>${freqDisplay}</strong></td>
+                    <td><span class="badge ${badgeClass}">${log.type}</span></td>
+                    <td>${log.radio || ""}</td>
+                    <td>${log.antenna || ""}</td>
+                    <td>${log.mode || ""}</td>
+                    <td>${log.station || ""}</td>
+                    <td>${log.notes || ""}</td>
+                    <td class="action-btns">
+                        <button class="edit-btn" onclick="startEdit(${log.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteLog(${log.id})">Del</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            document.getElementById('logCounter').innerText = "Total Logs: " + count;
+        }
+
+        function deleteLog(id) {
+            if(confirm("Delete entry?")) {
+                let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+                logs = logs.filter(log => log.id !== id);
+                localStorage.setItem('radioLogs', JSON.stringify(logs));
+                renderTable();
+            }
+        }
+
+        function clearData() {
+            if(confirm("Wipe all logs?")) {
+                localStorage.removeItem('radioLogs');
+                renderTable();
+            }
+        }
+
+        function exportData() {
+            const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+            if (logs.length === 0) return alert("Nothing to export");
+            let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Radio,Antenna,Mode,Station,Notes\n"; 
+            logs.forEach(l => {
+                const freqExp = parseFloat(l.freq).toFixed(3);
+                csvContent += `${l.date},${freqExp},${l.type},${l.radio},${l.antenna},${l.mode},${l.station},${l.notes}\n`;
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", "radio_logs.csv");
+            link.click();
+        }
+
+        function processImport() {
+            const file = document.getElementById('csvFileInput').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const rows = e.target.result.split("\n");
+                let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+                for (let i = 1; i < rows.length; i++) {
+                    const cols = rows[i].split(",");
+                    if(cols.length >= 8) {
+                        logs.unshift({ 
+                            id: Date.now()+i, date: cols[0], freq: parseFloat(cols[1]), 
+                            type: cols[2], radio: cols[3], antenna: cols[4], 
+                            mode: cols[5], station: cols[6], notes: cols[7] 
+                        });
+                    }
+                }
+                localStorage.setItem('radioLogs', JSON.stringify(logs));
+                renderTable();
+                alert("Imported!");
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadFullSnapshot() {
+            const logs = localStorage.getItem('radioLogs') || "[]";
+            const theme = document.body.getAttribute('data-theme') || "light";
+            let htmlContent = document.documentElement.outerHTML;
+            const dataInjector = `
+            <script>
+                localStorage.setItem('radioLogs', JSON.stringify(${logs}));
+                localStorage.setItem('radioTheme', '${theme}');
+            <\/script>`;
+            const blob = new Blob([htmlContent + dataInjector], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `RadioLogger_Snapshot_${new Date().toISOString().substring(0,10)}.html`;
+            link.click();
+        }
+    </script>
 </body>
 </html>
