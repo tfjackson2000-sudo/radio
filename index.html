@@ -164,7 +164,7 @@
 
         tr:hover { background-color: var(--table-hover); }
 
-        /* THE BADGE FIX */
+        /* BADGE FIX */
         .badge { 
             padding: 3px 8px; 
             border-radius: 15px; 
@@ -190,14 +190,16 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (Restored One-Line Layout!)       */
+        /* MOBILE CARD LAYOUT (Fully width-corrected Grid)      */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
-            .search-container { flex-direction: column; gap: 10px; }
+            .search-container { flex-direction: column; gap: 10px; width: 100%; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
-            table, tbody, tr { display: block; width: 100%; }
+            
+            /* FORCE FULL WIDTH TO BREAK THE DESKTOP CONSTRAINTS */
+            table, tbody, tr, th, td { display: block; width: 100% !important; box-sizing: border-box; }
             thead { display: none; } 
 
             tr {
@@ -210,18 +212,18 @@
             }
 
             td {
-                display: grid;
+                display: grid !important;
                 grid-template-columns: 105px 1fr;
                 gap: 10px;
-                align-items: center; /* Centers short text vertically with its label */
-                text-align: left;
+                align-items: center; 
+                text-align: left !important;
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
                 
-                /* RESTORED: STRICTLY ONE LINE FOR STANDARD FIELDS */
-                white-space: nowrap !important; 
-                overflow: hidden !important;
-                text-overflow: ellipsis;
+                /* Allow natural flow over 100% of screen */
+                white-space: normal !important; 
+                overflow: visible !important;
+                word-wrap: break-word;
             }
 
             td::before {
@@ -234,21 +236,16 @@
             }
 
             td:nth-child(8) { text-align: left; } 
-            
-            /* Only allow Station and Notes to wrap if they are long */
-            td:nth-child(7), td.notes-cell {
-                white-space: normal !important;
-                overflow: visible !important;
-                align-items: start; 
-            }
 
+            /* Notes drop onto their own lines to keep cards clean */
             td.notes-cell { 
-                grid-template-columns: 1fr; /* Label and text stack */
+                grid-template-columns: 1fr; 
                 gap: 4px;
+                align-items: start;
             }
 
             td:last-child { 
-                display: flex;
+                display: flex !important;
                 border-bottom: none; 
                 justify-content: center; 
                 padding-top: 15px; 
