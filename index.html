@@ -35,6 +35,9 @@
             --table-hover: #2d3748;
         }
 
+        /* Added box-sizing everywhere to prevent horizontal scrolling */
+        *, *::before, *::after { box-sizing: border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -43,6 +46,7 @@
             margin: 0 auto;
             padding: 15px;
             transition: background 0.3s, color 0.3s;
+            overflow-x: hidden; /* Hard stop on horizontal scrolling */
         }
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -85,13 +89,13 @@
             background-color: var(--card-bg);
             color: var(--text-main);
             height: 44px;
-            box-sizing: border-box;
+            width: 100%;
         }
 
         .s-meter-container {
             display: flex; align-items: flex-end; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 8px; box-sizing: border-box;
+            border-radius: 8px; width: 100%;
         }
         
         .s-meter-bar {
@@ -122,8 +126,8 @@
         }
         .btn-save { background-color: var(--edit-color) !important; }
 
-        .search-container { margin-bottom: 15px; display: flex; gap: 10px; }
-        #searchInput { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
+        .search-container { margin-bottom: 15px; display: flex; gap: 10px; width: 100%; }
+        #searchInput { flex-grow: 1; }
         .mobile-only { display: none; }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
@@ -135,13 +139,12 @@
         }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        
-        /* Default Desktop Table Styling */
         th, td { 
             text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); 
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
+        /* Desktop Widths */
         th:nth-child(1), td:nth-child(1) { width: 140px; }
         th:nth-child(2), td:nth-child(2) { width: 90px; }
         th:nth-child(3), td:nth-child(3) { width: 90px; }
@@ -178,16 +181,16 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (Fully Responsive & Wrapping)     */
+        /* MOBILE CARD LAYOUT (Grid Alignment Fix & Anti-Scroll)*/
         /* ==================================================== */
         @media screen and (max-width: 800px) {
-            .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; }
-            table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
-            
+            /* 1. Prevent Search Bar horizontal scroll by stacking */
+            .search-container { flex-direction: column; gap: 10px; }
+            .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
+
+            .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
+            table, tbody, tr { display: block; width: 100%; }
             thead { display: none; } 
-            
-            /* Show dropdown search filter on mobile */
-            .mobile-only { display: block; flex-shrink: 0; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             tr {
                 margin-bottom: 15px;
@@ -195,22 +198,21 @@
                 border: 1px solid var(--border-color);
                 border-radius: 12px;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                padding: 5px 15px 15px 15px;
+                padding: 10px 15px;
             }
 
+            /* 2. CSS GRID for perfect uniform alignment */
             td {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start; /* Changed from center to allow wrapping text to drop naturally */
-                text-align: right;
+                display: grid;
+                grid-template-columns: 105px 1fr; /* Fixed 105px for label, remainder for data */
+                gap: 10px;
+                align-items: start; /* Locks text to the top of its row */
+                text-align: left;   /* Forces all data strictly to the left */
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
-                
-                /* FIX FOR CUT-OFF TEXT: */
                 white-space: normal !important; 
                 overflow: visible !important;
                 word-wrap: break-word;
-                gap: 15px; /* Ensures text doesn't touch the label */
             }
 
             td::before {
@@ -220,17 +222,23 @@
                 text-transform: uppercase;
                 font-size: 0.8em;
                 text-align: left;
-                flex-shrink: 0; /* Stops the label from shrinking */
-                max-width: 40%;
+                padding-top: 2px; /* Aligns visually with the text next to it */
             }
 
-            td:nth-child(8) { text-align: right; } 
+            td:nth-child(8) { text-align: left; } /* Reset S-meter alignment to left */
             
-            /* Specific fix for notes to stack cleanly if very long */
-            td.notes-cell { flex-direction: column; align-items: flex-start; text-align: left; }
-            td.notes-cell::before { margin-bottom: 5px; }
+            /* Give Notes a stacked view to make reading easier */
+            td.notes-cell { 
+                grid-template-columns: 1fr; /* Label and text stack instead of side-by-side */
+                gap: 4px;
+            }
 
-            td:last-child { border-bottom: none; justify-content: center; padding-top: 15px; }
+            td:last-child { 
+                display: flex; /* Revert actions to flexbox */
+                border-bottom: none; 
+                justify-content: center; 
+                padding-top: 15px; 
+            }
             td:last-child::before { display: none; }
             
             .action-btns { width: 100%; display: flex; justify-content: stretch; gap: 10px; flex-wrap: wrap; }
@@ -325,10 +333,10 @@
             <thead>
                 <tr>
                     <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
-                    <th onclick="sortTable('freq', this)">Freq</th>
+                    <th onclick="sortTable('freq', this)">Freq (MHz)</th>
                     <th onclick="sortTable('type', this)">Band</th>
                     <th onclick="sortTable('radio', this)">Radio</th>
-                    <th onclick="sortTable('antenna', this)">Ant</th>
+                    <th onclick="sortTable('antenna', this)">Antenna</th>
                     <th onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
                     <th onclick="sortTable('signal', this)">Sig</th>
@@ -344,7 +352,7 @@
 
     <script>
         // ==========================================
-        // 1. FIREBASE CONFIGURATION (WITH YOUR KEYS)
+        // 1. FIREBASE CONFIGURATION (YOUR KEYS)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w",
