@@ -14,6 +14,7 @@
             --card-bg: #ffffff;
             --primary: #2563eb;
             --edit-color: #7c3aed;
+            --dup-color: #059669; /* Green for Duplicate */
             --sw-color: #10b981;
             --vhf-color: #f59e0b;
             --text-main: #1f2937;
@@ -27,6 +28,7 @@
             --card-bg: #1f2937;
             --primary: #3b82f6;
             --edit-color: #a78bfa;
+            --dup-color: #34d399;
             --text-main: #f3f4f6;
             --text-sub: #9ca3af;
             --border-color: #374151;
@@ -103,11 +105,8 @@
         #searchInput { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
-        .btn-group { display: flex; gap: 8px; }
-
-        .btn-secondary { background-color: #4b5563; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
-        .btn-import { background-color: #059669; }
-        .btn-clear { background-color: #ef4444; }
+        
+        .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
         .table-container { 
             overflow: hidden;
@@ -131,7 +130,7 @@
         th:nth-child(6), td:nth-child(6) { width: 70px; }
         th:nth-child(7), td:nth-child(7),
         th:nth-child(8), td:nth-child(8) { width: auto; white-space: normal; word-wrap: break-word; }
-        th:nth-child(9), td:nth-child(9) { width: 100px; text-align: center; }
+        th:nth-child(9), td:nth-child(9) { width: 140px; text-align: center; } /* Increased width for 3 buttons */
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: relative; }
         th:hover { background-color: #1d4ed8; }
@@ -147,6 +146,7 @@
         
         .action-btns { display: flex; gap: 4px; justify-content: center; }
         .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
@@ -226,12 +226,7 @@
 
     <div class="controls">
         <h2>Your Logs</h2>
-        <div class="btn-group">
-            <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="processImport()">
-            <button class="btn-secondary btn-import" onclick="document.getElementById('csvFileInput').click()">⬆ Import CSV</button>
-            <button class="btn-secondary" onclick="exportData()">⬇ Export CSV</button>
-            <button class="btn-secondary btn-clear" onclick="clearData()">Clear All Cloud Data</button>
-        </div>
+        <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
     </div>
 
     <div class="table-container">
@@ -260,14 +255,14 @@
         // 1. FIREBASE CONFIGURATION (PASTE YOURS HERE)
         // ==========================================
         const firebaseConfig = {
-  apiKey: "AIzaSyB...",
-  authDomain: "radio-logger-xxxx.firebaseapp.com",
-  databaseURL: "https://radio-logger-xxxx-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "radio-logger-xxxx",
-  storageBucket: "radio-logger-xxxx.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdefg"
-};
+            apiKey: "AIzaSyB...",
+            authDomain: "radio-logger-xxxx.firebaseapp.com",
+            databaseURL: "https://radio-logger-xxxx-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "radio-logger-xxxx",
+            storageBucket: "radio-logger-xxxx.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdefg"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -391,7 +386,7 @@
             document.getElementById('radioInput').value = log.radio || "Malahit DSP2";
             document.getElementById('antennaInput').value = log.antenna || "GA800";
             document.getElementById('modeInput').value = log.mode;
-            document.getElementById('stationInput').value = log.station;
+            document.getElementById('stationInput').value = log.station || "";
 
             const notesSelect = document.getElementById('notesInput');
             let found = false;
@@ -419,6 +414,27 @@
             document.getElementById('submitBtn').innerText = "Add to Log";
             document.getElementById('submitBtn').classList.remove('btn-save');
             document.getElementById('formCard').classList.remove('editing-mode');
+        }
+
+        function duplicateLog(id) {
+            const logToCopy = cloudLogs.find(l => l.id === id);
+            if (!logToCopy) return;
+
+            const freqDisplay = parseFloat(logToCopy.freq).toFixed(3);
+            if(confirm(`Duplicate log entry for ${freqDisplay} MHz?`)) {
+                const duplicatedLog = {
+                    freq: logToCopy.freq,
+                    type: logToCopy.type,
+                    radio: logToCopy.radio || "Malahit DSP2",
+                    antenna: logToCopy.antenna || "GA800",
+                    mode: logToCopy.mode || "AM",
+                    station: logToCopy.station || "",
+                    notes: logToCopy.notes || "Both sides clear",
+                    date: new Date().toISOString() // Fresh timestamp for right now
+                };
+                
+                logsRef.push(duplicatedLog);
+            }
         }
 
         function resetForm() {
@@ -472,6 +488,7 @@
                     <td class="notes-cell">${log.notes || ""}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
+                        <button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button>
                         <button class="delete-btn" onclick="deleteLog('${log.id}')">Del</button>
                     </td>
                 `;
@@ -490,42 +507,6 @@
             if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) {
                 logsRef.remove();
             }
-        }
-
-        function exportData() {
-            if (cloudLogs.length === 0) return alert("Nothing to export");
-            let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Radio,Antenna,Mode,Station,Notes\n"; 
-            cloudLogs.forEach(l => {
-                const freqExp = parseFloat(l.freq).toFixed(3);
-                csvContent += `${l.date},${freqExp},${l.type},${l.radio},${l.antenna},${l.mode},${l.station},${l.notes}\n`;
-            });
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", "radio_logs_cloud_backup.csv");
-            link.click();
-        }
-
-        function processImport() {
-            const file = document.getElementById('csvFileInput').files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const rows = e.target.result.split("\n");
-                let importCount = 0;
-                for (let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].split(",");
-                    if(cols.length >= 8) {
-                        logsRef.push({ 
-                            date: cols[0], freq: parseFloat(cols[1]), 
-                            type: cols[2], radio: cols[3], antenna: cols[4], 
-                            mode: cols[5], station: cols[6], notes: cols[7] 
-                        });
-                        importCount++;
-                    }
-                }
-                alert(`Imported ${importCount} logs to Firebase!`);
-            };
-            reader.readAsText(file);
         }
     </script>
 </body>
