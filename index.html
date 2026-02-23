@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Logger Pro</title>
+    <title>Radio Logger Pro (Cloud)</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --bg-color: #f4f4f9;
@@ -40,7 +44,8 @@
         }
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h1 { margin: 0; color: var(--primary); font-size: 1.5rem; }
+        h1 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        .cloud-status { font-size: 0.5em; background: #10b981; color: white; padding: 3px 8px; border-radius: 12px; }
 
         .theme-toggle {
             background: var(--card-bg);
@@ -102,7 +107,6 @@
 
         .btn-secondary { background-color: #4b5563; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
         .btn-import { background-color: #059669; }
-        .btn-snapshot { background-color: #0891b2; }
         .btn-clear { background-color: #ef4444; }
 
         .table-container { 
@@ -112,20 +116,11 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
 
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            table-layout: fixed;
-        }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 
         th, td { 
-            text-align: left; 
-            padding: 10px 12px; 
-            border-bottom: 1px solid var(--border-color);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 0.9em;
+            text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em;
         }
         
         th:nth-child(1), td:nth-child(1) { width: 140px; }
@@ -134,27 +129,12 @@
         th:nth-child(4), td:nth-child(4) { width: 130px; }
         th:nth-child(5), td:nth-child(5) { width: 80px; }
         th:nth-child(6), td:nth-child(6) { width: 70px; }
-        
         th:nth-child(7), td:nth-child(7),
-        th:nth-child(8), td:nth-child(8) { 
-            width: auto; 
-            white-space: normal; 
-            word-wrap: break-word;
-        }
-        
+        th:nth-child(8), td:nth-child(8) { width: auto; white-space: normal; word-wrap: break-word; }
         th:nth-child(9), td:nth-child(9) { width: 100px; text-align: center; }
 
-        th { 
-            background-color: var(--primary); 
-            color: white; 
-            font-size: 0.8em; 
-            text-transform: uppercase; 
-            cursor: pointer;
-            user-select: none;
-            position: relative;
-        }
+        th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: relative; }
         th:hover { background-color: #1d4ed8; }
-
         th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; margin-left: 4px; }
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
@@ -172,20 +152,9 @@
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
 
         #scrollTopBtn {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 99;
-            border: none;
-            background-color: var(--primary);
-            color: white;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none;
+            background-color: var(--primary); color: white; cursor: pointer; padding: 10px;
+            border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         @media screen and (max-width: 800px) {
@@ -199,7 +168,7 @@
     <button onclick="topFunction()" id="scrollTopBtn" title="Go to top">↑</button>
 
     <header>
-        <h1>📡 Radio Logger</h1>
+        <h1>📡 Radio Logger <span class="cloud-status">Cloud Synced</span></h1>
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
     </header>
 
@@ -259,10 +228,9 @@
         <h2>Your Logs</h2>
         <div class="btn-group">
             <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="processImport()">
-            <button class="btn-secondary btn-import" onclick="document.getElementById('csvFileInput').click()">⬆ Import</button>
+            <button class="btn-secondary btn-import" onclick="document.getElementById('csvFileInput').click()">⬆ Import CSV</button>
             <button class="btn-secondary" onclick="exportData()">⬇ Export CSV</button>
-            <button class="btn-secondary btn-snapshot" onclick="downloadFullSnapshot()">📸 Snapshot</button>
-            <button class="btn-secondary btn-clear" onclick="clearData()">Clear</button>
+            <button class="btn-secondary btn-clear" onclick="clearData()">Clear All Cloud Data</button>
         </div>
     </div>
 
@@ -287,8 +255,41 @@
 
     <div class="footer-stats" id="logCounter">Total Logs: 0</div>
 
-    <script id="mainScript">
+    <script>
+        // ==========================================
+        // 1. FIREBASE CONFIGURATION (PASTE YOURS HERE)
+        // ==========================================
+        const firebaseConfig = {
+  apiKey: "AIzaSyB...",
+  authDomain: "radio-logger-xxxx.firebaseapp.com",
+  databaseURL: "https://radio-logger-xxxx-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "radio-logger-xxxx",
+  storageBucket: "radio-logger-xxxx.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdefg"
+};
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const logsRef = db.ref('radioLogs');
+
+        // ==========================================
+        // 2. APP LOGIC & STATE
+        // ==========================================
+        let cloudLogs = []; // Stores our data from Firebase
         let currentSort = { key: 'date', desc: true };
+
+        // Listen for real-time changes from Firebase!
+        logsRef.on('value', (snapshot) => {
+            cloudLogs = [];
+            snapshot.forEach((childSnapshot) => {
+                let log = childSnapshot.val();
+                log.id = childSnapshot.key; // The unique Firebase ID
+                cloudLogs.push(log);
+            });
+            renderTable(); // Re-draw table automatically when cloud changes
+        });
 
         function checkCustomNote(select) {
             if (select.value === "CUSTOM_VALUE") {
@@ -305,18 +306,10 @@
             }
         }
 
+        // Scrolling & Theme Functions
         let mybutton = document.getElementById("scrollTopBtn");
-        window.onscroll = function() {scrollFunction()};
-        function scrollFunction() {
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                mybutton.style.display = "block";
-            } else {
-                mybutton.style.display = "none";
-            }
-        }
-        function topFunction() {
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
+        window.onscroll = function() { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { mybutton.style.display = "block"; } else { mybutton.style.display = "none"; } };
+        function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
 
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
@@ -326,12 +319,9 @@
             localStorage.setItem('radioTheme', target);
         }
 
-        const savedTheme = localStorage.getItem('radioTheme') || 
-                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        const savedTheme = localStorage.getItem('radioTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.body.setAttribute('data-theme', savedTheme);
         document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
-
-        document.addEventListener('DOMContentLoaded', renderTable);
 
         function formatRadioDate(isoString) {
             const date = new Date(isoString);
@@ -368,43 +358,32 @@
             if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
             
             const freqNum = parseFloat(freqVal);
-            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+            
+            const logEntry = {
+                freq: freqNum,
+                type: (freqNum <= 30) ? "Shortwave" : "VHF/UHF",
+                radio: radio,
+                antenna: antenna,
+                mode: mode,
+                station: station,
+                notes: notes
+            };
 
             if (editId) {
-                const index = logs.findIndex(l => l.id == editId);
-                if (index !== -1) {
-                    logs[index].freq = freqNum;
-                    logs[index].type = (freqNum <= 30) ? "Shortwave" : "VHF/UHF";
-                    logs[index].radio = radio;
-                    logs[index].antenna = antenna;
-                    logs[index].mode = mode;
-                    logs[index].station = station;
-                    logs[index].notes = notes;
-                }
+                // Update existing record in Firebase
+                db.ref('radioLogs/' + editId).update(logEntry);
                 cancelEdit();
             } else {
-                const logEntry = {
-                    id: Date.now(),
-                    date: new Date().toISOString(),
-                    freq: freqNum,
-                    type: (freqNum <= 30) ? "Shortwave" : "VHF/UHF",
-                    radio: radio,
-                    antenna: antenna,
-                    mode: mode,
-                    station: station,
-                    notes: notes
-                };
-                logs.unshift(logEntry);
+                // Push new record to Firebase
+                logEntry.date = new Date().toISOString();
+                logsRef.push(logEntry);
             }
 
-            localStorage.setItem('radioLogs', JSON.stringify(logs));
-            renderTable();
             resetForm();
         }
 
         function startEdit(id) {
-            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
-            const log = logs.find(l => l.id == id);
+            const log = cloudLogs.find(l => l.id === id);
             if (!log) return;
 
             document.getElementById('editId').value = log.id;
@@ -419,14 +398,12 @@
             for (let i = 0; i < notesSelect.options.length; i++) {
                 if (notesSelect.options[i].value === log.notes) {
                     notesSelect.selectedIndex = i;
-                    found = true;
-                    break;
+                    found = true; break;
                 }
             }
             if (!found) {
                 const newOpt = document.createElement("option");
-                newOpt.value = log.notes;
-                newOpt.text = log.notes;
+                newOpt.value = log.notes; newOpt.text = log.notes;
                 notesSelect.add(newOpt, notesSelect.options[notesSelect.length - 1]);
                 notesSelect.value = log.notes;
             }
@@ -456,9 +433,11 @@
             const tbody = document.querySelector('#logTable tbody');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
-            let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+            
+            // Create a copy of cloudLogs to sort without mutating original
+            let displayLogs = [...cloudLogs];
 
-            logs.sort((a, b) => {
+            displayLogs.sort((a, b) => {
                 let valA = a[currentSort.key];
                 let valB = b[currentSort.key];
                 if (currentSort.key === 'freq') return currentSort.desc ? valB - valA : valA - valB;
@@ -468,7 +447,7 @@
             });
 
             let count = 0;
-            logs.forEach(log => {
+            displayLogs.forEach(log => {
                 const freqDisplay = parseFloat(log.freq).toFixed(3);
                 const formattedDate = formatRadioDate(log.date);
                 const matches = freqDisplay.includes(searchTerm) || 
@@ -490,10 +469,10 @@
                     <td>${log.antenna || ""}</td>
                     <td>${log.mode || ""}</td>
                     <td>${log.station || ""}</td>
-                    <td>${log.notes || ""}</td>
+                    <td class="notes-cell">${log.notes || ""}</td>
                     <td class="action-btns">
-                        <button class="edit-btn" onclick="startEdit(${log.id})">Edit</button>
-                        <button class="delete-btn" onclick="deleteLog(${log.id})">Del</button>
+                        <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
+                        <button class="delete-btn" onclick="deleteLog('${log.id}')">Del</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -502,32 +481,27 @@
         }
 
         function deleteLog(id) {
-            if(confirm("Delete entry?")) {
-                let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
-                logs = logs.filter(log => log.id !== id);
-                localStorage.setItem('radioLogs', JSON.stringify(logs));
-                renderTable();
+            if(confirm("Delete entry from Cloud?")) {
+                db.ref('radioLogs/' + id).remove();
             }
         }
 
         function clearData() {
-            if(confirm("Wipe all logs?")) {
-                localStorage.removeItem('radioLogs');
-                renderTable();
+            if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) {
+                logsRef.remove();
             }
         }
 
         function exportData() {
-            const logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
-            if (logs.length === 0) return alert("Nothing to export");
+            if (cloudLogs.length === 0) return alert("Nothing to export");
             let csvContent = "data:text/csv;charset=utf-8,Date(UTC),Frequency,Type,Radio,Antenna,Mode,Station,Notes\n"; 
-            logs.forEach(l => {
+            cloudLogs.forEach(l => {
                 const freqExp = parseFloat(l.freq).toFixed(3);
                 csvContent += `${l.date},${freqExp},${l.type},${l.radio},${l.antenna},${l.mode},${l.station},${l.notes}\n`;
             });
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", "radio_logs.csv");
+            link.setAttribute("download", "radio_logs_cloud_backup.csv");
             link.click();
         }
 
@@ -537,40 +511,22 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const rows = e.target.result.split("\n");
-                let logs = JSON.parse(localStorage.getItem('radioLogs')) || [];
+                let importCount = 0;
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].split(",");
                     if(cols.length >= 8) {
-                        logs.unshift({ 
-                            id: Date.now()+i, date: cols[0], freq: parseFloat(cols[1]), 
+                        logsRef.push({ 
+                            date: cols[0], freq: parseFloat(cols[1]), 
                             type: cols[2], radio: cols[3], antenna: cols[4], 
                             mode: cols[5], station: cols[6], notes: cols[7] 
                         });
+                        importCount++;
                     }
                 }
-                localStorage.setItem('radioLogs', JSON.stringify(logs));
-                renderTable();
-                alert("Imported!");
+                alert(`Imported ${importCount} logs to Firebase!`);
             };
             reader.readAsText(file);
-        }
-
-        function downloadFullSnapshot() {
-            const logs = localStorage.getItem('radioLogs') || "[]";
-            const theme = document.body.getAttribute('data-theme') || "light";
-            let htmlContent = document.documentElement.outerHTML;
-            const dataInjector = `
-            <script>
-                localStorage.setItem('radioLogs', JSON.stringify(${logs}));
-                localStorage.setItem('radioTheme', '${theme}');
-            <\/script>`;
-            const blob = new Blob([htmlContent + dataInjector], { type: 'text/html' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `RadioLogger_Snapshot_${new Date().toISOString().substring(0,10)}.html`;
-            link.click();
         }
     </script>
 </body>
 </html>
-
