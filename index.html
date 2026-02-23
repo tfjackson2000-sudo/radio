@@ -35,7 +35,6 @@
             --table-hover: #2d3748;
         }
 
-        /* Added box-sizing everywhere to prevent horizontal scrolling */
         *, *::before, *::after { box-sizing: border-box; }
 
         body {
@@ -46,7 +45,7 @@
             margin: 0 auto;
             padding: 15px;
             transition: background 0.3s, color 0.3s;
-            overflow-x: hidden; /* Hard stop on horizontal scrolling */
+            overflow-x: hidden; 
         }
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -181,10 +180,9 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (Grid Alignment Fix & Anti-Scroll)*/
+        /* MOBILE CARD LAYOUT (One-Line Grid Fix)               */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
-            /* 1. Prevent Search Bar horizontal scroll by stacking */
             .search-container { flex-direction: column; gap: 10px; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
@@ -201,18 +199,19 @@
                 padding: 10px 15px;
             }
 
-            /* 2. CSS GRID for perfect uniform alignment */
             td {
                 display: grid;
-                grid-template-columns: 105px 1fr; /* Fixed 105px for label, remainder for data */
+                grid-template-columns: 105px 1fr;
                 gap: 10px;
-                align-items: start; /* Locks text to the top of its row */
-                text-align: left;   /* Forces all data strictly to the left */
+                align-items: center; /* Centers short text vertically with its label */
+                text-align: left;
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
-                white-space: normal !important; 
-                overflow: visible !important;
-                word-wrap: break-word;
+                
+                /* STRICTLY ONE LINE FOR STANDARD FIELDS */
+                white-space: nowrap !important; 
+                overflow: hidden !important;
+                text-overflow: ellipsis;
             }
 
             td::before {
@@ -222,19 +221,24 @@
                 text-transform: uppercase;
                 font-size: 0.8em;
                 text-align: left;
-                padding-top: 2px; /* Aligns visually with the text next to it */
             }
 
-            td:nth-child(8) { text-align: left; } /* Reset S-meter alignment to left */
+            td:nth-child(8) { text-align: left; } 
             
-            /* Give Notes a stacked view to make reading easier */
+            /* Only allow Station and Notes to wrap if they are long */
+            td:nth-child(7), td.notes-cell {
+                white-space: normal !important;
+                overflow: visible !important;
+                align-items: start; /* If it wraps to two lines, align to the top of the label */
+            }
+
             td.notes-cell { 
-                grid-template-columns: 1fr; /* Label and text stack instead of side-by-side */
+                grid-template-columns: 1fr; /* Label and text stack */
                 gap: 4px;
             }
 
             td:last-child { 
-                display: flex; /* Revert actions to flexbox */
+                display: flex;
                 border-bottom: none; 
                 justify-content: center; 
                 padding-top: 15px; 
@@ -352,7 +356,7 @@
 
     <script>
         // ==========================================
-        // 1. FIREBASE CONFIGURATION (YOUR KEYS)
+        // 1. FIREBASE CONFIGURATION
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w",
