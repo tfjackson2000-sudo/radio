@@ -164,7 +164,17 @@
 
         tr:hover { background-color: var(--table-hover); }
 
-        .badge { padding: 3px 8px; border-radius: 15px; font-size: 0.75em; color: white; font-weight: bold; display: inline-block;}
+        /* Fixed the Badge stretching here */
+        .badge { 
+            padding: 3px 8px; 
+            border-radius: 15px; 
+            font-size: 0.75em; 
+            color: white; 
+            font-weight: bold; 
+            display: inline-block;
+            width: fit-content; 
+            justify-self: start; 
+        }
         .badge-sw { background-color: var(--sw-color); }
         .badge-vhf { background-color: var(--vhf-color); }
         
@@ -180,22 +190,14 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (Override specificities & widths) */
+        /* MOBILE CARD LAYOUT (One-Line Grid Fix)               */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
-            table, thead, tbody, tr { display: block; width: 100%; }
-            
-            /* THIS IS THE FIX: Destroy desktop fixed widths on mobile */
-            td, th { 
-                width: 100% !important; 
-                max-width: 100%;
-                box-sizing: border-box; 
-            }
-
+            table, tbody, tr { display: block; width: 100%; }
             thead { display: none; } 
 
             tr {
@@ -209,16 +211,15 @@
 
             td {
                 display: grid !important;
-                grid-template-columns: 110px 1fr;
+                grid-template-columns: 105px 1fr;
                 gap: 10px;
                 align-items: center; 
                 text-align: left !important;
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
-                
-                /* Allow text to flow naturally. Removing the 'nowrap' fixes the truncation! */
-                white-space: normal !important; 
-                overflow: visible !important;
+                white-space: nowrap !important; 
+                overflow: hidden !important;
+                text-overflow: ellipsis;
             }
 
             td::before {
@@ -228,13 +229,19 @@
                 text-transform: uppercase;
                 font-size: 0.8em;
                 text-align: left;
-                padding-top: 2px;
+            }
+
+            td:nth-child(8) { text-align: left; } 
+            
+            td:nth-child(7), td.notes-cell {
+                white-space: normal !important;
+                overflow: visible !important;
+                align-items: start; 
             }
 
             td.notes-cell { 
                 grid-template-columns: 1fr; 
                 gap: 4px;
-                align-items: start;
             }
 
             td:last-child { 
