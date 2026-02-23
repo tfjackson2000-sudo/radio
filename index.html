@@ -123,7 +123,7 @@
         .btn-save { background-color: var(--edit-color) !important; }
 
         .search-container { margin-bottom: 15px; display: flex; gap: 10px; }
-        #searchInput { flex-grow: 1; }
+        #searchInput { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
         .mobile-only { display: none; }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
@@ -135,9 +135,13 @@
         }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
         
-        /* Desktop Widths */
+        /* Default Desktop Table Styling */
+        th, td { 
+            text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); 
+            font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
+        }
+        
         th:nth-child(1), td:nth-child(1) { width: 140px; }
         th:nth-child(2), td:nth-child(2) { width: 90px; }
         th:nth-child(3), td:nth-child(3) { width: 90px; }
@@ -158,14 +162,14 @@
 
         tr:hover { background-color: var(--table-hover); }
 
-        .badge { padding: 3px 8px; border-radius: 15px; font-size: 0.75em; color: white; font-weight: bold; }
+        .badge { padding: 3px 8px; border-radius: 15px; font-size: 0.75em; color: white; font-weight: bold; display: inline-block;}
         .badge-sw { background-color: var(--sw-color); }
         .badge-vhf { background-color: var(--vhf-color); }
         
         .action-btns { display: flex; gap: 4px; justify-content: center; }
-        .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-        .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-        .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
 
@@ -174,14 +178,16 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (Eliminates Horizontal Scrolling) */
+        /* MOBILE CARD LAYOUT (Fully Responsive & Wrapping)     */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; }
-            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
             
-            thead { display: none; } /* Hide standard headers on mobile */
-            .mobile-only { display: block; flex-shrink: 0; } /* Show mobile sort dropdown */
+            thead { display: none; } 
+            
+            /* Show dropdown search filter on mobile */
+            .mobile-only { display: block; flex-shrink: 0; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             tr {
                 margin-bottom: 15px;
@@ -195,35 +201,40 @@
             td {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
+                align-items: flex-start; /* Changed from center to allow wrapping text to drop naturally */
                 text-align: right;
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
+                
+                /* FIX FOR CUT-OFF TEXT: */
+                white-space: normal !important; 
+                overflow: visible !important;
+                word-wrap: break-word;
+                gap: 15px; /* Ensures text doesn't touch the label */
             }
 
-            /* Uses the data-label attribute to create headers inside the card */
             td::before {
                 content: attr(data-label);
                 font-weight: bold;
                 color: var(--text-sub);
                 text-transform: uppercase;
                 font-size: 0.8em;
-                margin-right: 15px;
                 text-align: left;
+                flex-shrink: 0; /* Stops the label from shrinking */
+                max-width: 40%;
             }
 
-            td:nth-child(8) { text-align: right; } /* Reset S-meter text align */
+            td:nth-child(8) { text-align: right; } 
             
-            /* Make Notes field stack nicely if it's long */
+            /* Specific fix for notes to stack cleanly if very long */
             td.notes-cell { flex-direction: column; align-items: flex-start; text-align: left; }
             td.notes-cell::before { margin-bottom: 5px; }
 
-            /* Action buttons at the bottom of the card */
             td:last-child { border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
             
-            .action-btns { width: 100%; display: flex; justify-content: stretch; gap: 10px; }
-            .action-btns button { flex: 1; padding: 10px; font-size: 1em; } /* Bigger buttons for fingers */
+            .action-btns { width: 100%; display: flex; justify-content: stretch; gap: 10px; flex-wrap: wrap; }
+            .action-btns button { flex: 1; padding: 10px; font-size: 1em; } 
         }
     </style>
 </head>
@@ -414,7 +425,6 @@
             return `${day} ${month} ${year} ${hours}:${minutes}`;
         }
 
-        // Handles sorting from the Desktop Headers
         function sortTable(key, element) {
             if (currentSort.key === key) {
                 currentSort.desc = !currentSort.desc;
@@ -424,16 +434,12 @@
             }
             document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
             if(element) element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc');
-            
-            // Sync mobile dropdown if used
             document.getElementById('mobileSort').value = key;
             renderTable();
         }
 
-        // Handles sorting from the Mobile Dropdown
         function handleMobileSort(key) {
             currentSort.key = key;
-            // Default to descending for date and signal, ascending for others
             currentSort.desc = (key === 'date' || key === 'signal');
             renderTable();
         }
@@ -572,7 +578,6 @@
                 const row = document.createElement('tr');
                 const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
                 
-                // Note the "data-label" attributes here - these power the mobile cards!
                 row.innerHTML = `
                     <td data-label="UTC Time">${formattedDate}</td>
                     <td data-label="Freq (MHz)"><strong>${freqDisplay}</strong></td>
@@ -606,7 +611,6 @@
             }
         }
 
-        // Scroll Button Logic
         let mybutton = document.getElementById("scrollTopBtn");
         window.onscroll = function() { 
             if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { 
