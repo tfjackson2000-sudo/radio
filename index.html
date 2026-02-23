@@ -84,7 +84,7 @@
             font-size: 16px;
             background-color: var(--card-bg);
             color: var(--text-main);
-            height: 44px; /* standardized height */
+            height: 44px;
             box-sizing: border-box;
         }
 
@@ -107,18 +107,14 @@
             border-radius: 2px 2px 0 0;
             cursor: pointer;
             transition: background-color 0.1s;
-            color: transparent; /* Hide numbers visually but keep them for structure if needed */
         }
         
         [data-theme="dark"] .s-meter-bar { background-color: #374151; }
-
         .s-meter-bar:hover { opacity: 0.8; }
-
         .s-meter-bar.active-green { background-color: #10b981; }
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
         .s-meter-bar.active-red { background-color: #ef4444; }
 
-        /* Ascending heights */
         .s-meter-bar[data-val="1"] { height: 20%; }
         .s-meter-bar[data-val="2"] { height: 25%; }
         .s-meter-bar[data-val="3"] { height: 35%; }
@@ -151,33 +147,50 @@
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
+        /* --- Scrollable Table Container --- */
         .table-container { 
-            overflow: hidden;
+            max-height: 60vh; /* Keeps the table from getting too tall */
+            overflow-y: auto; /* Internal Vertical Scroll */
+            overflow-x: auto;
             background: var(--card-bg); 
             border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        table { width: 100%; border-collapse: collapse; table-layout: auto; }
 
         th, td { 
             text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color);
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9em;
+            font-size: 0.9em; white-space: nowrap;
         }
         
-        th:nth-child(1), td:nth-child(1) { width: 140px; }
-        th:nth-child(2), td:nth-child(2) { width: 90px; }
-        th:nth-child(3), td:nth-child(3) { width: 90px; }
-        th:nth-child(4), td:nth-child(4) { width: 130px; }
-        th:nth-child(5), td:nth-child(5) { width: 80px; }
-        th:nth-child(6), td:nth-child(6) { width: 70px; }
-        th:nth-child(7), td:nth-child(7) { width: auto; white-space: normal; word-wrap: break-word; } /* Station */
-        th:nth-child(8), td:nth-child(8) { width: 60px; font-weight: bold; } /* S-Meter */
-        th:nth-child(9), td:nth-child(9) { width: 140px; text-align: center; } 
+        td.wrap-cell {
+            white-space: normal;
+            word-wrap: break-word;
+            min-width: 150px;
+        }
 
-        th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: relative; }
+        /* Sticky Header Logic */
+        th { 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; /* Keeps header above rows when scrolling */
+            background-color: var(--primary); 
+            color: white; 
+            font-size: 0.8em; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            user-select: none; 
+            padding-right: 20px;
+        }
+        
+        /* Give specific sizing to keep it neat */
+        th:nth-child(8) { width: 60px; text-align: center; } /* S-Meter */
+        td:nth-child(8) { font-weight: bold; text-align: center; }
+        th:nth-child(10) { width: 140px; text-align: center; } /* Actions */
+
         th:hover { background-color: #1d4ed8; }
-        th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; margin-left: 4px; }
+        th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; position: absolute; right: 5px; }
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
 
@@ -193,22 +206,9 @@
         .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
-
-        #scrollTopBtn {
-            display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none;
-            background-color: var(--primary); color: white; cursor: pointer; padding: 10px;
-            border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        @media screen and (max-width: 800px) {
-            .table-container { overflow-x: auto; }
-            table { table-layout: auto; }
-        }
     </style>
 </head>
 <body data-theme="light">
-
-    <button onclick="topFunction()" id="scrollTopBtn" title="Go to top">↑</button>
 
     <header>
         <h1>📡 Radio Logger <span class="cloud-status">Cloud Synced</span></h1>
@@ -264,7 +264,11 @@
                 <div class="s-meter-bar" data-val="9" onclick="setSMeter(9)"></div>
                 <div class="s-meter-bar" data-val="10" onclick="setSMeter(10)"></div>
             </div>
-            <input type="hidden" id="notesInput" value="5">
+            <input type="hidden" id="signalInput" value="5">
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Additional Notes</label>
+            <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
         </div>
         <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
     </div>
@@ -289,7 +293,8 @@
                     <th onclick="sortTable('antenna', this)">Ant</th>
                     <th onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
-                    <th onclick="sortTable('notes', this)">Signal</th>
+                    <th onclick="sortTable('signal', this)">Sig</th>
+                    <th onclick="sortTable('notes', this)">Notes</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -301,7 +306,7 @@
 
     <script>
         // ==========================================
-        // 1. FIREBASE CONFIGURATION
+        // 1. FIREBASE CONFIGURATION (WITH YOUR KEYS)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w",
@@ -323,20 +328,30 @@
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
 
-        // Real-time Firebase Listener
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
             snapshot.forEach((childSnapshot) => {
                 let log = childSnapshot.val();
                 log.id = childSnapshot.key; 
+                
+                // BACKWARDS COMPATIBILITY FIX:
+                // If a user saved an old record where "notes" was just a number (the old S-meter),
+                // we convert it to the new format so it displays properly.
+                if (!log.signal && log.notes) {
+                    let parsedNote = parseInt(log.notes);
+                    if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && log.notes.length <= 2) {
+                        log.signal = log.notes;
+                        log.notes = "";
+                    }
+                }
+
                 cloudLogs.push(log);
             });
             renderTable(); 
         });
 
-        // S-Meter Logic
         function setSMeter(val) {
-            document.getElementById('notesInput').value = val;
+            document.getElementById('signalInput').value = val;
             const bars = document.querySelectorAll('.s-meter-bar');
             bars.forEach((bar, index) => {
                 bar.classList.remove('active-green', 'active-yellow', 'active-red');
@@ -348,14 +363,9 @@
             });
         }
 
-        // Initialize S-Meter to 5 on load
         document.addEventListener('DOMContentLoaded', () => {
             setSMeter(5);
         });
-
-        let mybutton = document.getElementById("scrollTopBtn");
-        window.onscroll = function() { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { mybutton.style.display = "block"; } else { mybutton.style.display = "none"; } };
-        function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
 
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
@@ -400,20 +410,20 @@
             const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
             const station = document.getElementById('stationInput').value.replace(/,/g, ";");
-            const notes = document.getElementById('notesInput').value;
+            const signalVal = document.getElementById('signalInput').value;
+            const notesText = document.getElementById('notesInput').value;
 
             if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
             
-            const freqNum = parseFloat(freqVal);
-            
             const logEntry = {
-                freq: freqNum,
-                type: (freqNum <= 30) ? "Shortwave" : "VHF/UHF",
+                freq: parseFloat(freqVal),
+                type: (parseFloat(freqVal) <= 30) ? "Shortwave" : "VHF/UHF",
                 radio: radio,
                 antenna: antenna,
                 mode: mode,
                 station: station,
-                notes: notes // This is now a number string "1" to "10"
+                signal: signalVal,
+                notes: notesText
             };
 
             if (editId) {
@@ -437,13 +447,11 @@
             document.getElementById('antennaInput').value = log.antenna || "GA800";
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station || "";
+            document.getElementById('notesInput').value = log.notes || "";
 
-            // Set the S-Meter, fallback to 5 if it's an old text log
-            let parsedVal = parseInt(log.notes);
-            if (isNaN(parsedVal) || parsedVal < 1 || parsedVal > 10) {
-                parsedVal = 5; 
-            }
-            setSMeter(parsedVal);
+            let parsedSignal = parseInt(log.signal);
+            if (isNaN(parsedSignal) || parsedSignal < 1 || parsedSignal > 10) { parsedSignal = 5; }
+            setSMeter(parsedSignal);
 
             document.getElementById('submitBtn').innerText = "Save Changes";
             document.getElementById('submitBtn').classList.add('btn-save');
@@ -472,10 +480,10 @@
                     antenna: logToCopy.antenna || "GA800",
                     mode: logToCopy.mode || "AM",
                     station: logToCopy.station || "",
-                    notes: logToCopy.notes || "5",
+                    signal: logToCopy.signal || "5",
+                    notes: logToCopy.notes || "",
                     date: new Date().toISOString() 
                 };
-                
                 logsRef.push(duplicatedLog);
             }
         }
@@ -483,9 +491,10 @@
         function resetForm() {
             document.getElementById('freqInput').value = '';
             document.getElementById('stationInput').value = '';
+            document.getElementById('notesInput').value = '';
             document.getElementById('radioInput').value = "Malahit DSP2";
             document.getElementById('antennaInput').value = "GA800";
-            setSMeter(5); // Reset S-Meter to default
+            setSMeter(5); 
         }
 
         function renderTable() {
@@ -499,14 +508,12 @@
                 let valA = a[currentSort.key] || "";
                 let valB = b[currentSort.key] || "";
                 
-                // If sorting by notes, sort numerically if possible
-                if (currentSort.key === 'notes') {
-                    valA = parseInt(valA) || 0;
-                    valB = parseInt(valB) || 0;
+                if (currentSort.key === 'signal' || currentSort.key === 'freq') {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
                     return currentSort.desc ? valB - valA : valA - valB;
                 }
 
-                if (currentSort.key === 'freq') return currentSort.desc ? valB - valA : valA - valB;
                 if (valA < valB) return currentSort.desc ? 1 : -1;
                 if (valA > valB) return currentSort.desc ? -1 : 1;
                 return 0;
@@ -516,19 +523,14 @@
             displayLogs.forEach(log => {
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
-
-                // Format the Signal output
-                let displayNote = log.notes || "";
-                if (!isNaN(displayNote) && displayNote !== "") {
-                    displayNote = "S-" + displayNote; // Format as S-7, S-9 etc.
-                }
+                const displaySignal = log.signal ? "S-" + log.signal : "";
 
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
                                 (log.antenna || "").toLowerCase().includes(searchTerm) ||
                                 (log.station || "").toLowerCase().includes(searchTerm) || 
                                 (log.mode || "").toLowerCase().includes(searchTerm) ||
-                                (displayNote || "").toLowerCase().includes(searchTerm);
+                                (log.notes || "").toLowerCase().includes(searchTerm);
 
                 if (!matches && searchTerm !== "") return;
                 count++;
@@ -541,8 +543,9 @@
                     <td>${log.radio || ""}</td>
                     <td>${log.antenna || ""}</td>
                     <td>${log.mode || ""}</td>
-                    <td>${log.station || ""}</td>
-                    <td style="font-weight: bold;">${displayNote}</td>
+                    <td class="wrap-cell">${log.station || ""}</td>
+                    <td>${displaySignal}</td>
+                    <td class="wrap-cell">${log.notes || ""}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
                         <button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button>
