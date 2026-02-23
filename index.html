@@ -88,25 +88,15 @@
             box-sizing: border-box;
         }
 
-        /* --- S-Meter Graphic Styles --- */
         .s-meter-container {
-            display: flex;
-            align-items: flex-end;
-            gap: 3px;
-            height: 44px;
-            padding: 5px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-sizing: border-box;
+            display: flex; align-items: flex-end; gap: 3px; height: 44px; padding: 5px;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; box-sizing: border-box;
         }
         
         .s-meter-bar {
-            flex: 1;
-            background-color: #e5e7eb;
-            border-radius: 2px 2px 0 0;
-            cursor: pointer;
-            transition: background-color 0.1s;
+            flex: 1; background-color: #e5e7eb; border-radius: 2px 2px 0 0;
+            cursor: pointer; transition: background-color 0.1s;
         }
         
         [data-theme="dark"] .s-meter-bar { background-color: #374151; }
@@ -127,68 +117,40 @@
         .s-meter-bar[data-val="10"] { height: 100%; }
 
         .btn-main {
-            grid-column: 1 / -1;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 1.1em;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
+            grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
+            padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px;
         }
-        
         .btn-save { background-color: var(--edit-color) !important; }
 
         .search-container { margin-bottom: 15px; display: flex; gap: 10px; }
-        #searchInput { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
+        #searchInput { flex-grow: 1; }
+        .mobile-only { display: none; }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
-        /* --- Scrollable Table Container --- */
         .table-container { 
-            max-height: 60vh; /* Keeps the table from getting too tall */
-            overflow-y: auto; /* Internal Vertical Scroll */
-            overflow-x: auto;
-            background: var(--card-bg); 
-            border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            max-height: 65vh; overflow-y: auto; overflow-x: hidden;
+            background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
 
-        table { width: 100%; border-collapse: collapse; table-layout: auto; }
-
-        th, td { 
-            text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color);
-            font-size: 0.9em; white-space: nowrap;
-        }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
         
-        td.wrap-cell {
-            white-space: normal;
-            word-wrap: break-word;
-            min-width: 150px;
-        }
-
-        /* Sticky Header Logic */
-        th { 
-            position: sticky; 
-            top: 0; 
-            z-index: 10; /* Keeps header above rows when scrolling */
-            background-color: var(--primary); 
-            color: white; 
-            font-size: 0.8em; 
-            text-transform: uppercase; 
-            cursor: pointer; 
-            user-select: none; 
-            padding-right: 20px;
-        }
-        
-        /* Give specific sizing to keep it neat */
-        th:nth-child(8) { width: 60px; text-align: center; } /* S-Meter */
+        /* Desktop Widths */
+        th:nth-child(1), td:nth-child(1) { width: 140px; }
+        th:nth-child(2), td:nth-child(2) { width: 90px; }
+        th:nth-child(3), td:nth-child(3) { width: 90px; }
+        th:nth-child(4), td:nth-child(4) { width: 130px; }
+        th:nth-child(5), td:nth-child(5) { width: 80px; }
+        th:nth-child(6), td:nth-child(6) { width: 70px; }
+        th:nth-child(7), td:nth-child(7),
+        th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
+        th:nth-child(8) { width: 60px; text-align: center; } 
         td:nth-child(8) { font-weight: bold; text-align: center; }
-        th:nth-child(10) { width: 140px; text-align: center; } /* Actions */
+        th:nth-child(10), td:nth-child(10) { width: 140px; text-align: center; } 
 
+        th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 10; }
         th:hover { background-color: #1d4ed8; }
         th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; position: absolute; right: 5px; }
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
@@ -201,14 +163,73 @@
         .badge-vhf { background-color: var(--vhf-color); }
         
         .action-btns { display: flex; gap: 4px; justify-content: center; }
-        .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
-        .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
-        .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
+
+        #scrollTopBtn {
+            display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* ==================================================== */
+        /* MOBILE CARD LAYOUT (Eliminates Horizontal Scrolling) */
+        /* ==================================================== */
+        @media screen and (max-width: 800px) {
+            .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; }
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            
+            thead { display: none; } /* Hide standard headers on mobile */
+            .mobile-only { display: block; flex-shrink: 0; } /* Show mobile sort dropdown */
+
+            tr {
+                margin-bottom: 15px;
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                padding: 5px 15px 15px 15px;
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right;
+                border-bottom: 1px solid var(--border-color);
+                padding: 10px 0;
+            }
+
+            /* Uses the data-label attribute to create headers inside the card */
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: var(--text-sub);
+                text-transform: uppercase;
+                font-size: 0.8em;
+                margin-right: 15px;
+                text-align: left;
+            }
+
+            td:nth-child(8) { text-align: right; } /* Reset S-meter text align */
+            
+            /* Make Notes field stack nicely if it's long */
+            td.notes-cell { flex-direction: column; align-items: flex-start; text-align: left; }
+            td.notes-cell::before { margin-bottom: 5px; }
+
+            /* Action buttons at the bottom of the card */
+            td:last-child { border-bottom: none; justify-content: center; padding-top: 15px; }
+            td:last-child::before { display: none; }
+            
+            .action-btns { width: 100%; display: flex; justify-content: stretch; gap: 10px; }
+            .action-btns button { flex: 1; padding: 10px; font-size: 1em; } /* Bigger buttons for fingers */
+        }
     </style>
 </head>
 <body data-theme="light">
+
+    <button onclick="topFunction()" id="scrollTopBtn" title="Go to top">↑</button>
 
     <header>
         <h1>📡 Radio Logger <span class="cloud-status">Cloud Synced</span></h1>
@@ -275,6 +296,12 @@
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
+        <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
+            <option value="date">Sort: Newest First</option>
+            <option value="freq">Sort: Frequency</option>
+            <option value="signal">Sort: Best Signal</option>
+            <option value="radio">Sort: Radio</option>
+        </select>
     </div>
 
     <div class="controls">
@@ -334,9 +361,6 @@
                 let log = childSnapshot.val();
                 log.id = childSnapshot.key; 
                 
-                // BACKWARDS COMPATIBILITY FIX:
-                // If a user saved an old record where "notes" was just a number (the old S-meter),
-                // we convert it to the new format so it displays properly.
                 if (!log.signal && log.notes) {
                     let parsedNote = parseInt(log.notes);
                     if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && log.notes.length <= 2) {
@@ -344,7 +368,6 @@
                         log.notes = "";
                     }
                 }
-
                 cloudLogs.push(log);
             });
             renderTable(); 
@@ -391,6 +414,7 @@
             return `${day} ${month} ${year} ${hours}:${minutes}`;
         }
 
+        // Handles sorting from the Desktop Headers
         function sortTable(key, element) {
             if (currentSort.key === key) {
                 currentSort.desc = !currentSort.desc;
@@ -399,7 +423,18 @@
                 currentSort.desc = false;
             }
             document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
-            element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc');
+            if(element) element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc');
+            
+            // Sync mobile dropdown if used
+            document.getElementById('mobileSort').value = key;
+            renderTable();
+        }
+
+        // Handles sorting from the Mobile Dropdown
+        function handleMobileSort(key) {
+            currentSort.key = key;
+            // Default to descending for date and signal, ascending for others
+            currentSort.desc = (key === 'date' || key === 'signal');
             renderTable();
         }
 
@@ -536,16 +571,18 @@
                 count++;
                 const row = document.createElement('tr');
                 const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
+                
+                // Note the "data-label" attributes here - these power the mobile cards!
                 row.innerHTML = `
-                    <td>${formattedDate}</td>
-                    <td><strong>${freqDisplay}</strong></td>
-                    <td><span class="badge ${badgeClass}">${log.type || ""}</span></td>
-                    <td>${log.radio || ""}</td>
-                    <td>${log.antenna || ""}</td>
-                    <td>${log.mode || ""}</td>
-                    <td class="wrap-cell">${log.station || ""}</td>
-                    <td>${displaySignal}</td>
-                    <td class="wrap-cell">${log.notes || ""}</td>
+                    <td data-label="UTC Time">${formattedDate}</td>
+                    <td data-label="Freq (MHz)"><strong>${freqDisplay}</strong></td>
+                    <td data-label="Band"><span class="badge ${badgeClass}">${log.type || ""}</span></td>
+                    <td data-label="Radio">${log.radio || ""}</td>
+                    <td data-label="Antenna">${log.antenna || ""}</td>
+                    <td data-label="Mode">${log.mode || ""}</td>
+                    <td data-label="Station">${log.station || ""}</td>
+                    <td data-label="Signal">${displaySignal}</td>
+                    <td data-label="Notes" class="notes-cell">${log.notes || ""}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
                         <button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button>
@@ -568,6 +605,17 @@
                 logsRef.remove();
             }
         }
+
+        // Scroll Button Logic
+        let mybutton = document.getElementById("scrollTopBtn");
+        window.onscroll = function() { 
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { 
+                mybutton.style.display = "block"; 
+            } else { 
+                mybutton.style.display = "none"; 
+            } 
+        };
+        function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
     </script>
 </body>
 </html>
