@@ -14,7 +14,7 @@
             --card-bg: #ffffff;
             --primary: #2563eb;
             --edit-color: #7c3aed;
-            --dup-color: #059669; /* Green for Duplicate */
+            --dup-color: #059669; 
             --sw-color: #10b981;
             --vhf-color: #f59e0b;
             --text-main: #1f2937;
@@ -130,7 +130,7 @@
         th:nth-child(6), td:nth-child(6) { width: 70px; }
         th:nth-child(7), td:nth-child(7),
         th:nth-child(8), td:nth-child(8) { width: auto; white-space: normal; word-wrap: break-word; }
-        th:nth-child(9), td:nth-child(9) { width: 140px; text-align: center; } /* Increased width for 3 buttons */
+        th:nth-child(9), td:nth-child(9) { width: 140px; text-align: center; } 
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: relative; }
         th:hover { background-color: #1d4ed8; }
@@ -252,16 +252,16 @@
 
     <script>
         // ==========================================
-        // 1. FIREBASE CONFIGURATION (PASTE YOURS HERE)
+        // 1. FIREBASE CONFIGURATION (WITH YOUR KEYS)
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyB...",
-            authDomain: "radio-logger-xxxx.firebaseapp.com",
-            databaseURL: "https://radio-logger-xxxx-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "radio-logger-xxxx",
-            storageBucket: "radio-logger-xxxx.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdefg"
+            apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w",
+            authDomain: "radio-logger-cloud.firebaseapp.com",
+            databaseURL: "https://radio-logger-cloud-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "radio-logger-cloud",
+            storageBucket: "radio-logger-cloud.firebasestorage.app",
+            messagingSenderId: "501308146621",
+            appId: "1:501308146621:web:b16456a55d252f9eafc8d4"
         };
 
         // Initialize Firebase
@@ -272,18 +272,18 @@
         // ==========================================
         // 2. APP LOGIC & STATE
         // ==========================================
-        let cloudLogs = []; // Stores our data from Firebase
+        let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
 
-        // Listen for real-time changes from Firebase!
+        // Listen for real-time changes from Firebase
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
             snapshot.forEach((childSnapshot) => {
                 let log = childSnapshot.val();
-                log.id = childSnapshot.key; // The unique Firebase ID
+                log.id = childSnapshot.key; 
                 cloudLogs.push(log);
             });
-            renderTable(); // Re-draw table automatically when cloud changes
+            renderTable(); 
         });
 
         function checkCustomNote(select) {
@@ -301,7 +301,6 @@
             }
         }
 
-        // Scrolling & Theme Functions
         let mybutton = document.getElementById("scrollTopBtn");
         window.onscroll = function() { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { mybutton.style.display = "block"; } else { mybutton.style.display = "none"; } };
         function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
@@ -319,6 +318,7 @@
         document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
 
         function formatRadioDate(isoString) {
+            if (!isoString) return "";
             const date = new Date(isoString);
             const day = String(date.getDate()).padStart(2, '0');
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -365,11 +365,9 @@
             };
 
             if (editId) {
-                // Update existing record in Firebase
                 db.ref('radioLogs/' + editId).update(logEntry);
                 cancelEdit();
             } else {
-                // Push new record to Firebase
                 logEntry.date = new Date().toISOString();
                 logsRef.push(logEntry);
             }
@@ -430,7 +428,7 @@
                     mode: logToCopy.mode || "AM",
                     station: logToCopy.station || "",
                     notes: logToCopy.notes || "Both sides clear",
-                    date: new Date().toISOString() // Fresh timestamp for right now
+                    date: new Date().toISOString() 
                 };
                 
                 logsRef.push(duplicatedLog);
@@ -450,12 +448,11 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             tbody.innerHTML = '';
             
-            // Create a copy of cloudLogs to sort without mutating original
             let displayLogs = [...cloudLogs];
 
             displayLogs.sort((a, b) => {
-                let valA = a[currentSort.key];
-                let valB = b[currentSort.key];
+                let valA = a[currentSort.key] || "";
+                let valB = b[currentSort.key] || "";
                 if (currentSort.key === 'freq') return currentSort.desc ? valB - valA : valA - valB;
                 if (valA < valB) return currentSort.desc ? 1 : -1;
                 if (valA > valB) return currentSort.desc ? -1 : 1;
@@ -464,7 +461,7 @@
 
             let count = 0;
             displayLogs.forEach(log => {
-                const freqDisplay = parseFloat(log.freq).toFixed(3);
+                const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
@@ -480,7 +477,7 @@
                 row.innerHTML = `
                     <td>${formattedDate}</td>
                     <td><strong>${freqDisplay}</strong></td>
-                    <td><span class="badge ${badgeClass}">${log.type}</span></td>
+                    <td><span class="badge ${badgeClass}">${log.type || ""}</span></td>
                     <td>${log.radio || ""}</td>
                     <td>${log.antenna || ""}</td>
                     <td>${log.mode || ""}</td>
