@@ -84,7 +84,51 @@
             font-size: 16px;
             background-color: var(--card-bg);
             color: var(--text-main);
+            height: 44px; /* standardized height */
+            box-sizing: border-box;
         }
+
+        /* --- S-Meter Graphic Styles --- */
+        .s-meter-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 44px;
+            padding: 5px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        
+        .s-meter-bar {
+            flex: 1;
+            background-color: #e5e7eb;
+            border-radius: 2px 2px 0 0;
+            cursor: pointer;
+            transition: background-color 0.1s;
+            color: transparent; /* Hide numbers visually but keep them for structure if needed */
+        }
+        
+        [data-theme="dark"] .s-meter-bar { background-color: #374151; }
+
+        .s-meter-bar:hover { opacity: 0.8; }
+
+        .s-meter-bar.active-green { background-color: #10b981; }
+        .s-meter-bar.active-yellow { background-color: #f59e0b; }
+        .s-meter-bar.active-red { background-color: #ef4444; }
+
+        /* Ascending heights */
+        .s-meter-bar[data-val="1"] { height: 20%; }
+        .s-meter-bar[data-val="2"] { height: 25%; }
+        .s-meter-bar[data-val="3"] { height: 35%; }
+        .s-meter-bar[data-val="4"] { height: 45%; }
+        .s-meter-bar[data-val="5"] { height: 55%; }
+        .s-meter-bar[data-val="6"] { height: 65%; }
+        .s-meter-bar[data-val="7"] { height: 75%; }
+        .s-meter-bar[data-val="8"] { height: 85%; }
+        .s-meter-bar[data-val="9"] { height: 95%; }
+        .s-meter-bar[data-val="10"] { height: 100%; }
 
         .btn-main {
             grid-column: 1 / -1;
@@ -105,7 +149,6 @@
         #searchInput { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
-        
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
         .table-container { 
@@ -128,8 +171,8 @@
         th:nth-child(4), td:nth-child(4) { width: 130px; }
         th:nth-child(5), td:nth-child(5) { width: 80px; }
         th:nth-child(6), td:nth-child(6) { width: 70px; }
-        th:nth-child(7), td:nth-child(7),
-        th:nth-child(8), td:nth-child(8) { width: auto; white-space: normal; word-wrap: break-word; }
+        th:nth-child(7), td:nth-child(7) { width: auto; white-space: normal; word-wrap: break-word; } /* Station */
+        th:nth-child(8), td:nth-child(8) { width: 60px; font-weight: bold; } /* S-Meter */
         th:nth-child(9), td:nth-child(9) { width: 140px; text-align: center; } 
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: relative; }
@@ -208,14 +251,20 @@
             <input type="text" id="stationInput" placeholder="Who are they?">
         </div>
         <div class="form-group">
-            <label>Signal Note</label>
-            <select id="notesInput" onchange="checkCustomNote(this)">
-                <option value="Both sides clear">Both sides clear</option>
-                <option value="One side clear">One side clear</option>
-                <option value="Weak / Noisy">Weak / Noisy</option>
-                <option value="Fading / Static">Fading / Static</option>
-                <option value="CUSTOM_VALUE">-- Type Custom Note... --</option>
-            </select>
+            <label>Signal (S-Meter)</label>
+            <div class="s-meter-container">
+                <div class="s-meter-bar" data-val="1" onclick="setSMeter(1)"></div>
+                <div class="s-meter-bar" data-val="2" onclick="setSMeter(2)"></div>
+                <div class="s-meter-bar" data-val="3" onclick="setSMeter(3)"></div>
+                <div class="s-meter-bar" data-val="4" onclick="setSMeter(4)"></div>
+                <div class="s-meter-bar" data-val="5" onclick="setSMeter(5)"></div>
+                <div class="s-meter-bar" data-val="6" onclick="setSMeter(6)"></div>
+                <div class="s-meter-bar" data-val="7" onclick="setSMeter(7)"></div>
+                <div class="s-meter-bar" data-val="8" onclick="setSMeter(8)"></div>
+                <div class="s-meter-bar" data-val="9" onclick="setSMeter(9)"></div>
+                <div class="s-meter-bar" data-val="10" onclick="setSMeter(10)"></div>
+            </div>
+            <input type="hidden" id="notesInput" value="5">
         </div>
         <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
     </div>
@@ -240,7 +289,7 @@
                     <th onclick="sortTable('antenna', this)">Ant</th>
                     <th onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
-                    <th onclick="sortTable('notes', this)">Note</th>
+                    <th onclick="sortTable('notes', this)">Signal</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -252,7 +301,7 @@
 
     <script>
         // ==========================================
-        // 1. FIREBASE CONFIGURATION (WITH YOUR KEYS)
+        // 1. FIREBASE CONFIGURATION
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w",
@@ -264,7 +313,6 @@
             appId: "1:501308146621:web:b16456a55d252f9eafc8d4"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const logsRef = db.ref('radioLogs');
@@ -275,7 +323,7 @@
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
 
-        // Listen for real-time changes from Firebase
+        // Real-time Firebase Listener
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
             snapshot.forEach((childSnapshot) => {
@@ -286,20 +334,24 @@
             renderTable(); 
         });
 
-        function checkCustomNote(select) {
-            if (select.value === "CUSTOM_VALUE") {
-                const customText = prompt("Enter your custom signal note:");
-                if (customText) {
-                    const newOpt = document.createElement("option");
-                    newOpt.value = customText;
-                    newOpt.text = customText;
-                    select.add(newOpt, select.options[select.length - 1]);
-                    select.value = customText;
-                } else {
-                    select.selectedIndex = 0;
+        // S-Meter Logic
+        function setSMeter(val) {
+            document.getElementById('notesInput').value = val;
+            const bars = document.querySelectorAll('.s-meter-bar');
+            bars.forEach((bar, index) => {
+                bar.classList.remove('active-green', 'active-yellow', 'active-red');
+                if (index < val) {
+                    if (index < 5) bar.classList.add('active-green');
+                    else if (index < 8) bar.classList.add('active-yellow');
+                    else bar.classList.add('active-red');
                 }
-            }
+            });
         }
+
+        // Initialize S-Meter to 5 on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setSMeter(5);
+        });
 
         let mybutton = document.getElementById("scrollTopBtn");
         window.onscroll = function() { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { mybutton.style.display = "block"; } else { mybutton.style.display = "none"; } };
@@ -361,7 +413,7 @@
                 antenna: antenna,
                 mode: mode,
                 station: station,
-                notes: notes
+                notes: notes // This is now a number string "1" to "10"
             };
 
             if (editId) {
@@ -386,20 +438,12 @@
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station || "";
 
-            const notesSelect = document.getElementById('notesInput');
-            let found = false;
-            for (let i = 0; i < notesSelect.options.length; i++) {
-                if (notesSelect.options[i].value === log.notes) {
-                    notesSelect.selectedIndex = i;
-                    found = true; break;
-                }
+            // Set the S-Meter, fallback to 5 if it's an old text log
+            let parsedVal = parseInt(log.notes);
+            if (isNaN(parsedVal) || parsedVal < 1 || parsedVal > 10) {
+                parsedVal = 5; 
             }
-            if (!found) {
-                const newOpt = document.createElement("option");
-                newOpt.value = log.notes; newOpt.text = log.notes;
-                notesSelect.add(newOpt, notesSelect.options[notesSelect.length - 1]);
-                notesSelect.value = log.notes;
-            }
+            setSMeter(parsedVal);
 
             document.getElementById('submitBtn').innerText = "Save Changes";
             document.getElementById('submitBtn').classList.add('btn-save');
@@ -412,6 +456,7 @@
             document.getElementById('submitBtn').innerText = "Add to Log";
             document.getElementById('submitBtn').classList.remove('btn-save');
             document.getElementById('formCard').classList.remove('editing-mode');
+            setSMeter(5);
         }
 
         function duplicateLog(id) {
@@ -427,7 +472,7 @@
                     antenna: logToCopy.antenna || "GA800",
                     mode: logToCopy.mode || "AM",
                     station: logToCopy.station || "",
-                    notes: logToCopy.notes || "Both sides clear",
+                    notes: logToCopy.notes || "5",
                     date: new Date().toISOString() 
                 };
                 
@@ -440,7 +485,7 @@
             document.getElementById('stationInput').value = '';
             document.getElementById('radioInput').value = "Malahit DSP2";
             document.getElementById('antennaInput').value = "GA800";
-            document.getElementById('notesInput').selectedIndex = 0;
+            setSMeter(5); // Reset S-Meter to default
         }
 
         function renderTable() {
@@ -453,6 +498,14 @@
             displayLogs.sort((a, b) => {
                 let valA = a[currentSort.key] || "";
                 let valB = b[currentSort.key] || "";
+                
+                // If sorting by notes, sort numerically if possible
+                if (currentSort.key === 'notes') {
+                    valA = parseInt(valA) || 0;
+                    valB = parseInt(valB) || 0;
+                    return currentSort.desc ? valB - valA : valA - valB;
+                }
+
                 if (currentSort.key === 'freq') return currentSort.desc ? valB - valA : valA - valB;
                 if (valA < valB) return currentSort.desc ? 1 : -1;
                 if (valA > valB) return currentSort.desc ? -1 : 1;
@@ -463,12 +516,19 @@
             displayLogs.forEach(log => {
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
+
+                // Format the Signal output
+                let displayNote = log.notes || "";
+                if (!isNaN(displayNote) && displayNote !== "") {
+                    displayNote = "S-" + displayNote; // Format as S-7, S-9 etc.
+                }
+
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
                                 (log.antenna || "").toLowerCase().includes(searchTerm) ||
                                 (log.station || "").toLowerCase().includes(searchTerm) || 
                                 (log.mode || "").toLowerCase().includes(searchTerm) ||
-                                (log.notes || "").toLowerCase().includes(searchTerm);
+                                (displayNote || "").toLowerCase().includes(searchTerm);
 
                 if (!matches && searchTerm !== "") return;
                 count++;
@@ -482,7 +542,7 @@
                     <td>${log.antenna || ""}</td>
                     <td>${log.mode || ""}</td>
                     <td>${log.station || ""}</td>
-                    <td class="notes-cell">${log.notes || ""}</td>
+                    <td style="font-weight: bold;">${displayNote}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
                         <button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button>
