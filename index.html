@@ -180,14 +180,22 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (One-Line Grid Fix)               */
+        /* MOBILE CARD LAYOUT (Override specificities & widths) */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
-            .search-container { flex-direction: column; gap: 10px; }
+            .search-container { flex-direction: column; gap: 10px; width: 100%; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
-            table, tbody, tr { display: block; width: 100%; }
+            table, thead, tbody, tr { display: block; width: 100%; }
+            
+            /* THIS IS THE FIX: Destroy desktop fixed widths on mobile */
+            td, th { 
+                width: 100% !important; 
+                max-width: 100%;
+                box-sizing: border-box; 
+            }
+
             thead { display: none; } 
 
             tr {
@@ -200,18 +208,17 @@
             }
 
             td {
-                display: grid;
-                grid-template-columns: 105px 1fr;
+                display: grid !important;
+                grid-template-columns: 110px 1fr;
                 gap: 10px;
-                align-items: center; /* Centers short text vertically with its label */
-                text-align: left;
+                align-items: center; 
+                text-align: left !important;
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
                 
-                /* STRICTLY ONE LINE FOR STANDARD FIELDS */
-                white-space: nowrap !important; 
-                overflow: hidden !important;
-                text-overflow: ellipsis;
+                /* Allow text to flow naturally. Removing the 'nowrap' fixes the truncation! */
+                white-space: normal !important; 
+                overflow: visible !important;
             }
 
             td::before {
@@ -221,24 +228,17 @@
                 text-transform: uppercase;
                 font-size: 0.8em;
                 text-align: left;
-            }
-
-            td:nth-child(8) { text-align: left; } 
-            
-            /* Only allow Station and Notes to wrap if they are long */
-            td:nth-child(7), td.notes-cell {
-                white-space: normal !important;
-                overflow: visible !important;
-                align-items: start; /* If it wraps to two lines, align to the top of the label */
+                padding-top: 2px;
             }
 
             td.notes-cell { 
-                grid-template-columns: 1fr; /* Label and text stack */
+                grid-template-columns: 1fr; 
                 gap: 4px;
+                align-items: start;
             }
 
             td:last-child { 
-                display: flex;
+                display: flex !important;
                 border-bottom: none; 
                 justify-content: center; 
                 padding-top: 15px; 
