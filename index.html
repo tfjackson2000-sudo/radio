@@ -63,50 +63,65 @@
             font-size: 0.85em;
         }
 
+        /* --- Collapsible Form Card --- */
         .input-card {
             background: var(--card-bg);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
             margin-bottom: 25px;
             border: 2px solid transparent;
         }
-        
         .editing-mode { border: 2px solid var(--edit-color); }
         [data-theme="dark"] .editing-mode { background: #2e263d; }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; user-select: none;
+        }
+        .card-header h2 { margin: 0; font-size: 1.1em; color: var(--primary); }
+        .card-header span { font-weight: bold; font-size: 0.9em; opacity: 0.7; }
+        
+        .form-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            transition: opacity 0.2s ease;
+        }
+        .form-body.collapsed { display: none; }
 
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-sub); }
         
         input, select {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 16px;
-            background-color: var(--card-bg);
-            color: var(--text-main);
-            height: 44px;
-            width: 100%;
+            padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 16px; background-color: var(--card-bg);
+            color: var(--text-main); height: 44px; width: 100%;
         }
 
-        /* --- S-Meter --- */
-        .s-meter-container {
-            display: flex; align-items: flex-end; gap: 3px; height: 44px; padding: 5px;
+        /* --- S-Meter & Traffic --- */
+        .s-meter-container, .traffic-container {
+            display: flex; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 8px; width: 100%;
         }
-        .s-meter-bar {
-            flex: 1; background-color: #e5e7eb; border-radius: 2px 2px 0 0;
-            cursor: pointer; transition: background-color 0.1s;
+        .s-meter-container { align-items: flex-end; }
+        .traffic-container { align-items: center; }
+
+        .s-meter-bar, .traffic-block {
+            flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s;
         }
-        [data-theme="dark"] .s-meter-bar { background-color: #374151; }
-        .s-meter-bar:hover { opacity: 0.8; }
+        .s-meter-bar { border-radius: 2px 2px 0 0; }
+        .traffic-block { height: 100%; border-radius: 3px; }
+
+        [data-theme="dark"] .s-meter-bar, [data-theme="dark"] .traffic-block { background-color: #374151; }
+        
+        .s-meter-bar:hover, .traffic-block:hover { opacity: 0.8; }
         .s-meter-bar.active-green { background-color: #10b981; }
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
         .s-meter-bar.active-red { background-color: #ef4444; }
+        .traffic-block.active { background-color: var(--traffic-color); }
 
         .s-meter-bar[data-val="1"] { height: 20%; }
         .s-meter-bar[data-val="2"] { height: 25%; }
@@ -119,30 +134,22 @@
         .s-meter-bar[data-val="9"] { height: 95%; }
         .s-meter-bar[data-val="10"] { height: 100%; }
 
-        /* --- Traffic Level --- */
-        .traffic-container {
-            display: flex; align-items: center; gap: 3px; height: 44px; padding: 5px;
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 8px; width: 100%;
-        }
-        .traffic-block {
-            flex: 1; height: 100%; background-color: #e5e7eb; border-radius: 3px;
-            cursor: pointer; transition: background-color 0.1s;
-        }
-        [data-theme="dark"] .traffic-block { background-color: #374151; }
-        .traffic-block:hover { opacity: 0.8; }
-        .traffic-block.active { background-color: var(--traffic-color); }
-
         /* --- Mini Graphics --- */
-        .mini-meter {
-            display: inline-flex; align-items: flex-end; gap: 1.5px;
-            height: 18px; width: 40px; margin-left: 8px;
+        .mini-meter, .mini-traffic {
+            display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px;
         }
-        .mini-bar { flex: 1; background-color: #e5e7eb; border-radius: 1px 1px 0 0; }
-        [data-theme="dark"] .mini-bar { background-color: #374151; }
+        .mini-meter { align-items: flex-end; }
+        .mini-traffic { align-items: center; }
+
+        .mini-bar, .mini-t-block { flex: 1; background-color: #e5e7eb; }
+        .mini-bar { border-radius: 1px 1px 0 0; }
+        .mini-t-block { height: 60%; border-radius: 1px; }
+
+        [data-theme="dark"] .mini-bar, [data-theme="dark"] .mini-t-block { background-color: #374151; }
         .mini-bar.active-green { background-color: #10b981; }
         .mini-bar.active-yellow { background-color: #f59e0b; }
         .mini-bar.active-red { background-color: #ef4444; }
+        .mini-t-block.active { background-color: var(--traffic-color); }
 
         .mini-bar[data-val="1"] { height: 20%; }
         .mini-bar[data-val="2"] { height: 25%; }
@@ -155,14 +162,6 @@
         .mini-bar[data-val="9"] { height: 95%; }
         .mini-bar[data-val="10"] { height: 100%; }
 
-        .mini-traffic {
-            display: inline-flex; align-items: center; gap: 1.5px;
-            height: 18px; width: 40px; margin-left: 8px;
-        }
-        .mini-t-block { flex: 1; height: 60%; background-color: #e5e7eb; border-radius: 1px; }
-        [data-theme="dark"] .mini-t-block { background-color: #374151; }
-        .mini-t-block.active { background-color: var(--traffic-color); }
-
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
             padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px;
@@ -174,7 +173,22 @@
         .mobile-only { display: none; }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .controls h2 { margin: 0; }
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
+
+        /* --- Radio Filter Buttons --- */
+        .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .filter-btn {
+            padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color);
+            background: var(--card-bg); color: var(--text-main); cursor: pointer;
+            font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;
+        }
+        .filter-btn:hover { background: #e5e7eb; }
+        [data-theme="dark"] .filter-btn:hover { background: #374151; }
+        .filter-btn.active {
+            background: var(--primary) !important; color: white !important; 
+            border-color: var(--primary) !important;
+        }
 
         .table-container { 
             max-height: 65vh; overflow-y: auto; overflow-x: hidden;
@@ -187,7 +201,6 @@
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
-        /* Desktop Widths - Updated for new order */
         th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
         th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
         th:nth-child(3), td:nth-child(3) { width: 70px; }  /* Mode */
@@ -205,7 +218,6 @@
         th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; position: absolute; right: 5px; }
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
-
         tr:hover { background-color: var(--table-hover); }
 
         .badge { 
@@ -239,47 +251,27 @@
             thead { display: none; } 
 
             tr {
-                margin-bottom: 15px;
-                background: var(--card-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                padding: 10px 15px;
+                margin-bottom: 15px; background: var(--card-bg); border: 1px solid var(--border-color);
+                border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 15px;
             }
 
             td {
-                display: grid !important;
-                grid-template-columns: 105px 1fr;
-                gap: 10px;
-                align-items: center; 
-                text-align: left !important;
-                border-bottom: 1px solid var(--border-color);
-                padding: 10px 0;
-                
-                white-space: normal !important; 
-                overflow: visible !important;
-                word-wrap: break-word;
+                display: grid !important; grid-template-columns: 105px 1fr; gap: 10px;
+                align-items: center; text-align: left !important;
+                border-bottom: 1px solid var(--border-color); padding: 10px 0;
+                white-space: normal !important; overflow: visible !important; word-wrap: break-word;
             }
 
             td::before {
-                content: attr(data-label);
-                font-weight: bold;
-                color: var(--text-sub);
-                text-transform: uppercase;
-                font-size: 0.8em;
-                text-align: left;
+                content: attr(data-label); font-weight: bold; color: var(--text-sub);
+                text-transform: uppercase; font-size: 0.8em; text-align: left;
             }
 
             td:nth-child(8), td:nth-child(9) { text-align: left; } 
-
-            /* Updated child targeting for wrap handling (Station is now 4th) */
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
 
-            td:last-child { 
-                display: flex !important; border-bottom: none; 
-                justify-content: center; padding-top: 15px; 
-            }
+            td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
             
             .action-btns { width: 100%; display: flex; justify-content: stretch; gap: 10px; flex-wrap: wrap; }
@@ -297,78 +289,93 @@
     </header>
 
     <div id="formCard" class="input-card">
-        <input type="hidden" id="editId">
-        <div class="form-group">
-            <label>Frequency (MHz)</label>
-            <input type="text" id="freqInput" placeholder="e.g. 14.250" inputmode="decimal">
+        <div class="card-header" onclick="toggleForm()">
+            <h2>📝 Log Entry</h2>
+            <span id="formToggleIcon">▼ (Hide)</span>
         </div>
-        <div class="form-group">
-            <label>Radio</label>
-            <select id="radioInput">
-                <option value="Malahit DSP2" selected>Malahit DSP2</option>
-                <option value="Realistic Pro 2006">Realistic Pro 2006</option>
-                <option value="Baofeng DM1701">Baofeng DM1701</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Antenna</label>
-            <select id="antennaInput">
-                <option value="GA800" selected>GA800</option>
-                <option value="Whip">Whip</option>
-                <option value="X30N">X30N</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Mode</label>
-            <select id="modeInput">
-                <option value="AM">AM</option><option value="FM">FM</option>
-                <option value="USB">USB</option><option value="LSB">LSB</option>
-                <option value="CW">CW</option><option value="FT8">FT8</option>
-                <option value="DMR">DMR</option><option value="Other">Other</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Station / Callsign</label>
-            <input type="text" id="stationInput" placeholder="Who are they?">
-        </div>
-        <div class="form-group">
-            <label>Signal (S-Meter)</label>
-            <div class="s-meter-container">
-                <div class="s-meter-bar" data-val="1" onclick="setSMeter(1)"></div>
-                <div class="s-meter-bar" data-val="2" onclick="setSMeter(2)"></div>
-                <div class="s-meter-bar" data-val="3" onclick="setSMeter(3)"></div>
-                <div class="s-meter-bar" data-val="4" onclick="setSMeter(4)"></div>
-                <div class="s-meter-bar" data-val="5" onclick="setSMeter(5)"></div>
-                <div class="s-meter-bar" data-val="6" onclick="setSMeter(6)"></div>
-                <div class="s-meter-bar" data-val="7" onclick="setSMeter(7)"></div>
-                <div class="s-meter-bar" data-val="8" onclick="setSMeter(8)"></div>
-                <div class="s-meter-bar" data-val="9" onclick="setSMeter(9)"></div>
-                <div class="s-meter-bar" data-val="10" onclick="setSMeter(10)"></div>
+        
+        <div id="formBody" class="form-body">
+            <input type="hidden" id="editId">
+            <div class="form-group">
+                <label>Frequency (MHz)</label>
+                <input type="text" id="freqInput" placeholder="e.g. 14.250" inputmode="decimal">
             </div>
-            <input type="hidden" id="signalInput" value="5">
-        </div>
-        <div class="form-group">
-            <label>Traffic (1-10)</label>
-            <div class="traffic-container">
-                <div class="traffic-block" data-val="1" onclick="setTraffic(1)"></div>
-                <div class="traffic-block" data-val="2" onclick="setTraffic(2)"></div>
-                <div class="traffic-block" data-val="3" onclick="setTraffic(3)"></div>
-                <div class="traffic-block" data-val="4" onclick="setTraffic(4)"></div>
-                <div class="traffic-block" data-val="5" onclick="setTraffic(5)"></div>
-                <div class="traffic-block" data-val="6" onclick="setTraffic(6)"></div>
-                <div class="traffic-block" data-val="7" onclick="setTraffic(7)"></div>
-                <div class="traffic-block" data-val="8" onclick="setTraffic(8)"></div>
-                <div class="traffic-block" data-val="9" onclick="setTraffic(9)"></div>
-                <div class="traffic-block" data-val="10" onclick="setTraffic(10)"></div>
+            <div class="form-group">
+                <label>Radio</label>
+                <select id="radioInput">
+                    <option value="Malahit DSP2" selected>Malahit DSP2</option>
+                    <option value="Realistic Pro 2006">Realistic Pro 2006</option>
+                    <option value="Baofeng DM1701">Baofeng DM1701</option>
+                </select>
             </div>
-            <input type="hidden" id="trafficInput" value="1">
+            <div class="form-group">
+                <label>Antenna</label>
+                <select id="antennaInput">
+                    <option value="GA800" selected>GA800</option>
+                    <option value="Whip">Whip</option>
+                    <option value="X30N">X30N</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mode</label>
+                <select id="modeInput">
+                    <option value="AM">AM</option><option value="FM">FM</option>
+                    <option value="USB">USB</option><option value="LSB">LSB</option>
+                    <option value="CW">CW</option><option value="FT8">FT8</option>
+                    <option value="DMR">DMR</option><option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Station / Callsign</label>
+                <input type="text" id="stationInput" placeholder="Who are they?">
+            </div>
+            <div class="form-group">
+                <label>Signal (S-Meter)</label>
+                <div class="s-meter-container">
+                    <div class="s-meter-bar" data-val="1" onclick="setSMeter(1)"></div>
+                    <div class="s-meter-bar" data-val="2" onclick="setSMeter(2)"></div>
+                    <div class="s-meter-bar" data-val="3" onclick="setSMeter(3)"></div>
+                    <div class="s-meter-bar" data-val="4" onclick="setSMeter(4)"></div>
+                    <div class="s-meter-bar" data-val="5" onclick="setSMeter(5)"></div>
+                    <div class="s-meter-bar" data-val="6" onclick="setSMeter(6)"></div>
+                    <div class="s-meter-bar" data-val="7" onclick="setSMeter(7)"></div>
+                    <div class="s-meter-bar" data-val="8" onclick="setSMeter(8)"></div>
+                    <div class="s-meter-bar" data-val="9" onclick="setSMeter(9)"></div>
+                    <div class="s-meter-bar" data-val="10" onclick="setSMeter(10)"></div>
+                </div>
+                <input type="hidden" id="signalInput" value="5">
+            </div>
+            <div class="form-group">
+                <label>Traffic (1-10)</label>
+                <div class="traffic-container">
+                    <div class="traffic-block" data-val="1" onclick="setTraffic(1)"></div>
+                    <div class="traffic-block" data-val="2" onclick="setTraffic(2)"></div>
+                    <div class="traffic-block" data-val="3" onclick="setTraffic(3)"></div>
+                    <div class="traffic-block" data-val="4" onclick="setTraffic(4)"></div>
+                    <div class="traffic-block" data-val="5" onclick="setTraffic(5)"></div>
+                    <div class="traffic-block" data-val="6" onclick="setTraffic(6)"></div>
+                    <div class="traffic-block" data-val="7" onclick="setTraffic(7)"></div>
+                    <div class="traffic-block" data-val="8" onclick="setTraffic(8)"></div>
+                    <div class="traffic-block" data-val="9" onclick="setTraffic(9)"></div>
+                    <div class="traffic-block" data-val="10" onclick="setTraffic(10)"></div>
+                </div>
+                <input type="hidden" id="trafficInput" value="1">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Additional Notes</label>
+                <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
+            </div>
+            <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
         </div>
-        <div class="form-group" style="grid-column: 1 / -1;">
-            <label>Additional Notes</label>
-            <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
-        </div>
-        <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
     </div>
+
+    <div class="controls">
+        <h2>Your Logs</h2>
+        <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
+    </div>
+
+    <div class="radio-filters" id="radioFilterContainer">
+        </div>
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
@@ -377,13 +384,7 @@
             <option value="freq">Sort: Frequency</option>
             <option value="signal">Sort: Best Signal</option>
             <option value="traffic">Sort: Busiest Traffic</option>
-            <option value="radio">Sort: Radio</option>
         </select>
-    </div>
-
-    <div class="controls">
-        <h2>Your Logs</h2>
-        <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
     </div>
 
     <div class="table-container">
@@ -432,6 +433,7 @@
         // ==========================================
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
+        let activeRadioFilter = 'All'; // Filter state
 
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
@@ -442,17 +444,59 @@
                 if (!log.signal && log.notes) {
                     let parsedNote = parseInt(log.notes);
                     if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && log.notes.length <= 2) {
-                        log.signal = log.notes;
-                        log.notes = "";
+                        log.signal = log.notes; log.notes = "";
                     }
                 }
                 if (!log.traffic) { log.traffic = ""; }
 
                 cloudLogs.push(log);
             });
+            renderFilters();
             renderTable(); 
         });
 
+        // Form Collapse Logic
+        let isFormCollapsed = false;
+        function toggleForm() {
+            isFormCollapsed = !isFormCollapsed;
+            const body = document.getElementById('formBody');
+            const icon = document.getElementById('formToggleIcon');
+            if(isFormCollapsed) {
+                body.classList.add('collapsed');
+                icon.innerText = "◀ (Show)";
+            } else {
+                body.classList.remove('collapsed');
+                icon.innerText = "▼ (Hide)";
+            }
+        }
+        function expandForm() {
+            if(isFormCollapsed) toggleForm(); // Force open if closed
+        }
+
+        // Generate Filter Buttons Dynamically
+        function renderFilters() {
+            const container = document.getElementById('radioFilterContainer');
+            const baseRadios = ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"];
+            const loggedRadios = cloudLogs.map(l => l.radio).filter(Boolean);
+            
+            // Combines default radios and user-added ones, removes duplicates
+            const uniqueRadios = ['All', ...new Set([...baseRadios, ...loggedRadios])];
+            
+            container.innerHTML = '';
+            uniqueRadios.forEach(radio => {
+                const btn = document.createElement('button');
+                btn.className = `filter-btn ${activeRadioFilter === radio ? 'active' : ''}`;
+                btn.innerText = radio;
+                btn.onclick = () => {
+                    activeRadioFilter = radio;
+                    renderFilters(); // updates color
+                    renderTable();   // filters table
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // S-Meter & Traffic Handlers
         function setSMeter(val) {
             document.getElementById('signalInput').value = val;
             const bars = document.querySelectorAll('.s-meter-bar');
@@ -471,9 +515,7 @@
             const blocks = document.querySelectorAll('.traffic-block');
             blocks.forEach((block, index) => {
                 block.classList.remove('active');
-                if (index < val) {
-                    block.classList.add('active');
-                }
+                if (index < val) block.classList.add('active');
             });
         }
 
@@ -594,6 +636,8 @@
             const log = cloudLogs.find(l => l.id === id);
             if (!log) return;
 
+            expandForm(); // Pops the form open automatically if you hid it!
+
             document.getElementById('editId').value = log.id;
             document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
             document.getElementById('radioInput').value = log.radio || "Malahit DSP2";
@@ -681,6 +725,9 @@
 
             let count = 0;
             displayLogs.forEach(log => {
+                // Radio Filter Check
+                if (activeRadioFilter !== 'All' && log.radio !== activeRadioFilter) return;
+
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
                 
@@ -699,7 +746,6 @@
                 const row = document.createElement('tr');
                 const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
                 
-                // Fields are now generated in the new order!
                 row.innerHTML = `
                     <td data-label="UTC Time">${formattedDate}</td>
                     <td data-label="Freq (MHz)"><strong>${freqDisplay}</strong></td>
