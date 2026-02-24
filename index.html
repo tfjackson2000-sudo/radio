@@ -91,6 +91,7 @@
             width: 100%;
         }
 
+        /* --- Input Form S-Meter --- */
         .s-meter-container {
             display: flex; align-items: flex-end; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
@@ -118,6 +119,30 @@
         .s-meter-bar[data-val="8"] { height: 85%; }
         .s-meter-bar[data-val="9"] { height: 95%; }
         .s-meter-bar[data-val="10"] { height: 100%; }
+
+        /* --- Mini S-Meter for the Table --- */
+        .mini-meter {
+            display: inline-flex; align-items: flex-end; gap: 1.5px;
+            height: 18px; width: 40px; margin-left: 8px;
+        }
+        .mini-bar {
+            flex: 1; background-color: #e5e7eb; border-radius: 1px 1px 0 0;
+        }
+        [data-theme="dark"] .mini-bar { background-color: #374151; }
+        .mini-bar.active-green { background-color: #10b981; }
+        .mini-bar.active-yellow { background-color: #f59e0b; }
+        .mini-bar.active-red { background-color: #ef4444; }
+
+        .mini-bar[data-val="1"] { height: 20%; }
+        .mini-bar[data-val="2"] { height: 25%; }
+        .mini-bar[data-val="3"] { height: 35%; }
+        .mini-bar[data-val="4"] { height: 45%; }
+        .mini-bar[data-val="5"] { height: 55%; }
+        .mini-bar[data-val="6"] { height: 65%; }
+        .mini-bar[data-val="7"] { height: 75%; }
+        .mini-bar[data-val="8"] { height: 85%; }
+        .mini-bar[data-val="9"] { height: 95%; }
+        .mini-bar[data-val="10"] { height: 100%; }
 
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
@@ -152,8 +177,8 @@
         th:nth-child(6), td:nth-child(6) { width: 70px; }
         th:nth-child(7), td:nth-child(7),
         th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
-        th:nth-child(8) { width: 60px; text-align: center; } 
-        td:nth-child(8) { font-weight: bold; text-align: center; }
+        th:nth-child(8) { width: 95px; text-align: left; } /* Widened for mini-graph */
+        td:nth-child(8) { font-weight: bold; text-align: left; }
         th:nth-child(10), td:nth-child(10) { width: 140px; text-align: center; } 
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 10; }
@@ -164,7 +189,6 @@
 
         tr:hover { background-color: var(--table-hover); }
 
-        /* BADGE FIX */
         .badge { 
             padding: 3px 8px; 
             border-radius: 15px; 
@@ -172,8 +196,8 @@
             color: white; 
             font-weight: bold; 
             display: inline-block;
-            width: fit-content;       /* Prevents stretching */
-            justify-self: start;      /* Keeps it left-aligned in grid */
+            width: fit-content;       
+            justify-self: start;      
         }
         .badge-sw { background-color: var(--sw-color); }
         .badge-vhf { background-color: var(--vhf-color); }
@@ -190,7 +214,7 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (Fully width-corrected Grid)      */
+        /* MOBILE CARD LAYOUT                                   */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
@@ -198,7 +222,6 @@
 
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
             
-            /* FORCE FULL WIDTH TO BREAK THE DESKTOP CONSTRAINTS */
             table, tbody, tr, th, td { display: block; width: 100% !important; box-sizing: border-box; }
             thead { display: none; } 
 
@@ -220,7 +243,6 @@
                 border-bottom: 1px solid var(--border-color);
                 padding: 10px 0;
                 
-                /* Allow natural flow over 100% of screen */
                 white-space: normal !important; 
                 overflow: visible !important;
                 word-wrap: break-word;
@@ -237,7 +259,6 @@
 
             td:nth-child(8) { text-align: left; } 
 
-            /* Notes drop onto their own lines to keep cards clean */
             td.notes-cell { 
                 grid-template-columns: 1fr; 
                 gap: 4px;
@@ -416,6 +437,24 @@
             });
         }
 
+        // GENERATES THE MINI S-METER FOR THE TABLE
+        function generateMiniMeter(val) {
+            let num = parseInt(val);
+            if (isNaN(num) || num < 1) return "";
+            let html = '<div class="mini-meter">';
+            for (let i = 1; i <= 10; i++) {
+                let colorClass = "";
+                if (i <= num) {
+                    if (i < 5) colorClass = "active-green";
+                    else if (i < 8) colorClass = "active-yellow";
+                    else colorClass = "active-red";
+                }
+                html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             setSMeter(5);
         });
@@ -583,7 +622,12 @@
             displayLogs.forEach(log => {
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
-                const displaySignal = log.signal ? "S-" + log.signal : "";
+                
+                // INJECTS THE MINI METER NEXT TO THE TEXT
+                let displaySignal = "";
+                if (log.signal) {
+                    displaySignal = `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>`;
+                }
 
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
