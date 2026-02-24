@@ -199,6 +199,9 @@
         .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
         .filter-btn.active .filter-count { opacity: 0.9; }
 
+        /* Mobile Mode Pill (Hidden on Desktop) */
+        .mobile-mode { display: none; }
+
         .table-container { 
             max-height: 65vh; overflow-y: auto; overflow-x: hidden;
             background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
@@ -280,6 +283,15 @@
             td:nth-child(8), td:nth-child(9) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
+
+            /* --- THE FREQ + MODE MERGE MAGIC --- */
+            td.desktop-mode { display: none !important; } /* Hide standalone mode row */
+            .mobile-mode {
+                display: inline-block; margin-left: 8px; padding: 2px 6px; 
+                background: #e5e7eb; color: var(--text-sub); border-radius: 4px; 
+                font-size: 0.8em; font-weight: bold;
+            }
+            [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
 
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
@@ -468,7 +480,6 @@
             renderTable(); 
         });
 
-        // Form Collapse Logic
         let isFormCollapsed = false;
         function toggleForm() {
             isFormCollapsed = !isFormCollapsed;
@@ -486,7 +497,6 @@
             if(isFormCollapsed) toggleForm(); 
         }
 
-        // Generate Filter Buttons with COUNTS
         function renderFilters() {
             const container = document.getElementById('radioFilterContainer');
             const baseRadios = ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"];
@@ -496,7 +506,6 @@
             
             container.innerHTML = '';
             
-            // Create "All" Button
             const allBtn = document.createElement('button');
             allBtn.className = `filter-btn ${activeRadioFilter === 'All' ? 'active' : ''}`;
             allBtn.innerHTML = `All <span class="filter-count">(${cloudLogs.length})</span>`;
@@ -507,7 +516,6 @@
             };
             container.appendChild(allBtn);
 
-            // Create individual radio buttons
             uniqueRadios.forEach(radio => {
                 const count = cloudLogs.filter(l => l.radio === radio).length;
                 const btn = document.createElement('button');
@@ -770,10 +778,14 @@
                 const row = document.createElement('tr');
                 const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
                 
+                // --- INJECTS MODE PILL DIRECTLY NEXT TO FREQUENCY ON MOBILE ---
                 row.innerHTML = `
                     <td data-label="UTC Time">${formattedDate}</td>
-                    <td data-label="Freq (MHz)"><strong>${freqDisplay}</strong></td>
-                    <td data-label="Mode">${log.mode || ""}</td>
+                    <td data-label="Freq (MHz)">
+                        <strong>${freqDisplay}</strong>
+                        ${log.mode ? `<span class="mobile-mode">${log.mode}</span>` : ""}
+                    </td>
+                    <td data-label="Mode" class="desktop-mode">${log.mode || ""}</td>
                     <td data-label="Station">${log.station || ""}</td>
                     <td data-label="Band"><span class="badge ${badgeClass}">${log.type || ""}</span></td>
                     <td data-label="Radio">${log.radio || ""}</td>
