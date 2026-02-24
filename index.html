@@ -13,7 +13,7 @@
             --bg-color: #f4f4f9;
             --card-bg: #ffffff;
             --primary: #2563eb;
-            --traffic-color: #3b82f6; /* Blue for traffic */
+            --traffic-color: #3b82f6; 
             --edit-color: #7c3aed;
             --dup-color: #059669; 
             --sw-color: #10b981;
@@ -50,7 +50,6 @@
             overflow-x: hidden; 
         }
 
-        /* Cleaned up header */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h1 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
 
@@ -93,7 +92,7 @@
             width: 100%;
         }
 
-        /* --- S-Meter (Equalizer style) --- */
+        /* --- S-Meter --- */
         .s-meter-container {
             display: flex; align-items: flex-end; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
@@ -120,7 +119,7 @@
         .s-meter-bar[data-val="9"] { height: 95%; }
         .s-meter-bar[data-val="10"] { height: 100%; }
 
-        /* --- Traffic Level (Block style) --- */
+        /* --- Traffic Level --- */
         .traffic-container {
             display: flex; align-items: center; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
@@ -134,7 +133,7 @@
         .traffic-block:hover { opacity: 0.8; }
         .traffic-block.active { background-color: var(--traffic-color); }
 
-        /* --- Mini Graphics for Table --- */
+        /* --- Mini Graphics --- */
         .mini-meter {
             display: inline-flex; align-items: flex-end; gap: 1.5px;
             height: 18px; width: 40px; margin-left: 8px;
@@ -164,7 +163,6 @@
         [data-theme="dark"] .mini-t-block { background-color: #374151; }
         .mini-t-block.active { background-color: var(--traffic-color); }
 
-
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
             padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px;
@@ -189,15 +187,15 @@
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
-        /* Desktop Widths updated for new Traffic column */
-        th:nth-child(1), td:nth-child(1) { width: 140px; }
-        th:nth-child(2), td:nth-child(2) { width: 80px; }
-        th:nth-child(3), td:nth-child(3) { width: 90px; }
-        th:nth-child(4), td:nth-child(4) { width: 130px; }
-        th:nth-child(5), td:nth-child(5) { width: 80px; }
-        th:nth-child(6), td:nth-child(6) { width: 60px; }
-        th:nth-child(7), td:nth-child(7),
+        /* Desktop Widths - Updated for new order */
+        th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
+        th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
+        th:nth-child(3), td:nth-child(3) { width: 70px; }  /* Mode */
+        th:nth-child(4), td:nth-child(4),
         th:nth-child(10), td:nth-child(10) { width: auto; white-space: normal; word-wrap: break-word; } /* Station & Notes */
+        th:nth-child(5), td:nth-child(5) { width: 90px; }  /* Band */
+        th:nth-child(6), td:nth-child(6) { width: 130px; } /* Radio */
+        th:nth-child(7), td:nth-child(7) { width: 80px; }  /* Antenna */
         th:nth-child(8), th:nth-child(9) { width: 95px; text-align: left; } /* Signal & Traffic */
         td:nth-child(8), td:nth-child(9) { font-weight: bold; text-align: left; }
         th:nth-child(11), td:nth-child(11) { width: 135px; text-align: center; } /* Actions */
@@ -274,7 +272,8 @@
 
             td:nth-child(8), td:nth-child(9) { text-align: left; } 
 
-            td:nth-child(7), td.notes-cell { align-items: start; }
+            /* Updated child targeting for wrap handling (Station is now 4th) */
+            td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
 
             td:last-child { 
@@ -393,11 +392,11 @@
                 <tr>
                     <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
                     <th onclick="sortTable('freq', this)">Freq (MHz)</th>
+                    <th onclick="sortTable('mode', this)">Mode</th>
+                    <th onclick="sortTable('station', this)">Station</th>
                     <th onclick="sortTable('type', this)">Band</th>
                     <th onclick="sortTable('radio', this)">Radio</th>
                     <th onclick="sortTable('antenna', this)">Antenna</th>
-                    <th onclick="sortTable('mode', this)">Mode</th>
-                    <th onclick="sortTable('station', this)">Station</th>
                     <th onclick="sortTable('signal', this)">Sig</th>
                     <th onclick="sortTable('traffic', this)">Traf</th>
                     <th onclick="sortTable('notes', this)">Notes</th>
@@ -440,7 +439,6 @@
                 let log = childSnapshot.val();
                 log.id = childSnapshot.key; 
                 
-                // Legacy support for older logs
                 if (!log.signal && log.notes) {
                     let parsedNote = parseInt(log.notes);
                     if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && log.notes.length <= 2) {
@@ -448,17 +446,13 @@
                         log.notes = "";
                     }
                 }
-                // Default traffic if old log doesn't have it
-                if (!log.traffic) {
-                    log.traffic = ""; 
-                }
+                if (!log.traffic) { log.traffic = ""; }
 
                 cloudLogs.push(log);
             });
             renderTable(); 
         });
 
-        // UI Handlers for S-Meter and Traffic
         function setSMeter(val) {
             document.getElementById('signalInput').value = val;
             const bars = document.querySelectorAll('.s-meter-bar');
@@ -483,7 +477,6 @@
             });
         }
 
-        // Generators for the mini-graphs in the table
         function generateMiniMeter(val) {
             let num = parseInt(val);
             if (isNaN(num) || num < 1) return "";
@@ -691,7 +684,6 @@
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
                 
-                // Inject the mini graphs
                 let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
                 let displayTraffic = log.traffic ? `<div style="display:flex; align-items:center;">T-${log.traffic} ${generateMiniTraffic(log.traffic)}</div>` : "";
 
@@ -707,14 +699,15 @@
                 const row = document.createElement('tr');
                 const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
                 
+                // Fields are now generated in the new order!
                 row.innerHTML = `
                     <td data-label="UTC Time">${formattedDate}</td>
                     <td data-label="Freq (MHz)"><strong>${freqDisplay}</strong></td>
+                    <td data-label="Mode">${log.mode || ""}</td>
+                    <td data-label="Station">${log.station || ""}</td>
                     <td data-label="Band"><span class="badge ${badgeClass}">${log.type || ""}</span></td>
                     <td data-label="Radio">${log.radio || ""}</td>
                     <td data-label="Antenna">${log.antenna || ""}</td>
-                    <td data-label="Mode">${log.mode || ""}</td>
-                    <td data-label="Station">${log.station || ""}</td>
                     <td data-label="Signal">${displaySignal}</td>
                     <td data-label="Traffic">${displayTraffic}</td>
                     <td data-label="Notes" class="notes-cell">${log.notes || ""}</td>
