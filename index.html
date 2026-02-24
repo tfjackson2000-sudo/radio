@@ -174,7 +174,17 @@
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .controls h2 { margin: 0; }
+        
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
+
+        /* Danger Zone for Clear Data button */
+        .danger-zone {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+        }
 
         /* --- Radio Filter Buttons --- */
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
@@ -201,6 +211,7 @@
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
+        /* Desktop Widths */
         th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
         th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
         th:nth-child(3), td:nth-child(3) { width: 70px; }  /* Mode */
@@ -371,7 +382,6 @@
 
     <div class="controls">
         <h2>Your Logs</h2>
-        <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
     </div>
 
     <div class="radio-filters" id="radioFilterContainer">
@@ -410,6 +420,10 @@
 
     <div class="footer-stats" id="logCounter">Total Logs: 0</div>
 
+    <div class="danger-zone">
+        <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
+    </div>
+
     <script>
         // ==========================================
         // 1. FIREBASE CONFIGURATION
@@ -433,7 +447,7 @@
         // ==========================================
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
-        let activeRadioFilter = 'All'; // Filter state
+        let activeRadioFilter = 'All'; 
 
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
@@ -470,7 +484,7 @@
             }
         }
         function expandForm() {
-            if(isFormCollapsed) toggleForm(); // Force open if closed
+            if(isFormCollapsed) toggleForm(); 
         }
 
         // Generate Filter Buttons Dynamically
@@ -479,7 +493,6 @@
             const baseRadios = ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"];
             const loggedRadios = cloudLogs.map(l => l.radio).filter(Boolean);
             
-            // Combines default radios and user-added ones, removes duplicates
             const uniqueRadios = ['All', ...new Set([...baseRadios, ...loggedRadios])];
             
             container.innerHTML = '';
@@ -489,8 +502,8 @@
                 btn.innerText = radio;
                 btn.onclick = () => {
                     activeRadioFilter = radio;
-                    renderFilters(); // updates color
-                    renderTable();   // filters table
+                    renderFilters(); 
+                    renderTable();   
                 };
                 container.appendChild(btn);
             });
@@ -636,7 +649,7 @@
             const log = cloudLogs.find(l => l.id === id);
             if (!log) return;
 
-            expandForm(); // Pops the form open automatically if you hid it!
+            expandForm(); 
 
             document.getElementById('editId').value = log.id;
             document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
@@ -725,7 +738,6 @@
 
             let count = 0;
             displayLogs.forEach(log => {
-                // Radio Filter Check
                 if (activeRadioFilter !== 'All' && log.radio !== activeRadioFilter) return;
 
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
