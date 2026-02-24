@@ -13,6 +13,7 @@
             --bg-color: #f4f4f9;
             --card-bg: #ffffff;
             --primary: #2563eb;
+            --traffic-color: #3b82f6; /* Blue for traffic */
             --edit-color: #7c3aed;
             --dup-color: #059669; 
             --sw-color: #10b981;
@@ -27,6 +28,7 @@
             --bg-color: #111827;
             --card-bg: #1f2937;
             --primary: #3b82f6;
+            --traffic-color: #60a5fa;
             --edit-color: #a78bfa;
             --dup-color: #34d399;
             --text-main: #f3f4f6;
@@ -48,9 +50,9 @@
             overflow-x: hidden; 
         }
 
+        /* Cleaned up header */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h1 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        .cloud-status { font-size: 0.5em; background: #10b981; color: white; padding: 3px 8px; border-radius: 12px; }
 
         .theme-toggle {
             background: var(--card-bg);
@@ -91,18 +93,16 @@
             width: 100%;
         }
 
-        /* --- Input Form S-Meter --- */
+        /* --- S-Meter (Equalizer style) --- */
         .s-meter-container {
             display: flex; align-items: flex-end; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 8px; width: 100%;
         }
-        
         .s-meter-bar {
             flex: 1; background-color: #e5e7eb; border-radius: 2px 2px 0 0;
             cursor: pointer; transition: background-color 0.1s;
         }
-        
         [data-theme="dark"] .s-meter-bar { background-color: #374151; }
         .s-meter-bar:hover { opacity: 0.8; }
         .s-meter-bar.active-green { background-color: #10b981; }
@@ -120,14 +120,26 @@
         .s-meter-bar[data-val="9"] { height: 95%; }
         .s-meter-bar[data-val="10"] { height: 100%; }
 
-        /* --- Mini S-Meter for the Table --- */
+        /* --- Traffic Level (Block style) --- */
+        .traffic-container {
+            display: flex; align-items: center; gap: 3px; height: 44px; padding: 5px;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; width: 100%;
+        }
+        .traffic-block {
+            flex: 1; height: 100%; background-color: #e5e7eb; border-radius: 3px;
+            cursor: pointer; transition: background-color 0.1s;
+        }
+        [data-theme="dark"] .traffic-block { background-color: #374151; }
+        .traffic-block:hover { opacity: 0.8; }
+        .traffic-block.active { background-color: var(--traffic-color); }
+
+        /* --- Mini Graphics for Table --- */
         .mini-meter {
             display: inline-flex; align-items: flex-end; gap: 1.5px;
             height: 18px; width: 40px; margin-left: 8px;
         }
-        .mini-bar {
-            flex: 1; background-color: #e5e7eb; border-radius: 1px 1px 0 0;
-        }
+        .mini-bar { flex: 1; background-color: #e5e7eb; border-radius: 1px 1px 0 0; }
         [data-theme="dark"] .mini-bar { background-color: #374151; }
         .mini-bar.active-green { background-color: #10b981; }
         .mini-bar.active-yellow { background-color: #f59e0b; }
@@ -143,6 +155,15 @@
         .mini-bar[data-val="8"] { height: 85%; }
         .mini-bar[data-val="9"] { height: 95%; }
         .mini-bar[data-val="10"] { height: 100%; }
+
+        .mini-traffic {
+            display: inline-flex; align-items: center; gap: 1.5px;
+            height: 18px; width: 40px; margin-left: 8px;
+        }
+        .mini-t-block { flex: 1; height: 60%; background-color: #e5e7eb; border-radius: 1px; }
+        [data-theme="dark"] .mini-t-block { background-color: #374151; }
+        .mini-t-block.active { background-color: var(--traffic-color); }
+
 
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
@@ -168,18 +189,18 @@
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
-        /* Desktop Widths */
+        /* Desktop Widths updated for new Traffic column */
         th:nth-child(1), td:nth-child(1) { width: 140px; }
-        th:nth-child(2), td:nth-child(2) { width: 90px; }
+        th:nth-child(2), td:nth-child(2) { width: 80px; }
         th:nth-child(3), td:nth-child(3) { width: 90px; }
         th:nth-child(4), td:nth-child(4) { width: 130px; }
         th:nth-child(5), td:nth-child(5) { width: 80px; }
-        th:nth-child(6), td:nth-child(6) { width: 70px; }
+        th:nth-child(6), td:nth-child(6) { width: 60px; }
         th:nth-child(7), td:nth-child(7),
-        th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
-        th:nth-child(8) { width: 95px; text-align: left; } /* Widened for mini-graph */
-        td:nth-child(8) { font-weight: bold; text-align: left; }
-        th:nth-child(10), td:nth-child(10) { width: 140px; text-align: center; } 
+        th:nth-child(10), td:nth-child(10) { width: auto; white-space: normal; word-wrap: break-word; } /* Station & Notes */
+        th:nth-child(8), th:nth-child(9) { width: 95px; text-align: left; } /* Signal & Traffic */
+        td:nth-child(8), td:nth-child(9) { font-weight: bold; text-align: left; }
+        th:nth-child(11), td:nth-child(11) { width: 135px; text-align: center; } /* Actions */
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 10; }
         th:hover { background-color: #1d4ed8; }
@@ -190,14 +211,8 @@
         tr:hover { background-color: var(--table-hover); }
 
         .badge { 
-            padding: 3px 8px; 
-            border-radius: 15px; 
-            font-size: 0.75em; 
-            color: white; 
-            font-weight: bold; 
-            display: inline-block;
-            width: fit-content;       
-            justify-self: start;      
+            padding: 3px 8px; border-radius: 15px; font-size: 0.75em; color: white; 
+            font-weight: bold; display: inline-block; width: fit-content; justify-self: start;      
         }
         .badge-sw { background-color: var(--sw-color); }
         .badge-vhf { background-color: var(--vhf-color); }
@@ -257,19 +272,14 @@
                 text-align: left;
             }
 
-            td:nth-child(8) { text-align: left; } 
+            td:nth-child(8), td:nth-child(9) { text-align: left; } 
 
-            td.notes-cell { 
-                grid-template-columns: 1fr; 
-                gap: 4px;
-                align-items: start;
-            }
+            td:nth-child(7), td.notes-cell { align-items: start; }
+            td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
 
             td:last-child { 
-                display: flex !important;
-                border-bottom: none; 
-                justify-content: center; 
-                padding-top: 15px; 
+                display: flex !important; border-bottom: none; 
+                justify-content: center; padding-top: 15px; 
             }
             td:last-child::before { display: none; }
             
@@ -283,7 +293,7 @@
     <button onclick="topFunction()" id="scrollTopBtn" title="Go to top">↑</button>
 
     <header>
-        <h1>📡 Radio Logger <span class="cloud-status">Cloud Synced</span></h1>
+        <h1>📡 Radio Logger</h1>
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
     </header>
 
@@ -338,6 +348,22 @@
             </div>
             <input type="hidden" id="signalInput" value="5">
         </div>
+        <div class="form-group">
+            <label>Traffic (1-10)</label>
+            <div class="traffic-container">
+                <div class="traffic-block" data-val="1" onclick="setTraffic(1)"></div>
+                <div class="traffic-block" data-val="2" onclick="setTraffic(2)"></div>
+                <div class="traffic-block" data-val="3" onclick="setTraffic(3)"></div>
+                <div class="traffic-block" data-val="4" onclick="setTraffic(4)"></div>
+                <div class="traffic-block" data-val="5" onclick="setTraffic(5)"></div>
+                <div class="traffic-block" data-val="6" onclick="setTraffic(6)"></div>
+                <div class="traffic-block" data-val="7" onclick="setTraffic(7)"></div>
+                <div class="traffic-block" data-val="8" onclick="setTraffic(8)"></div>
+                <div class="traffic-block" data-val="9" onclick="setTraffic(9)"></div>
+                <div class="traffic-block" data-val="10" onclick="setTraffic(10)"></div>
+            </div>
+            <input type="hidden" id="trafficInput" value="1">
+        </div>
         <div class="form-group" style="grid-column: 1 / -1;">
             <label>Additional Notes</label>
             <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
@@ -351,6 +377,7 @@
             <option value="date">Sort: Newest First</option>
             <option value="freq">Sort: Frequency</option>
             <option value="signal">Sort: Best Signal</option>
+            <option value="traffic">Sort: Busiest Traffic</option>
             <option value="radio">Sort: Radio</option>
         </select>
     </div>
@@ -372,6 +399,7 @@
                     <th onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
                     <th onclick="sortTable('signal', this)">Sig</th>
+                    <th onclick="sortTable('traffic', this)">Traf</th>
                     <th onclick="sortTable('notes', this)">Notes</th>
                     <th>Actions</th>
                 </tr>
@@ -412,6 +440,7 @@
                 let log = childSnapshot.val();
                 log.id = childSnapshot.key; 
                 
+                // Legacy support for older logs
                 if (!log.signal && log.notes) {
                     let parsedNote = parseInt(log.notes);
                     if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && log.notes.length <= 2) {
@@ -419,11 +448,17 @@
                         log.notes = "";
                     }
                 }
+                // Default traffic if old log doesn't have it
+                if (!log.traffic) {
+                    log.traffic = ""; 
+                }
+
                 cloudLogs.push(log);
             });
             renderTable(); 
         });
 
+        // UI Handlers for S-Meter and Traffic
         function setSMeter(val) {
             document.getElementById('signalInput').value = val;
             const bars = document.querySelectorAll('.s-meter-bar');
@@ -437,7 +472,18 @@
             });
         }
 
-        // GENERATES THE MINI S-METER FOR THE TABLE
+        function setTraffic(val) {
+            document.getElementById('trafficInput').value = val;
+            const blocks = document.querySelectorAll('.traffic-block');
+            blocks.forEach((block, index) => {
+                block.classList.remove('active');
+                if (index < val) {
+                    block.classList.add('active');
+                }
+            });
+        }
+
+        // Generators for the mini-graphs in the table
         function generateMiniMeter(val) {
             let num = parseInt(val);
             if (isNaN(num) || num < 1) return "";
@@ -455,8 +501,21 @@
             return html;
         }
 
+        function generateMiniTraffic(val) {
+            let num = parseInt(val);
+            if (isNaN(num) || num < 1) return "";
+            let html = '<div class="mini-traffic">';
+            for (let i = 1; i <= 10; i++) {
+                let colorClass = (i <= num) ? "active" : "";
+                html += `<div class="mini-t-block ${colorClass}"></div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             setSMeter(5);
+            setTraffic(1);
         });
 
         function toggleTheme() {
@@ -498,7 +557,7 @@
 
         function handleMobileSort(key) {
             currentSort.key = key;
-            currentSort.desc = (key === 'date' || key === 'signal');
+            currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic');
             renderTable();
         }
 
@@ -510,6 +569,7 @@
             const mode = document.getElementById('modeInput').value;
             const station = document.getElementById('stationInput').value.replace(/,/g, ";");
             const signalVal = document.getElementById('signalInput').value;
+            const trafficVal = document.getElementById('trafficInput').value;
             const notesText = document.getElementById('notesInput').value;
 
             if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
@@ -522,6 +582,7 @@
                 mode: mode,
                 station: station,
                 signal: signalVal,
+                traffic: trafficVal,
                 notes: notesText
             };
 
@@ -552,6 +613,10 @@
             if (isNaN(parsedSignal) || parsedSignal < 1 || parsedSignal > 10) { parsedSignal = 5; }
             setSMeter(parsedSignal);
 
+            let parsedTraffic = parseInt(log.traffic);
+            if (isNaN(parsedTraffic) || parsedTraffic < 1 || parsedTraffic > 10) { parsedTraffic = 1; }
+            setTraffic(parsedTraffic);
+
             document.getElementById('submitBtn').innerText = "Save Changes";
             document.getElementById('submitBtn').classList.add('btn-save');
             document.getElementById('formCard').classList.add('editing-mode');
@@ -564,6 +629,7 @@
             document.getElementById('submitBtn').classList.remove('btn-save');
             document.getElementById('formCard').classList.remove('editing-mode');
             setSMeter(5);
+            setTraffic(1);
         }
 
         function duplicateLog(id) {
@@ -580,6 +646,7 @@
                     mode: logToCopy.mode || "AM",
                     station: logToCopy.station || "",
                     signal: logToCopy.signal || "5",
+                    traffic: logToCopy.traffic || "1",
                     notes: logToCopy.notes || "",
                     date: new Date().toISOString() 
                 };
@@ -594,6 +661,7 @@
             document.getElementById('radioInput').value = "Malahit DSP2";
             document.getElementById('antennaInput').value = "GA800";
             setSMeter(5); 
+            setTraffic(1);
         }
 
         function renderTable() {
@@ -607,7 +675,7 @@
                 let valA = a[currentSort.key] || "";
                 let valB = b[currentSort.key] || "";
                 
-                if (currentSort.key === 'signal' || currentSort.key === 'freq') {
+                if (currentSort.key === 'signal' || currentSort.key === 'traffic' || currentSort.key === 'freq') {
                     valA = parseFloat(valA) || 0;
                     valB = parseFloat(valB) || 0;
                     return currentSort.desc ? valB - valA : valA - valB;
@@ -623,11 +691,9 @@
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
                 
-                // INJECTS THE MINI METER NEXT TO THE TEXT
-                let displaySignal = "";
-                if (log.signal) {
-                    displaySignal = `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>`;
-                }
+                // Inject the mini graphs
+                let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
+                let displayTraffic = log.traffic ? `<div style="display:flex; align-items:center;">T-${log.traffic} ${generateMiniTraffic(log.traffic)}</div>` : "";
 
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
@@ -650,6 +716,7 @@
                     <td data-label="Mode">${log.mode || ""}</td>
                     <td data-label="Station">${log.station || ""}</td>
                     <td data-label="Signal">${displaySignal}</td>
+                    <td data-label="Traffic">${displayTraffic}</td>
                     <td data-label="Notes" class="notes-cell">${log.notes || ""}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
