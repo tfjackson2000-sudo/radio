@@ -177,18 +177,15 @@
         
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
-        /* Danger Zone for Clear Data button */
         .danger-zone {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px dashed var(--border-color);
-            display: flex;
-            justify-content: flex-end;
+            margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-color);
+            display: flex; justify-content: flex-end;
         }
 
-        /* --- Radio Filter Buttons --- */
+        /* --- Radio Filter Buttons with Counts --- */
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
         .filter-btn {
+            display: inline-flex; align-items: center; gap: 6px;
             padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color);
             background: var(--card-bg); color: var(--text-main); cursor: pointer;
             font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;
@@ -199,6 +196,8 @@
             background: var(--primary) !important; color: white !important; 
             border-color: var(--primary) !important;
         }
+        .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
+        .filter-btn.active .filter-count { opacity: 0.9; }
 
         .table-container { 
             max-height: 65vh; overflow-y: auto; overflow-x: hidden;
@@ -487,19 +486,33 @@
             if(isFormCollapsed) toggleForm(); 
         }
 
-        // Generate Filter Buttons Dynamically
+        // Generate Filter Buttons with COUNTS
         function renderFilters() {
             const container = document.getElementById('radioFilterContainer');
             const baseRadios = ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"];
             const loggedRadios = cloudLogs.map(l => l.radio).filter(Boolean);
             
-            const uniqueRadios = ['All', ...new Set([...baseRadios, ...loggedRadios])];
+            const uniqueRadios = [...new Set([...baseRadios, ...loggedRadios])];
             
             container.innerHTML = '';
+            
+            // Create "All" Button
+            const allBtn = document.createElement('button');
+            allBtn.className = `filter-btn ${activeRadioFilter === 'All' ? 'active' : ''}`;
+            allBtn.innerHTML = `All <span class="filter-count">(${cloudLogs.length})</span>`;
+            allBtn.onclick = () => {
+                activeRadioFilter = 'All';
+                renderFilters(); 
+                renderTable();   
+            };
+            container.appendChild(allBtn);
+
+            // Create individual radio buttons
             uniqueRadios.forEach(radio => {
+                const count = cloudLogs.filter(l => l.radio === radio).length;
                 const btn = document.createElement('button');
                 btn.className = `filter-btn ${activeRadioFilter === radio ? 'active' : ''}`;
-                btn.innerText = radio;
+                btn.innerHTML = `${radio} <span class="filter-count">(${count})</span>`;
                 btn.onclick = () => {
                     activeRadioFilter = radio;
                     renderFilters(); 
@@ -509,7 +522,6 @@
             });
         }
 
-        // S-Meter & Traffic Handlers
         function setSMeter(val) {
             document.getElementById('signalInput').value = val;
             const bars = document.querySelectorAll('.s-meter-bar');
