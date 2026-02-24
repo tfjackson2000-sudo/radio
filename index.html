@@ -16,8 +16,6 @@
             --traffic-color: #3b82f6; 
             --edit-color: #7c3aed;
             --dup-color: #059669; 
-            --sw-color: #10b981;
-            --vhf-color: #f59e0b;
             --text-main: #1f2937;
             --text-sub: #555555;
             --border-color: #dddddd;
@@ -63,6 +61,7 @@
             font-size: 0.85em;
         }
 
+        /* --- Collapsible Form Card --- */
         .input-card {
             background: var(--card-bg);
             padding: 20px;
@@ -150,6 +149,17 @@
         .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
 
+        .mini-bar[data-val="1"] { height: 20%; }
+        .mini-bar[data-val="2"] { height: 25%; }
+        .mini-bar[data-val="3"] { height: 35%; }
+        .mini-bar[data-val="4"] { height: 45%; }
+        .mini-bar[data-val="5"] { height: 55%; }
+        .mini-bar[data-val="6"] { height: 65%; }
+        .mini-bar[data-val="7"] { height: 75%; }
+        .mini-bar[data-val="8"] { height: 85%; }
+        .mini-bar[data-val="9"] { height: 95%; }
+        .mini-bar[data-val="10"] { height: 100%; }
+
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
             padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px;
@@ -201,18 +211,17 @@
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
-        /* Desktop Widths */
+        /* Desktop Widths (Band removed) */
         th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
         th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
         th:nth-child(3), td:nth-child(3) { width: 70px; }  /* Mode */
         th:nth-child(4), td:nth-child(4),
-        th:nth-child(10), td:nth-child(10) { width: auto; white-space: normal; word-wrap: break-word; } /* Station & Notes */
-        th:nth-child(5), td:nth-child(5) { width: 90px; }  /* Band */
-        th:nth-child(6), td:nth-child(6) { width: 130px; } /* Radio */
-        th:nth-child(7), td:nth-child(7) { width: 80px; }  /* Antenna */
-        th:nth-child(8), th:nth-child(9) { width: 95px; text-align: left; } /* Signal & Traffic */
-        td:nth-child(8), td:nth-child(9) { font-weight: bold; text-align: left; }
-        th:nth-child(11), td:nth-child(11) { width: 135px; text-align: center; } /* Actions */
+        th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } /* Station & Notes */
+        th:nth-child(5), td:nth-child(5) { width: 130px; } /* Radio */
+        th:nth-child(6), td:nth-child(6) { width: 80px; }  /* Antenna */
+        th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } /* Signal & Traffic */
+        td:nth-child(7), td:nth-child(8) { font-weight: bold; text-align: left; }
+        th:nth-child(10), td:nth-child(10) { width: 135px; text-align: center; } /* Actions */
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 10; }
         th:hover { background-color: #1d4ed8; }
@@ -221,13 +230,6 @@
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
         tr:hover { background-color: var(--table-hover); }
 
-        .badge { 
-            padding: 3px 8px; border-radius: 15px; font-size: 0.75em; color: white; 
-            font-weight: bold; display: inline-block; width: fit-content; justify-self: start;      
-        }
-        .badge-sw { background-color: var(--sw-color); }
-        .badge-vhf { background-color: var(--vhf-color); }
-        
         .action-btns { display: flex; gap: 4px; justify-content: center; }
         .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
@@ -268,14 +270,13 @@
                 text-transform: uppercase; font-size: 0.8em; text-align: left;
             }
 
-            td:nth-child(8), td:nth-child(9) { text-align: left; } 
+            td:nth-child(7), td:nth-child(8) { text-align: left; } 
             
             /* Station and Notes alignment */
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
 
             /* --- THE FREQ + MODE MERGE MAGIC --- */
-            /* Absolute override to murder the standalone mode column on mobile */
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
             
             .mobile-mode {
@@ -284,7 +285,6 @@
             }
             [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
 
-            /* Ensure the Frequency + Mode wrapper acts as a single grid item so it stays inline */
             .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
@@ -410,7 +410,6 @@
                     <th onclick="sortTable('freq', this)">Freq (MHz)</th>
                     <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
-                    <th onclick="sortTable('type', this)">Band</th>
                     <th onclick="sortTable('radio', this)">Radio</th>
                     <th onclick="sortTable('antenna', this)">Antenna</th>
                     <th onclick="sortTable('signal', this)">Sig</th>
@@ -638,7 +637,6 @@
             
             const logEntry = {
                 freq: parseFloat(freqVal),
-                type: (parseFloat(freqVal) <= 30) ? "Shortwave" : "VHF/UHF",
                 radio: radio,
                 antenna: antenna,
                 mode: mode,
@@ -704,7 +702,6 @@
             if(confirm(`Duplicate log entry for ${freqDisplay} MHz?`)) {
                 const duplicatedLog = {
                     freq: logToCopy.freq,
-                    type: logToCopy.type,
                     radio: logToCopy.radio || "Malahit DSP2",
                     antenna: logToCopy.antenna || "GA800",
                     mode: logToCopy.mode || "AM",
@@ -770,9 +767,8 @@
                 if (!matches && searchTerm !== "") return;
                 count++;
                 const row = document.createElement('tr');
-                const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
                 
-                // Added flex-inline-wrapper and hide-on-mobile class
+                // Band pill removed from HTML rendering entirely
                 row.innerHTML = `
                     <td data-label="UTC Time">${formattedDate}</td>
                     <td data-label="Freq (MHz)">
@@ -783,7 +779,6 @@
                     </td>
                     <td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td>
                     <td data-label="Station">${log.station || ""}</td>
-                    <td data-label="Band"><span class="badge ${badgeClass}">${log.type || ""}</span></td>
                     <td data-label="Radio">${log.radio || ""}</td>
                     <td data-label="Antenna">${log.antenna || ""}</td>
                     <td data-label="Signal">${displaySignal}</td>
