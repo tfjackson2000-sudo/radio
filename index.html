@@ -63,7 +63,6 @@
             font-size: 0.85em;
         }
 
-        /* --- Collapsible Form Card --- */
         .input-card {
             background: var(--card-bg);
             padding: 20px;
@@ -150,17 +149,6 @@
         .mini-bar.active-yellow { background-color: #f59e0b; }
         .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
-
-        .mini-bar[data-val="1"] { height: 20%; }
-        .mini-bar[data-val="2"] { height: 25%; }
-        .mini-bar[data-val="3"] { height: 35%; }
-        .mini-bar[data-val="4"] { height: 45%; }
-        .mini-bar[data-val="5"] { height: 55%; }
-        .mini-bar[data-val="6"] { height: 65%; }
-        .mini-bar[data-val="7"] { height: 75%; }
-        .mini-bar[data-val="8"] { height: 85%; }
-        .mini-bar[data-val="9"] { height: 95%; }
-        .mini-bar[data-val="10"] { height: 100%; }
 
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
@@ -281,17 +269,23 @@
             }
 
             td:nth-child(8), td:nth-child(9) { text-align: left; } 
+            
+            /* Station and Notes alignment */
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
 
             /* --- THE FREQ + MODE MERGE MAGIC --- */
-            td.desktop-mode { display: none !important; } /* Hide standalone mode row */
+            /* Absolute override to murder the standalone mode column on mobile */
+            table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
+            
             .mobile-mode {
-                display: inline-block; margin-left: 8px; padding: 2px 6px; 
-                background: #e5e7eb; color: var(--text-sub); border-radius: 4px; 
-                font-size: 0.8em; font-weight: bold;
+                display: inline-block; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); 
+                border-radius: 4px; font-size: 0.8em; font-weight: bold;
             }
             [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
+
+            /* Ensure the Frequency + Mode wrapper acts as a single grid item so it stays inline */
+            .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
@@ -414,7 +408,7 @@
                 <tr>
                     <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
                     <th onclick="sortTable('freq', this)">Freq (MHz)</th>
-                    <th onclick="sortTable('mode', this)">Mode</th>
+                    <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
                     <th onclick="sortTable('type', this)">Band</th>
                     <th onclick="sortTable('radio', this)">Radio</th>
@@ -778,14 +772,16 @@
                 const row = document.createElement('tr');
                 const badgeClass = (parseFloat(log.freq) <= 30) ? "badge-sw" : "badge-vhf";
                 
-                // --- INJECTS MODE PILL DIRECTLY NEXT TO FREQUENCY ON MOBILE ---
+                // Added flex-inline-wrapper and hide-on-mobile class
                 row.innerHTML = `
                     <td data-label="UTC Time">${formattedDate}</td>
                     <td data-label="Freq (MHz)">
-                        <strong>${freqDisplay}</strong>
-                        ${log.mode ? `<span class="mobile-mode">${log.mode}</span>` : ""}
+                        <div class="freq-wrapper">
+                            <strong>${freqDisplay}</strong>
+                            ${log.mode ? `<span class="mobile-mode">${log.mode}</span>` : ""}
+                        </div>
                     </td>
-                    <td data-label="Mode" class="desktop-mode">${log.mode || ""}</td>
+                    <td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td>
                     <td data-label="Station">${log.station || ""}</td>
                     <td data-label="Band"><span class="badge ${badgeClass}">${log.type || ""}</span></td>
                     <td data-label="Radio">${log.radio || ""}</td>
