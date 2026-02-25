@@ -16,6 +16,7 @@
             --traffic-color: #3b82f6; 
             --edit-color: #7c3aed;
             --dup-color: #059669; 
+            --ch-color: #8b5cf6; /* Purple for Memory Channels */
             --text-main: #1f2937;
             --text-sub: #555555;
             --border-color: #dddddd;
@@ -29,6 +30,7 @@
             --traffic-color: #60a5fa;
             --edit-color: #a78bfa;
             --dup-color: #34d399;
+            --ch-color: #a78bfa;
             --text-main: #f3f4f6;
             --text-sub: #9ca3af;
             --border-color: #374151;
@@ -181,7 +183,7 @@
         }
 
         /* --- Radio Filter Buttons with Counts --- */
-        .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .filter-btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color);
@@ -194,11 +196,27 @@
             background: var(--primary) !important; color: white !important; 
             border-color: var(--primary) !important;
         }
+        
+        /* Memory Mode Button */
+        #memoryToggleBtn {
+            border-color: var(--ch-color); color: var(--ch-color);
+        }
+        #memoryToggleBtn.active {
+            background: var(--ch-color) !important; color: white !important;
+        }
+
         .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
         .filter-btn.active .filter-count { opacity: 0.9; }
 
-        /* Mobile Mode Pill (Hidden on Desktop) */
-        .mobile-mode { display: none; }
+        /* Pilled inline elements */
+        .inline-pill {
+            display: inline-block; margin-left: 8px; padding: 2px 6px; 
+            background: #e5e7eb; color: var(--text-sub); border-radius: 4px; 
+            font-size: 0.8em; font-weight: bold;
+        }
+        .ch-pill { background: var(--ch-color); color: white; border-radius: 12px; margin-left: 6px; }
+        [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
+        .flex-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
         .table-container { 
             max-height: 65vh; overflow-y: auto; overflow-x: hidden;
@@ -211,13 +229,13 @@
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
-        /* Desktop Widths (Band removed) */
+        /* Desktop Widths */
         th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
         th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
         th:nth-child(3), td:nth-child(3) { width: 70px; }  /* Mode */
         th:nth-child(4), td:nth-child(4),
         th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } /* Station & Notes */
-        th:nth-child(5), td:nth-child(5) { width: 130px; } /* Radio */
+        th:nth-child(5), td:nth-child(5) { width: 140px; } /* Radio / Ch */
         th:nth-child(6), td:nth-child(6) { width: 80px; }  /* Antenna */
         th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } /* Signal & Traffic */
         td:nth-child(7), td:nth-child(8) { font-weight: bold; text-align: left; }
@@ -229,7 +247,7 @@
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
         tr:hover { background-color: var(--table-hover); }
-
+        
         .action-btns { display: flex; gap: 4px; justify-content: center; }
         .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
@@ -271,21 +289,11 @@
             }
 
             td:nth-child(7), td:nth-child(8) { text-align: left; } 
-            
-            /* Station and Notes alignment */
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
 
-            /* --- THE FREQ + MODE MERGE MAGIC --- */
+            /* --- Hide unneeded mobile rows --- */
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
-            
-            .mobile-mode {
-                display: inline-block; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); 
-                border-radius: 4px; font-size: 0.8em; font-weight: bold;
-            }
-            [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
-
-            .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
@@ -323,6 +331,10 @@
                     <option value="Realistic Pro 2006">Realistic Pro 2006</option>
                     <option value="Baofeng DM1701">Baofeng DM1701</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Memory Ch. (Opt)</label>
+                <input type="text" id="channelInput" placeholder="e.g. 45" inputmode="numeric">
             </div>
             <div class="form-group">
                 <label>Antenna</label>
@@ -410,7 +422,7 @@
                     <th onclick="sortTable('freq', this)">Freq (MHz)</th>
                     <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
-                    <th onclick="sortTable('radio', this)">Radio</th>
+                    <th onclick="sortTable('radio', this)">Radio / Ch.</th>
                     <th onclick="sortTable('antenna', this)">Antenna</th>
                     <th onclick="sortTable('signal', this)">Sig</th>
                     <th onclick="sortTable('traffic', this)">Traf</th>
@@ -452,6 +464,7 @@
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
         let activeRadioFilter = 'All'; 
+        let memoryBankMode = false; // New memory mode state
 
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
@@ -466,6 +479,7 @@
                     }
                 }
                 if (!log.traffic) { log.traffic = ""; }
+                if (!log.channel) { log.channel = ""; }
 
                 cloudLogs.push(log);
             });
@@ -473,6 +487,7 @@
             renderTable(); 
         });
 
+        // Form Collapse Logic
         let isFormCollapsed = false;
         function toggleForm() {
             isFormCollapsed = !isFormCollapsed;
@@ -490,6 +505,13 @@
             if(isFormCollapsed) toggleForm(); 
         }
 
+        // Memory Bank Mode Toggle
+        function toggleMemoryBankMode() {
+            memoryBankMode = !memoryBankMode;
+            renderFilters(); // Re-render button state
+            renderTable();
+        }
+
         function renderFilters() {
             const container = document.getElementById('radioFilterContainer');
             const baseRadios = ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"];
@@ -499,28 +521,31 @@
             
             container.innerHTML = '';
             
+            // "All" Button
             const allBtn = document.createElement('button');
             allBtn.className = `filter-btn ${activeRadioFilter === 'All' ? 'active' : ''}`;
             allBtn.innerHTML = `All <span class="filter-count">(${cloudLogs.length})</span>`;
-            allBtn.onclick = () => {
-                activeRadioFilter = 'All';
-                renderFilters(); 
-                renderTable();   
-            };
+            allBtn.onclick = () => { activeRadioFilter = 'All'; renderFilters(); renderTable(); };
             container.appendChild(allBtn);
 
+            // Radio Buttons
             uniqueRadios.forEach(radio => {
                 const count = cloudLogs.filter(l => l.radio === radio).length;
                 const btn = document.createElement('button');
                 btn.className = `filter-btn ${activeRadioFilter === radio ? 'active' : ''}`;
                 btn.innerHTML = `${radio} <span class="filter-count">(${count})</span>`;
-                btn.onclick = () => {
-                    activeRadioFilter = radio;
-                    renderFilters(); 
-                    renderTable();   
-                };
+                btn.onclick = () => { activeRadioFilter = radio; renderFilters(); renderTable(); };
                 container.appendChild(btn);
             });
+
+            // Memory Bank Mode Button
+            const memBtn = document.createElement('button');
+            memBtn.id = "memoryToggleBtn";
+            memBtn.className = `filter-btn ${memoryBankMode ? 'active' : ''}`;
+            memBtn.innerHTML = memoryBankMode ? "📖 Memory Bank Mode: ON" : "📖 Memory Bank Mode: OFF";
+            memBtn.style.marginLeft = "auto"; // Pushes it to the right side if space allows
+            memBtn.onclick = toggleMemoryBankMode;
+            container.appendChild(memBtn);
         }
 
         function setSMeter(val) {
@@ -604,6 +629,8 @@
         }
 
         function sortTable(key, element) {
+            if (memoryBankMode) return; // Prevent manual sorting while in Memory mode
+            
             if (currentSort.key === key) {
                 currentSort.desc = !currentSort.desc;
             } else {
@@ -617,6 +644,7 @@
         }
 
         function handleMobileSort(key) {
+            if (memoryBankMode) return;
             currentSort.key = key;
             currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic');
             renderTable();
@@ -626,6 +654,7 @@
             const editId = document.getElementById('editId').value;
             const freqVal = document.getElementById('freqInput').value;
             const radio = document.getElementById('radioInput').value;
+            const channel = document.getElementById('channelInput').value;
             const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
             const station = document.getElementById('stationInput').value.replace(/,/g, ";");
@@ -638,6 +667,7 @@
             const logEntry = {
                 freq: parseFloat(freqVal),
                 radio: radio,
+                channel: channel,
                 antenna: antenna,
                 mode: mode,
                 station: station,
@@ -666,6 +696,7 @@
             document.getElementById('editId').value = log.id;
             document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
             document.getElementById('radioInput').value = log.radio || "Malahit DSP2";
+            document.getElementById('channelInput').value = log.channel || "";
             document.getElementById('antennaInput').value = log.antenna || "GA800";
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station || "";
@@ -692,6 +723,7 @@
             document.getElementById('formCard').classList.remove('editing-mode');
             setSMeter(5);
             setTraffic(1);
+            document.getElementById('channelInput').value = "";
         }
 
         function duplicateLog(id) {
@@ -703,6 +735,7 @@
                 const duplicatedLog = {
                     freq: logToCopy.freq,
                     radio: logToCopy.radio || "Malahit DSP2",
+                    channel: logToCopy.channel || "",
                     antenna: logToCopy.antenna || "GA800",
                     mode: logToCopy.mode || "AM",
                     station: logToCopy.station || "",
@@ -719,6 +752,7 @@
             document.getElementById('freqInput').value = '';
             document.getElementById('stationInput').value = '';
             document.getElementById('notesInput').value = '';
+            document.getElementById('channelInput').value = '';
             document.getElementById('radioInput').value = "Malahit DSP2";
             document.getElementById('antennaInput').value = "GA800";
             setSMeter(5); 
@@ -732,34 +766,57 @@
             
             let displayLogs = [...cloudLogs];
 
-            displayLogs.sort((a, b) => {
-                let valA = a[currentSort.key] || "";
-                let valB = b[currentSort.key] || "";
-                
-                if (currentSort.key === 'signal' || currentSort.key === 'traffic' || currentSort.key === 'freq') {
-                    valA = parseFloat(valA) || 0;
-                    valB = parseFloat(valB) || 0;
-                    return currentSort.desc ? valB - valA : valA - valB;
-                }
+            // Filter for Radio selection
+            if (activeRadioFilter !== 'All') {
+                displayLogs = displayLogs.filter(log => log.radio === activeRadioFilter);
+            }
 
-                if (valA < valB) return currentSort.desc ? 1 : -1;
-                if (valA > valB) return currentSort.desc ? -1 : 1;
-                return 0;
-            });
+            // --- MEMORY BANK SORTING LOGIC ---
+            if (memoryBankMode) {
+                // Remove anything that DOES NOT have a channel assigned
+                displayLogs = displayLogs.filter(log => log.channel && log.channel.trim() !== "");
+                
+                // Sort by Radio Name first, then by Channel Number numerically
+                displayLogs.sort((a, b) => {
+                    let radioA = a.radio || "";
+                    let radioB = b.radio || "";
+                    if (radioA !== radioB) return radioA.localeCompare(radioB);
+                    
+                    let chA = parseInt(a.channel) || 0;
+                    let chB = parseInt(b.channel) || 0;
+                    return chA - chB; // Ascending (1 to 400)
+                });
+            } else {
+                // Standard chronological/manual sorting
+                displayLogs.sort((a, b) => {
+                    let valA = a[currentSort.key] || "";
+                    let valB = b[currentSort.key] || "";
+                    
+                    if (currentSort.key === 'signal' || currentSort.key === 'traffic' || currentSort.key === 'freq') {
+                        valA = parseFloat(valA) || 0;
+                        valB = parseFloat(valB) || 0;
+                        return currentSort.desc ? valB - valA : valA - valB;
+                    }
+
+                    if (valA < valB) return currentSort.desc ? 1 : -1;
+                    if (valA > valB) return currentSort.desc ? -1 : 1;
+                    return 0;
+                });
+            }
 
             let count = 0;
             displayLogs.forEach(log => {
-                if (activeRadioFilter !== 'All' && log.radio !== activeRadioFilter) return;
-
                 const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 const formattedDate = formatRadioDate(log.date);
                 
                 let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
                 let displayTraffic = log.traffic ? `<div style="display:flex; align-items:center;">T-${log.traffic} ${generateMiniTraffic(log.traffic)}</div>` : "";
+                
+                let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : "";
 
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
-                                (log.antenna || "").toLowerCase().includes(searchTerm) ||
+                                (log.channel || "").toLowerCase().includes(searchTerm) ||
                                 (log.station || "").toLowerCase().includes(searchTerm) || 
                                 (log.mode || "").toLowerCase().includes(searchTerm) ||
                                 (log.notes || "").toLowerCase().includes(searchTerm);
@@ -768,18 +825,22 @@
                 count++;
                 const row = document.createElement('tr');
                 
-                // Band pill removed from HTML rendering entirely
                 row.innerHTML = `
                     <td data-label="UTC Time">${formattedDate}</td>
                     <td data-label="Freq (MHz)">
-                        <div class="freq-wrapper">
+                        <div class="flex-wrapper">
                             <strong>${freqDisplay}</strong>
-                            ${log.mode ? `<span class="mobile-mode">${log.mode}</span>` : ""}
+                            ${log.mode ? `<span class="inline-pill mobile-mode">${log.mode}</span>` : ""}
                         </div>
                     </td>
                     <td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td>
                     <td data-label="Station">${log.station || ""}</td>
-                    <td data-label="Radio">${log.radio || ""}</td>
+                    <td data-label="Radio">
+                        <div class="flex-wrapper">
+                            ${log.radio || ""}
+                            ${channelBadge}
+                        </div>
+                    </td>
                     <td data-label="Antenna">${log.antenna || ""}</td>
                     <td data-label="Signal">${displaySignal}</td>
                     <td data-label="Traffic">${displayTraffic}</td>
@@ -792,7 +853,7 @@
                 `;
                 tbody.appendChild(row);
             });
-            document.getElementById('logCounter').innerText = "Total Logs: " + count;
+            document.getElementById('logCounter').innerText = "Total Displayed: " + count;
         }
 
         function deleteLog(id) {
