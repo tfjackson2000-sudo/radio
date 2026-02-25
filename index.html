@@ -16,7 +16,7 @@
             --traffic-color: #3b82f6; 
             --edit-color: #7c3aed;
             --dup-color: #059669; 
-            --ch-color: #8b5cf6; /* Purple for Memory Channels */
+            --ch-color: #8b5cf6; 
             --text-main: #1f2937;
             --text-sub: #555555;
             --border-color: #dddddd;
@@ -151,17 +151,6 @@
         .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
 
-        .mini-bar[data-val="1"] { height: 20%; }
-        .mini-bar[data-val="2"] { height: 25%; }
-        .mini-bar[data-val="3"] { height: 35%; }
-        .mini-bar[data-val="4"] { height: 45%; }
-        .mini-bar[data-val="5"] { height: 55%; }
-        .mini-bar[data-val="6"] { height: 65%; }
-        .mini-bar[data-val="7"] { height: 75%; }
-        .mini-bar[data-val="8"] { height: 85%; }
-        .mini-bar[data-val="9"] { height: 95%; }
-        .mini-bar[data-val="10"] { height: 100%; }
-
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
             padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px;
@@ -182,7 +171,7 @@
             display: flex; justify-content: flex-end;
         }
 
-        /* --- Radio Filter Buttons with Counts --- */
+        /* --- Radio Filter Buttons --- */
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .filter-btn {
             display: inline-flex; align-items: center; gap: 6px;
@@ -197,13 +186,8 @@
             border-color: var(--primary) !important;
         }
         
-        /* Memory Mode Button */
-        #memoryToggleBtn {
-            border-color: var(--ch-color); color: var(--ch-color);
-        }
-        #memoryToggleBtn.active {
-            background: var(--ch-color) !important; color: white !important;
-        }
+        #memoryToggleBtn { border-color: var(--ch-color); color: var(--ch-color); }
+        #memoryToggleBtn.active { background: var(--ch-color) !important; color: white !important; }
 
         .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
         .filter-btn.active .filter-count { opacity: 0.9; }
@@ -230,16 +214,16 @@
         }
         
         /* Desktop Widths */
-        th:nth-child(1), td:nth-child(1) { width: 140px; } /* Time */
-        th:nth-child(2), td:nth-child(2) { width: 90px; }  /* Freq */
-        th:nth-child(3), td:nth-child(3) { width: 70px; }  /* Mode */
+        th:nth-child(1), td:nth-child(1) { width: 140px; } 
+        th:nth-child(2), td:nth-child(2) { width: 90px; }  
+        th:nth-child(3), td:nth-child(3) { width: 70px; }  
         th:nth-child(4), td:nth-child(4),
-        th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } /* Station & Notes */
-        th:nth-child(5), td:nth-child(5) { width: 140px; } /* Radio / Ch */
-        th:nth-child(6), td:nth-child(6) { width: 80px; }  /* Antenna */
-        th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } /* Signal & Traffic */
+        th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
+        th:nth-child(5), td:nth-child(5) { width: 160px; } /* Widened for radio+channel */
+        th:nth-child(6), td:nth-child(6) { width: 80px; }  
+        th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } 
         td:nth-child(7), td:nth-child(8) { font-weight: bold; text-align: left; }
-        th:nth-child(10), td:nth-child(10) { width: 135px; text-align: center; } /* Actions */
+        th:nth-child(10), td:nth-child(10) { width: 135px; text-align: center; } 
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 10; }
         th:hover { background-color: #1d4ed8; }
@@ -248,6 +232,10 @@
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
         tr:hover { background-color: var(--table-hover); }
         
+        /* Custom class for the clickable channel sort span */
+        .ch-sort { color: var(--ch-color); padding-left: 6px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .ch-sort:hover { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+
         .action-btns { display: flex; gap: 4px; justify-content: center; }
         .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
@@ -292,8 +280,15 @@
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
 
-            /* --- Hide unneeded mobile rows --- */
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
+
+            .mobile-mode {
+                display: inline-block; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); 
+                border-radius: 4px; font-size: 0.8em; font-weight: bold;
+            }
+            [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
+
+            .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
@@ -409,6 +404,7 @@
         <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
             <option value="date">Sort: Newest First</option>
             <option value="freq">Sort: Frequency</option>
+            <option value="channel">Sort: Memory Channel</option>
             <option value="signal">Sort: Best Signal</option>
             <option value="traffic">Sort: Busiest Traffic</option>
         </select>
@@ -422,7 +418,7 @@
                     <th onclick="sortTable('freq', this)">Freq (MHz)</th>
                     <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
                     <th onclick="sortTable('station', this)">Station</th>
-                    <th onclick="sortTable('radio', this)">Radio / Ch.</th>
+                    <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
                     <th onclick="sortTable('antenna', this)">Antenna</th>
                     <th onclick="sortTable('signal', this)">Sig</th>
                     <th onclick="sortTable('traffic', this)">Traf</th>
@@ -464,7 +460,7 @@
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
         let activeRadioFilter = 'All'; 
-        let memoryBankMode = false; // New memory mode state
+        let memoryBankMode = false; 
 
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
@@ -487,7 +483,6 @@
             renderTable(); 
         });
 
-        // Form Collapse Logic
         let isFormCollapsed = false;
         function toggleForm() {
             isFormCollapsed = !isFormCollapsed;
@@ -505,10 +500,9 @@
             if(isFormCollapsed) toggleForm(); 
         }
 
-        // Memory Bank Mode Toggle
         function toggleMemoryBankMode() {
             memoryBankMode = !memoryBankMode;
-            renderFilters(); // Re-render button state
+            renderFilters(); 
             renderTable();
         }
 
@@ -521,14 +515,12 @@
             
             container.innerHTML = '';
             
-            // "All" Button
             const allBtn = document.createElement('button');
             allBtn.className = `filter-btn ${activeRadioFilter === 'All' ? 'active' : ''}`;
             allBtn.innerHTML = `All <span class="filter-count">(${cloudLogs.length})</span>`;
             allBtn.onclick = () => { activeRadioFilter = 'All'; renderFilters(); renderTable(); };
             container.appendChild(allBtn);
 
-            // Radio Buttons
             uniqueRadios.forEach(radio => {
                 const count = cloudLogs.filter(l => l.radio === radio).length;
                 const btn = document.createElement('button');
@@ -538,12 +530,11 @@
                 container.appendChild(btn);
             });
 
-            // Memory Bank Mode Button
             const memBtn = document.createElement('button');
             memBtn.id = "memoryToggleBtn";
             memBtn.className = `filter-btn ${memoryBankMode ? 'active' : ''}`;
             memBtn.innerHTML = memoryBankMode ? "📖 Memory Bank Mode: ON" : "📖 Memory Bank Mode: OFF";
-            memBtn.style.marginLeft = "auto"; // Pushes it to the right side if space allows
+            memBtn.style.marginLeft = "auto"; 
             memBtn.onclick = toggleMemoryBankMode;
             container.appendChild(memBtn);
         }
@@ -629,7 +620,7 @@
         }
 
         function sortTable(key, element) {
-            if (memoryBankMode) return; // Prevent manual sorting while in Memory mode
+            if (memoryBankMode) return; 
             
             if (currentSort.key === key) {
                 currentSort.desc = !currentSort.desc;
@@ -646,7 +637,7 @@
         function handleMobileSort(key) {
             if (memoryBankMode) return;
             currentSort.key = key;
-            currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic');
+            currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic'); 
             renderTable();
         }
 
@@ -766,29 +757,38 @@
             
             let displayLogs = [...cloudLogs];
 
-            // Filter for Radio selection
             if (activeRadioFilter !== 'All') {
                 displayLogs = displayLogs.filter(log => log.radio === activeRadioFilter);
             }
 
-            // --- MEMORY BANK SORTING LOGIC ---
             if (memoryBankMode) {
-                // Remove anything that DOES NOT have a channel assigned
                 displayLogs = displayLogs.filter(log => log.channel && log.channel.trim() !== "");
-                
-                // Sort by Radio Name first, then by Channel Number numerically
                 displayLogs.sort((a, b) => {
                     let radioA = a.radio || "";
                     let radioB = b.radio || "";
                     if (radioA !== radioB) return radioA.localeCompare(radioB);
-                    
                     let chA = parseInt(a.channel) || 0;
                     let chB = parseInt(b.channel) || 0;
-                    return chA - chB; // Ascending (1 to 400)
+                    return chA - chB; 
                 });
             } else {
-                // Standard chronological/manual sorting
                 displayLogs.sort((a, b) => {
+                    // SMART CHANNEL SORTING
+                    if (currentSort.key === 'channel') {
+                        let hasA = (a.channel !== "" && a.channel != null);
+                        let hasB = (b.channel !== "" && b.channel != null);
+                        
+                        // Push empty channels to the bottom
+                        if (hasA && !hasB) return -1; 
+                        if (!hasA && hasB) return 1;  
+                        if (!hasA && !hasB) return 0;
+                        
+                        let valA = parseInt(a.channel);
+                        let valB = parseInt(b.channel);
+                        return currentSort.desc ? valB - valA : valA - valB;
+                    }
+
+                    // STANDARD SORTING
                     let valA = a[currentSort.key] || "";
                     let valB = b[currentSort.key] || "";
                     
@@ -811,7 +811,6 @@
                 
                 let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
                 let displayTraffic = log.traffic ? `<div style="display:flex; align-items:center;">T-${log.traffic} ${generateMiniTraffic(log.traffic)}</div>` : "";
-                
                 let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : "";
 
                 const matches = freqDisplay.includes(searchTerm) || 
@@ -835,7 +834,7 @@
                     </td>
                     <td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td>
                     <td data-label="Station">${log.station || ""}</td>
-                    <td data-label="Radio">
+                    <td data-label="Radio / Ch.">
                         <div class="flex-wrapper">
                             ${log.radio || ""}
                             ${channelBadge}
