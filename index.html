@@ -151,6 +151,17 @@
         .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
 
+        .mini-bar[data-val="1"] { height: 20%; }
+        .mini-bar[data-val="2"] { height: 25%; }
+        .mini-bar[data-val="3"] { height: 35%; }
+        .mini-bar[data-val="4"] { height: 45%; }
+        .mini-bar[data-val="5"] { height: 55%; }
+        .mini-bar[data-val="6"] { height: 65%; }
+        .mini-bar[data-val="7"] { height: 75%; }
+        .mini-bar[data-val="8"] { height: 85%; }
+        .mini-bar[data-val="9"] { height: 95%; }
+        .mini-bar[data-val="10"] { height: 100%; }
+
         .btn-main {
             grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
             padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px;
@@ -171,7 +182,7 @@
             display: flex; justify-content: flex-end;
         }
 
-        /* --- Radio Filter Buttons --- */
+        /* --- Radio Filter Buttons with Counts --- */
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .filter-btn {
             display: inline-flex; align-items: center; gap: 6px;
@@ -202,6 +213,31 @@
         [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
         .flex-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
+        /* --- EXPANDABLE NOTES STYLING --- */
+        .expandable-note {
+            display: -webkit-box;
+            -webkit-line-clamp: 1; /* Caps the note at 1 line */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            cursor: pointer;
+            padding-left: 8px;
+            border-left: 3px solid var(--primary);
+            background-color: rgba(37, 99, 235, 0.05);
+            border-radius: 0 4px 4px 0;
+            transition: background-color 0.2s;
+            margin-top: 2px;
+        }
+        .expandable-note:hover { background-color: rgba(37, 99, 235, 0.1); }
+        [data-theme="dark"] .expandable-note { background-color: rgba(59, 130, 246, 0.1); }
+        [data-theme="dark"] .expandable-note:hover { background-color: rgba(59, 130, 246, 0.15); }
+        
+        .expandable-note.expanded {
+            -webkit-line-clamp: unset; /* Releases the cap so you can read it all */
+            display: block;
+            padding-top: 4px;
+            padding-bottom: 4px;
+        }
+
         .table-container { 
             max-height: 65vh; overflow-y: auto; overflow-x: hidden;
             background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
@@ -219,7 +255,7 @@
         th:nth-child(3), td:nth-child(3) { width: 70px; }  
         th:nth-child(4), td:nth-child(4),
         th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
-        th:nth-child(5), td:nth-child(5) { width: 160px; } /* Widened for radio+channel */
+        th:nth-child(5), td:nth-child(5) { width: 160px; } 
         th:nth-child(6), td:nth-child(6) { width: 80px; }  
         th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } 
         td:nth-child(7), td:nth-child(8) { font-weight: bold; text-align: left; }
@@ -232,7 +268,6 @@
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
         tr:hover { background-color: var(--table-hover); }
         
-        /* Custom class for the clickable channel sort span */
         .ch-sort { color: var(--ch-color); padding-left: 6px; font-weight: 800; cursor: pointer; transition: 0.2s; }
         .ch-sort:hover { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 
@@ -773,12 +808,10 @@
                 });
             } else {
                 displayLogs.sort((a, b) => {
-                    // SMART CHANNEL SORTING
                     if (currentSort.key === 'channel') {
                         let hasA = (a.channel !== "" && a.channel != null);
                         let hasB = (b.channel !== "" && b.channel != null);
                         
-                        // Push empty channels to the bottom
                         if (hasA && !hasB) return -1; 
                         if (!hasA && hasB) return 1;  
                         if (!hasA && !hasB) return 0;
@@ -788,7 +821,6 @@
                         return currentSort.desc ? valB - valA : valA - valB;
                     }
 
-                    // STANDARD SORTING
                     let valA = a[currentSort.key] || "";
                     let valB = b[currentSort.key] || "";
                     
@@ -812,6 +844,9 @@
                 let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
                 let displayTraffic = log.traffic ? `<div style="display:flex; align-items:center;">T-${log.traffic} ${generateMiniTraffic(log.traffic)}</div>` : "";
                 let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : "";
+
+                // --- NEW EXPANDABLE NOTE HTML ---
+                let displayNotes = log.notes ? `<div class="expandable-note" onclick="this.classList.toggle('expanded')" title="Tap to expand/collapse">${log.notes}</div>` : "";
 
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
@@ -843,7 +878,7 @@
                     <td data-label="Antenna">${log.antenna || ""}</td>
                     <td data-label="Signal">${displaySignal}</td>
                     <td data-label="Traffic">${displayTraffic}</td>
-                    <td data-label="Notes" class="notes-cell">${log.notes || ""}</td>
+                    <td data-label="Notes" class="notes-cell">${displayNotes}</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
                         <button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button>
