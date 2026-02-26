@@ -213,7 +213,10 @@
         [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
         .flex-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
-        /* --- EXPANDABLE NOTES STYLING --- */
+      /* --- EXPANDABLE NOTES STYLING --- */
+        /* Crucial: Allows the pop-out bubble to escape the table cell */
+        td.notes-cell { overflow: visible !important; position: relative; } 
+
         .expandable-note {
             display: -webkit-box;
             -webkit-line-clamp: 1; /* Caps the note at 1 line */
@@ -226,16 +229,53 @@
             border-radius: 0 4px 4px 0;
             transition: background-color 0.2s;
             margin-top: 2px;
+            position: relative; /* Anchor for the desktop bubble */
         }
         .expandable-note:hover { background-color: rgba(37, 99, 235, 0.1); }
         [data-theme="dark"] .expandable-note { background-color: rgba(59, 130, 246, 0.1); }
         [data-theme="dark"] .expandable-note:hover { background-color: rgba(59, 130, 246, 0.15); }
         
-        .expandable-note.expanded {
-            -webkit-line-clamp: unset; /* Releases the cap so you can read it all */
-            display: block;
-            padding-top: 4px;
-            padding-bottom: 4px;
+        /* MOBILE: Just expand downward inline like normal */
+        @media screen and (max-width: 800px) {
+            .expandable-note.expanded {
+                -webkit-line-clamp: unset; 
+                display: block;
+                padding-top: 4px;
+                padding-bottom: 4px;
+            }
+        }
+
+        /* DESKTOP PC: Speech Bubble Pop-Out */
+        @media screen and (min-width: 801px) {
+            .expandable-note.expanded {
+                position: absolute;
+                z-index: 1000;
+                top: 100%; /* Drops it just below the text */
+                left: 0;
+                min-width: 280px;
+                max-width: 400px;
+                background-color: var(--card-bg);
+                border: 2px solid var(--primary);
+                border-radius: 8px;
+                padding: 12px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+                white-space: normal;
+                -webkit-line-clamp: unset;
+                overflow: visible;
+                display: block;
+                margin-top: 10px; /* Gap to make room for the arrow */
+            }
+            
+            /* The little speech bubble arrow pointing up */
+            .expandable-note.expanded::before {
+                content: '';
+                position: absolute;
+                bottom: 100%; /* Puts it on top of the bubble */
+                left: 15px;
+                border-width: 8px;
+                border-style: solid;
+                border-color: transparent transparent var(--primary) transparent;
+            }
         }
 
         .table-container { 
