@@ -625,7 +625,7 @@
 
         function renderFilters() {
             const container = document.getElementById('radioFilterContainer');
-            const baseRadios = ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"];
+            const baseRadios = appSettings.radios || [];
             const loggedRadios = cloudLogs.map(l => l.radio).filter(Boolean);
             
             const uniqueRadios = [...new Set([...baseRadios, ...loggedRadios])];
@@ -1024,7 +1024,7 @@
                 modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"]
             };
             renderAdminLists();
-            // updateDropdowns(); <-- We will turn this on in Step 3!
+            updateDropdowns();
         });
 
         // Add a new setting to the Cloud
@@ -1048,6 +1048,28 @@
             }
         }
 
+// Build the dropdown menus in the main input form
+        function updateDropdowns() {
+            const rSelect = document.getElementById('radioInput');
+            const aSelect = document.getElementById('antennaInput');
+            const mSelect = document.getElementById('modeInput');
+            
+            // Remember what you currently have selected so it doesn't reset while typing
+            const curR = rSelect.value;
+            const curA = aSelect.value;
+            const curM = mSelect.value;
+
+            // Overwrite the hardcoded HTML with the dynamic Cloud lists
+            if (rSelect) rSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (aSelect) aSelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (mSelect) mSelect.innerHTML = appSettings.modes.map(i => `<option value="${i}">${i}</option>`).join('');
+
+            // Restore your selection if it still exists
+            if (appSettings.radios.includes(curR)) rSelect.value = curR;
+            if (appSettings.antennas.includes(curA)) aSelect.value = curA;
+            if (appSettings.modes.includes(curM)) mSelect.value = curM;
+        }
+        
         // Draw the Admin lists in the Settings Panel
         function renderAdminLists() {
             ['radios', 'antennas', 'modes'].forEach(type => {
