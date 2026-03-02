@@ -1008,6 +1008,61 @@
             }
         }
 
+// ==========================================
+        // 3. ADMIN SETTINGS (FIREBASE CLOUD)
+        // ==========================================
+        let appSettings = { radios: [], antennas: [], modes: [] };
+        const settingsRef = db.ref('settings');
+
+        // Listen for Settings from the Cloud
+        settingsRef.on('value', (snapshot) => {
+            let data = snapshot.val() || {};
+            // Set defaults if cloud is empty
+            appSettings = {
+                radios: data.radios || ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"],
+                antennas: data.antennas || ["GA800", "Whip", "X30N"],
+                modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"]
+            };
+            renderAdminLists();
+            // updateDropdowns(); <-- We will turn this on in Step 3!
+        });
+
+        // Add a new setting to the Cloud
+        function addSetting(type, inputId) {
+            const input = document.getElementById(inputId);
+            const val = input.value.trim();
+            if (!val) return;
+            
+            if (!appSettings[type].includes(val)) {
+                appSettings[type].push(val);
+                settingsRef.child(type).set(appSettings[type]);
+            }
+            input.value = "";
+        }
+
+        // Remove a setting from the Cloud
+        function removeSetting(type, val) {
+            if(confirm(`Remove "${val}" from your list?`)) {
+                appSettings[type] = appSettings[type].filter(item => item !== val);
+                settingsRef.child(type).set(appSettings[type]);
+            }
+        }
+
+        // Draw the Admin lists in the Settings Panel
+        function renderAdminLists() {
+            ['radios', 'antennas', 'modes'].forEach(type => {
+                const listEl = document.getElementById(type + 'AdminList');
+                if(listEl) {
+                    listEl.innerHTML = appSettings[type].map(item => 
+                        `<li style="display:flex; justify-content:space-between; background:var(--table-hover); padding:5px 8px; border-radius:4px; border: 1px solid var(--border-color);">
+                            ${item} 
+                            <span style="color:#ef4444; cursor:pointer; font-weight:bold;" onclick="removeSetting('${type}', '${item}')">✖</span>
+                        </li>`
+                    ).join('');
+                }
+            });
+        }
+        
         let mybutton = document.getElementById("scrollTopBtn");
         window.onscroll = function() { 
             if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { 
