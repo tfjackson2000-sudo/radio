@@ -50,7 +50,7 @@
             overflow-x: hidden; 
         }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         h1 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
 
         .theme-toggle {
@@ -164,8 +164,8 @@
         }
         .btn-save { background-color: var(--edit-color) !important; }
 
-        .search-container { margin-bottom: 15px; display: flex; gap: 10px; width: 100%; }
-        #searchInput { flex-grow: 1; }
+        .search-container { margin-bottom: 15px; display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
+        #searchInput { flex-grow: 1; min-width: 200px; }
         .mobile-only { display: none; }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
@@ -265,7 +265,7 @@
         }
         
         th:nth-child(1), td:nth-child(1) { width: 140px; } 
-        th:nth-child(2), td:nth-child(2) { width: 90px; }  
+        th:nth-child(2), td:nth-child(2) { width: 110px; }  /* Slightly wider for Confirmed icon */
         th:nth-child(3), td:nth-child(3) { width: 70px; }  
         th:nth-child(4), td:nth-child(4),
         th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
@@ -297,7 +297,7 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT (Squish Fix Applied)              */
+        /* MOBILE CARD LAYOUT                                   */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
@@ -354,7 +354,7 @@
 
     <header>
         <h1>📡 Radio Logger</h1>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="theme-toggle" onclick="toggleSettings()">⚙️ Settings</button>
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
         </div>
@@ -471,6 +471,7 @@
 
     <div class="controls">
         <h2>Your Logs</h2>
+        <button class="filter-btn" style="border-color: var(--edit-color); color: var(--edit-color);" onclick="loadLocalStarterPack()">📥 Load Local Starter DB</button>
     </div>
 
     <div class="radio-filters" id="radioFilterContainer"></div>
@@ -479,8 +480,8 @@
         <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
         <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
             <option value="All">All Frequencies</option>
-            <option value="Confirmed">✅ Confirmed</option>
-            <option value="Unconfirmed">⏳ Unconfirmed (DB)</option>
+            <option value="Confirmed">✅ Confirmed Only</option>
+            <option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option>
         </select>
         <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
             <option value="date">Sort: Newest First</option>
@@ -995,6 +996,41 @@
             document.getElementById('logCounter').innerText = "Total Displayed: " + count;
         }
 
+        // --- NEW LOCAL DB STARTER PACK INJECTION ---
+        function loadLocalStarterPack() {
+            if(!confirm("Add 18 unconfirmed local Swansea/Cardiff frequencies to your DB?")) return;
+            
+            const localDB = [
+                { f: 156.000, m: "FM", s: "Marine Ch 0", n: "Search & Rescue" },
+                { f: 156.300, m: "FM", s: "Marine Ch 6", n: "Inter-ship safety" },
+                { f: 156.400, m: "FM", s: "Marine Ch 8", n: "Inter-ship communication" },
+                { f: 156.500, m: "FM", s: "Marine Ch 10", n: "Port Ops (Swansea Docks?)" },
+                { f: 156.600, m: "FM", s: "Marine Ch 12", n: "Port Operations" },
+                { f: 156.650, m: "FM", s: "Marine Ch 13", n: "Bridge-to-bridge" },
+                { f: 156.800, m: "FM", s: "Marine Ch 16", n: "Distress / Coastguard Milford Haven" },
+                { f: 161.500, m: "FM", s: "Marine Ch 10 Duplex", n: "Port Ops / Marina" },
+                { f: 119.250, m: "AM", s: "Cardiff Airport Radar", n: "EGFF Approach" },
+                { f: 133.100, m: "AM", s: "Cardiff Airport Dir", n: "EGFF Director" },
+                { f: 125.850, m: "AM", s: "Bristol Airport Radar", n: "EGGD Radar" },
+                { f: 133.850, m: "AM", s: "Bristol Airport App", n: "EGGD Approach" },
+                { f: 125.000, m: "AM", s: "London Info (West)", n: "Gen Aviation over Wales" },
+                { f: 145.625, m: "FM", s: "GB3WB Repeater", n: "2m Carmarthen/Swansea" },
+                { f: 433.100, m: "FM", s: "GB3CD Repeater", n: "70cm Cardiff" },
+                { f: 446.006, m: "FM", s: "PMR446 Ch 1", n: "Walkie-talkies (Scan 1-8)" },
+                { f: 446.093, m: "FM", s: "PMR446 Ch 8", n: "Walkie-talkies" },
+                { f: 446.106, m: "FM", s: "dPMR446 Ch 9", n: "Digital Walkie-talkies" }
+            ];
+
+            localDB.forEach(entry => {
+                logsRef.push({
+                    freq: entry.f, mode: entry.m, station: entry.s, notes: entry.n,
+                    radio: "Realistic Pro 2006", antenna: "Whip", signal: "5", traffic: "1", channel: "",
+                    confirmed: false, date: new Date().toISOString()
+                });
+            });
+            alert("Local DB added! Select 'Unconfirmed' in the filter to view them.");
+        }
+
         function deleteLog(id) { if(confirm("Delete entry from Cloud?")) { db.ref('radioLogs/' + id).remove(); } }
         function clearData() { if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) { logsRef.remove(); } }
 
@@ -1005,4 +1041,5 @@
         };
         function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
     </script>
-</body></html>
+</body>
+</html>
