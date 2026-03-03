@@ -63,7 +63,6 @@
             font-size: 0.85em;
         }
 
-        /* --- Collapsible Form Card --- */
         .input-card {
             background: var(--card-bg);
             padding: 20px;
@@ -100,7 +99,6 @@
             color: var(--text-main); height: 44px; width: 100%;
         }
 
-        /* --- S-Meter & Traffic --- */
         .s-meter-container, .traffic-container {
             display: flex; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
@@ -116,7 +114,6 @@
         .traffic-block { height: 100%; border-radius: 3px; }
 
         [data-theme="dark"] .s-meter-bar, [data-theme="dark"] .traffic-block { background-color: #374151; }
-        
         .s-meter-bar:hover, .traffic-block:hover { opacity: 0.8; }
         .s-meter-bar.active-green { background-color: #10b981; }
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
@@ -134,7 +131,6 @@
         .s-meter-bar[data-val="9"] { height: 95%; }
         .s-meter-bar[data-val="10"] { height: 100%; }
 
-        /* --- Mini Graphics --- */
         .mini-meter, .mini-traffic {
             display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px;
         }
@@ -182,7 +178,6 @@
             display: flex; justify-content: flex-end;
         }
 
-        /* --- Radio Filter Buttons with Counts --- */
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .filter-btn {
             display: inline-flex; align-items: center; gap: 6px;
@@ -203,7 +198,6 @@
         .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
         .filter-btn.active .filter-count { opacity: 0.9; }
 
-        /* Pilled inline elements */
         .inline-pill {
             display: inline-block; margin-left: 8px; padding: 2px 6px; 
             background: #e5e7eb; color: var(--text-sub); border-radius: 4px; 
@@ -213,7 +207,7 @@
         [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
         .flex-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
-     /* --- EXPANDABLE NOTES STYLING --- */
+        /* --- EXPANDABLE NOTES STYLING --- */
         td.notes-cell { overflow: visible !important; position: relative; } 
 
         .expandable-note {
@@ -234,7 +228,6 @@
         [data-theme="dark"] .expandable-note { background-color: rgba(59, 130, 246, 0.1); }
         [data-theme="dark"] .expandable-note:hover { background-color: rgba(59, 130, 246, 0.15); }
         
-        /* MOBILE: Just expand downward inline like normal */
         @media screen and (max-width: 800px) {
             .expandable-note.expanded {
                 -webkit-line-clamp: unset; 
@@ -244,40 +237,22 @@
             }
         }
 
-        /* DESKTOP PC: Speech Bubble Pop-Out */
         @media screen and (min-width: 801px) {
             .expandable-note.expanded {
-                position: absolute;
-                z-index: 9999;
-                top: 100%; 
-                right: 0; /* Anchors right, grows left to avoid scrollbar */
-                left: auto;
-                min-width: 280px;
-                max-width: 350px;
-                background: var(--card-bg) !important; /* Forces solid background */
-                border: 2px solid var(--primary);
-                border-radius: 8px;
-                padding: 12px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Stronger shadow to pop */
-                white-space: normal;
-                -webkit-line-clamp: unset;
-                overflow: visible;
-                display: block;
-                margin-top: 10px; 
+                position: absolute; z-index: 9999; top: 100%; 
+                right: 0; left: auto; min-width: 280px; max-width: 350px;
+                background: var(--card-bg) !important; border: 2px solid var(--primary);
+                border-radius: 8px; padding: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
+                white-space: normal; -webkit-line-clamp: unset; overflow: visible;
+                display: block; margin-top: 10px; 
             }
-            
-            /* Moves the little arrow to the right side */
             .expandable-note.expanded::before {
-                content: '';
-                position: absolute;
-                bottom: 100%; 
-                right: 15px; 
-                left: auto;
-                border-width: 8px;
-                border-style: solid;
+                content: ''; position: absolute; bottom: 100%; 
+                right: 15px; left: auto; border-width: 8px; border-style: solid;
                 border-color: transparent transparent var(--primary) transparent;
             }
         }
+
         .table-container { 
             max-height: 65vh; overflow-y: auto; overflow-x: hidden;
             background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
@@ -289,7 +264,6 @@
             font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
         }
         
-        /* Desktop Widths */
         th:nth-child(1), td:nth-child(1) { width: 140px; } 
         th:nth-child(2), td:nth-child(2) { width: 90px; }  
         th:nth-child(3), td:nth-child(3) { width: 70px; }  
@@ -323,10 +297,11 @@
         }
 
         /* ==================================================== */
-        /* MOBILE CARD LAYOUT                                   */
+        /* MOBILE CARD LAYOUT (Squish Fix Applied)              */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
+            #statusFilter { width: 100% !important; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
@@ -385,7 +360,7 @@
         </div>
     </header>
 
-<div id="settingsCard" class="input-card" style="display: none; border: 2px dashed var(--primary);">
+    <div id="settingsCard" class="input-card" style="display: none; border: 2px dashed var(--primary);">
         <div class="card-header" onclick="toggleSettings()">
             <h2>⚙️ Admin Settings (Manage Lists)</h2>
             <span>▼ (Close)</span>
@@ -417,7 +392,7 @@
             </div>
         </div>
     </div>
-    
+
     <div id="formCard" class="input-card">
         <div class="card-header" onclick="toggleForm()">
             <h2>📝 Log Entry</h2>
@@ -432,11 +407,7 @@
             </div>
             <div class="form-group">
                 <label>Radio</label>
-                <select id="radioInput">
-                    <option value="Malahit DSP2" selected>Malahit DSP2</option>
-                    <option value="Realistic Pro 2006">Realistic Pro 2006</option>
-                    <option value="Baofeng DM1701">Baofeng DM1701</option>
-                </select>
+                <select id="radioInput"></select>
             </div>
             <div class="form-group">
                 <label>Memory Ch. (Opt)</label>
@@ -444,20 +415,11 @@
             </div>
             <div class="form-group">
                 <label>Antenna</label>
-                <select id="antennaInput">
-                    <option value="GA800" selected>GA800</option>
-                    <option value="Whip">Whip</option>
-                    <option value="X30N">X30N</option>
-                </select>
+                <select id="antennaInput"></select>
             </div>
             <div class="form-group">
                 <label>Mode</label>
-                <select id="modeInput">
-                    <option value="AM">AM</option><option value="FM">FM</option>
-                    <option value="USB">USB</option><option value="LSB">LSB</option>
-                    <option value="CW">CW</option><option value="FT8">FT8</option>
-                    <option value="DMR">DMR</option><option value="Other">Other</option>
-                </select>
+                <select id="modeInput"></select>
             </div>
             <div class="form-group">
                 <label>Station / Callsign</label>
@@ -499,6 +461,10 @@
                 <label>Additional Notes</label>
                 <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
             </div>
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; grid-column: 1 / -1; margin-top: 5px;">
+                <input type="checkbox" id="confirmedInput" checked style="width: 22px; height: 22px; cursor: pointer; flex-shrink: 0;">
+                <label for="confirmedInput" style="margin: 0; cursor: pointer; font-size: 0.95em;">✅ <strong>Confirmed Active</strong> (Uncheck to save to Local DB for testing)</label>
+            </div>
             <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
         </div>
     </div>
@@ -507,11 +473,15 @@
         <h2>Your Logs</h2>
     </div>
 
-    <div class="radio-filters" id="radioFilterContainer">
-        </div>
+    <div class="radio-filters" id="radioFilterContainer"></div>
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
+        <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
+            <option value="All">All Frequencies</option>
+            <option value="Confirmed">✅ Confirmed</option>
+            <option value="Unconfirmed">⏳ Unconfirmed (DB)</option>
+        </select>
         <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
             <option value="date">Sort: Newest First</option>
             <option value="freq">Sort: Frequency</option>
@@ -548,9 +518,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. FIREBASE CONFIGURATION
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w",
             authDomain: "radio-logger-cloud.firebaseapp.com",
@@ -560,14 +527,72 @@
             messagingSenderId: "501308146621",
             appId: "1:501308146621:web:b16456a55d252f9eafc8d4"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const logsRef = db.ref('radioLogs');
 
-        // ==========================================
-        // 2. APP LOGIC & STATE
-        // ==========================================
+        let appSettings = { radios: [], antennas: [], modes: [] };
+        const settingsRef = db.ref('settings');
+
+        settingsRef.on('value', (snapshot) => {
+            let data = snapshot.val() || {};
+            appSettings = {
+                radios: data.radios || ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"],
+                antennas: data.antennas || ["GA800", "Whip", "X30N"],
+                modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"]
+            };
+            renderAdminLists();
+            updateDropdowns(); 
+        });
+
+        function addSetting(type, inputId) {
+            const input = document.getElementById(inputId);
+            const val = input.value.trim();
+            if (!val) return;
+            if (!appSettings[type].includes(val)) {
+                appSettings[type].push(val);
+                settingsRef.child(type).set(appSettings[type]);
+            }
+            input.value = "";
+        }
+
+        function removeSetting(type, val) {
+            if(confirm(`Remove "${val}" from your list?`)) {
+                appSettings[type] = appSettings[type].filter(item => item !== val);
+                settingsRef.child(type).set(appSettings[type]);
+            }
+        }
+
+        function renderAdminLists() {
+            ['radios', 'antennas', 'modes'].forEach(type => {
+                const listEl = document.getElementById(type + 'AdminList');
+                if(listEl) {
+                    listEl.innerHTML = appSettings[type].map(item => 
+                        `<li style="display:flex; justify-content:space-between; background:var(--table-hover); padding:5px 8px; border-radius:4px; border: 1px solid var(--border-color);">
+                            ${item} <span style="color:#ef4444; cursor:pointer; font-weight:bold;" onclick="removeSetting('${type}', '${item}')">✖</span>
+                        </li>`
+                    ).join('');
+                }
+            });
+        }
+
+        function updateDropdowns() {
+            const rSelect = document.getElementById('radioInput');
+            const aSelect = document.getElementById('antennaInput');
+            const mSelect = document.getElementById('modeInput');
+            const curR = rSelect ? rSelect.value : "";
+            const curA = aSelect ? aSelect.value : "";
+            const curM = mSelect ? mSelect.value : "";
+
+            if (rSelect) rSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (aSelect) aSelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (mSelect) mSelect.innerHTML = appSettings.modes.map(i => `<option value="${i}">${i}</option>`).join('');
+
+            if (appSettings.radios.includes(curR)) rSelect.value = curR;
+            if (appSettings.antennas.includes(curA)) aSelect.value = curA;
+            if (appSettings.modes.includes(curM)) mSelect.value = curM;
+        }
+
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
         let activeRadioFilter = 'All'; 
@@ -578,7 +603,6 @@
             snapshot.forEach((childSnapshot) => {
                 let log = childSnapshot.val();
                 log.id = childSnapshot.key; 
-                
                 if (!log.signal && log.notes) {
                     let parsedNote = parseInt(log.notes);
                     if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && log.notes.length <= 2) {
@@ -587,19 +611,12 @@
                 }
                 if (!log.traffic) { log.traffic = ""; }
                 if (!log.channel) { log.channel = ""; }
-
                 cloudLogs.push(log);
             });
             renderFilters();
             renderTable(); 
         });
 
-        // Settings Panel Toggle
-        function toggleSettings() {
-            const settings = document.getElementById('settingsCard');
-            settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
-        }
-        
         let isFormCollapsed = false;
         function toggleForm() {
             isFormCollapsed = !isFormCollapsed;
@@ -613,25 +630,24 @@
                 icon.innerText = "▼ (Hide)";
             }
         }
-        function expandForm() {
-            if(isFormCollapsed) toggleForm(); 
+        function expandForm() { if(isFormCollapsed) toggleForm(); }
+        function toggleSettings() {
+            const settings = document.getElementById('settingsCard');
+            settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
         }
 
         function toggleMemoryBankMode() {
             memoryBankMode = !memoryBankMode;
-            renderFilters(); 
-            renderTable();
+            renderFilters(); renderTable();
         }
 
         function renderFilters() {
             const container = document.getElementById('radioFilterContainer');
             const baseRadios = appSettings.radios || [];
             const loggedRadios = cloudLogs.map(l => l.radio).filter(Boolean);
-            
             const uniqueRadios = [...new Set([...baseRadios, ...loggedRadios])];
             
             container.innerHTML = '';
-            
             const allBtn = document.createElement('button');
             allBtn.className = `filter-btn ${activeRadioFilter === 'All' ? 'active' : ''}`;
             allBtn.innerHTML = `All <span class="filter-count">(${cloudLogs.length})</span>`;
@@ -691,8 +707,7 @@
                 }
                 html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`;
             }
-            html += '</div>';
-            return html;
+            html += '</div>'; return html;
         }
 
         function generateMiniTraffic(val) {
@@ -703,38 +718,25 @@
                 let colorClass = (i <= num) ? "active" : "";
                 html += `<div class="mini-t-block ${colorClass}"></div>`;
             }
-            html += '</div>';
-            return html;
+            html += '</div>'; return html;
         }
 
-        // --- NEW NOTE TOGGLE LOGIC ---
         function toggleNote(element, event) {
-            event.stopPropagation(); // Stops the global click listener
+            event.stopPropagation();
             const isExpanded = element.classList.contains('expanded');
-            
-            // Close ALL open notes first
             document.querySelectorAll('.expandable-note').forEach(note => {
                 note.classList.remove('expanded');
             });
-
-            // Open this one if it wasn't already open
-            if (!isExpanded) {
-                element.classList.add('expanded');
-            }
+            if (!isExpanded) { element.classList.add('expanded'); }
         }
 
-        // Clicking anywhere else on the screen closes the open note
         document.addEventListener('click', function() {
             document.querySelectorAll('.expandable-note').forEach(note => {
                 note.classList.remove('expanded');
             });
         });
-        // -----------------------------
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            setSMeter(5);
-            setTraffic(1);
-        });
+
+        document.addEventListener('DOMContentLoaded', () => { setSMeter(5); setTraffic(1); });
 
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
@@ -762,13 +764,8 @@
 
         function sortTable(key, element) {
             if (memoryBankMode) return; 
-            
-            if (currentSort.key === key) {
-                currentSort.desc = !currentSort.desc;
-            } else {
-                currentSort.key = key;
-                currentSort.desc = false;
-            }
+            if (currentSort.key === key) { currentSort.desc = !currentSort.desc; } 
+            else { currentSort.key = key; currentSort.desc = false; }
             document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
             if(element) element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc');
             document.getElementById('mobileSort').value = key;
@@ -793,6 +790,7 @@
             const signalVal = document.getElementById('signalInput').value;
             const trafficVal = document.getElementById('trafficInput').value;
             const notesText = document.getElementById('notesInput').value;
+            const isConfirmed = document.getElementById('confirmedInput').checked;
 
             if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
             
@@ -805,7 +803,8 @@
                 station: station,
                 signal: signalVal,
                 traffic: trafficVal,
-                notes: notesText
+                notes: notesText,
+                confirmed: isConfirmed
             };
 
             if (editId) {
@@ -815,24 +814,23 @@
                 logEntry.date = new Date().toISOString();
                 logsRef.push(logEntry);
             }
-
             resetForm();
         }
 
         function startEdit(id) {
             const log = cloudLogs.find(l => l.id === id);
             if (!log) return;
-
             expandForm(); 
 
             document.getElementById('editId').value = log.id;
             document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3);
-            document.getElementById('radioInput').value = log.radio || "Malahit DSP2";
+            document.getElementById('radioInput').value = log.radio || "";
             document.getElementById('channelInput').value = log.channel || "";
-            document.getElementById('antennaInput').value = log.antenna || "GA800";
+            document.getElementById('antennaInput').value = log.antenna || "";
             document.getElementById('modeInput').value = log.mode;
             document.getElementById('stationInput').value = log.station || "";
             document.getElementById('notesInput').value = log.notes || "";
+            document.getElementById('confirmedInput').checked = log.confirmed !== false; 
 
             let parsedSignal = parseInt(log.signal);
             if (isNaN(parsedSignal) || parsedSignal < 1 || parsedSignal > 10) { parsedSignal = 5; }
@@ -853,9 +851,9 @@
             document.getElementById('submitBtn').innerText = "Add to Log";
             document.getElementById('submitBtn').classList.remove('btn-save');
             document.getElementById('formCard').classList.remove('editing-mode');
-            setSMeter(5);
-            setTraffic(1);
+            setSMeter(5); setTraffic(1);
             document.getElementById('channelInput').value = "";
+            document.getElementById('confirmedInput').checked = true;
         }
 
         function duplicateLog(id) {
@@ -866,14 +864,15 @@
             if(confirm(`Duplicate log entry for ${freqDisplay} MHz?`)) {
                 const duplicatedLog = {
                     freq: logToCopy.freq,
-                    radio: logToCopy.radio || "Malahit DSP2",
+                    radio: logToCopy.radio || "",
                     channel: logToCopy.channel || "",
-                    antenna: logToCopy.antenna || "GA800",
+                    antenna: logToCopy.antenna || "",
                     mode: logToCopy.mode || "AM",
                     station: logToCopy.station || "",
                     signal: logToCopy.signal || "5",
                     traffic: logToCopy.traffic || "1",
                     notes: logToCopy.notes || "",
+                    confirmed: logToCopy.confirmed !== false,
                     date: new Date().toISOString() 
                 };
                 logsRef.push(duplicatedLog);
@@ -885,15 +884,18 @@
             document.getElementById('stationInput').value = '';
             document.getElementById('notesInput').value = '';
             document.getElementById('channelInput').value = '';
-            document.getElementById('radioInput').value = "Malahit DSP2";
-            document.getElementById('antennaInput').value = "GA800";
-            setSMeter(5); 
-            setTraffic(1);
+            setSMeter(5); setTraffic(1);
+            document.getElementById('confirmedInput').checked = true;
+        }
+
+        function toggleConfirm(id, currentStatus) {
+            db.ref('radioLogs/' + id).update({ confirmed: currentStatus });
         }
 
         function renderTable() {
             const tbody = document.querySelector('#logTable tbody');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
             tbody.innerHTML = '';
             
             let displayLogs = [...cloudLogs];
@@ -902,14 +904,18 @@
                 displayLogs = displayLogs.filter(log => log.radio === activeRadioFilter);
             }
 
+            if (statusFilter === 'Confirmed') {
+                displayLogs = displayLogs.filter(log => log.confirmed !== false);
+            } else if (statusFilter === 'Unconfirmed') {
+                displayLogs = displayLogs.filter(log => log.confirmed === false);
+            }
+
             if (memoryBankMode) {
                 displayLogs = displayLogs.filter(log => log.channel && log.channel.trim() !== "");
                 displayLogs.sort((a, b) => {
-                    let radioA = a.radio || "";
-                    let radioB = b.radio || "";
+                    let radioA = a.radio || ""; let radioB = b.radio || "";
                     if (radioA !== radioB) return radioA.localeCompare(radioB);
-                    let chA = parseInt(a.channel) || 0;
-                    let chB = parseInt(b.channel) || 0;
+                    let chA = parseInt(a.channel) || 0; let chB = parseInt(b.channel) || 0;
                     return chA - chB; 
                 });
             } else {
@@ -917,25 +923,15 @@
                     if (currentSort.key === 'channel') {
                         let hasA = (a.channel !== "" && a.channel != null);
                         let hasB = (b.channel !== "" && b.channel != null);
-                        
-                        if (hasA && !hasB) return -1; 
-                        if (!hasA && hasB) return 1;  
-                        if (!hasA && !hasB) return 0;
-                        
-                        let valA = parseInt(a.channel);
-                        let valB = parseInt(b.channel);
+                        if (hasA && !hasB) return -1; if (!hasA && hasB) return 1; if (!hasA && !hasB) return 0;
+                        let valA = parseInt(a.channel); let valB = parseInt(b.channel);
                         return currentSort.desc ? valB - valA : valA - valB;
                     }
-
-                    let valA = a[currentSort.key] || "";
-                    let valB = b[currentSort.key] || "";
-                    
+                    let valA = a[currentSort.key] || ""; let valB = b[currentSort.key] || "";
                     if (currentSort.key === 'signal' || currentSort.key === 'traffic' || currentSort.key === 'freq') {
-                        valA = parseFloat(valA) || 0;
-                        valB = parseFloat(valB) || 0;
+                        valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0;
                         return currentSort.desc ? valB - valA : valA - valB;
                     }
-
                     if (valA < valB) return currentSort.desc ? 1 : -1;
                     if (valA > valB) return currentSort.desc ? -1 : 1;
                     return 0;
@@ -950,10 +946,13 @@
                 let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
                 let displayTraffic = log.traffic ? `<div style="display:flex; align-items:center;">T-${log.traffic} ${generateMiniTraffic(log.traffic)}</div>` : "";
                 let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : "";
+                let displayNotes = log.notes ? `<div class="expandable-note" onclick="toggleNote(this, event)" title="Tap to expand/collapse">${log.notes}</div>` : "";
 
-                // --- NEW EXPANDABLE NOTE HTML ---
-               let displayNotes = log.notes ? `<div class="expandable-note" onclick="toggleNote(this, event)" title="Tap to expand/collapse">${log.notes}</div>` : "";
-                
+                let isConf = log.confirmed !== false;
+                let confIcon = isConf 
+                    ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` 
+                    : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
+
                 const matches = freqDisplay.includes(searchTerm) || 
                                 (log.radio || "").toLowerCase().includes(searchTerm) ||
                                 (log.channel || "").toLowerCase().includes(searchTerm) ||
@@ -969,7 +968,7 @@
                     <td data-label="UTC Time">${formattedDate}</td>
                     <td data-label="Freq (MHz)">
                         <div class="flex-wrapper">
-                            <strong>${freqDisplay}</strong>
+                            ${confIcon} <strong>${freqDisplay}</strong>
                             ${log.mode ? `<span class="inline-pill mobile-mode">${log.mode}</span>` : ""}
                         </div>
                     </td>
@@ -996,104 +995,14 @@
             document.getElementById('logCounter').innerText = "Total Displayed: " + count;
         }
 
-        function deleteLog(id) {
-            if(confirm("Delete entry from Cloud?")) {
-                db.ref('radioLogs/' + id).remove();
-            }
-        }
+        function deleteLog(id) { if(confirm("Delete entry from Cloud?")) { db.ref('radioLogs/' + id).remove(); } }
+        function clearData() { if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) { logsRef.remove(); } }
 
-        function clearData() {
-            if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) {
-                logsRef.remove();
-            }
-        }
-
-// ==========================================
-        // 3. ADMIN SETTINGS (FIREBASE CLOUD)
-        // ==========================================
-        let appSettings = { radios: [], antennas: [], modes: [] };
-        const settingsRef = db.ref('settings');
-
-        // Listen for Settings from the Cloud
-        settingsRef.on('value', (snapshot) => {
-            let data = snapshot.val() || {};
-            // Set defaults if cloud is empty
-            appSettings = {
-                radios: data.radios || ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"],
-                antennas: data.antennas || ["GA800", "Whip", "X30N"],
-                modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"]
-            };
-            renderAdminLists();
-            updateDropdowns();
-        });
-
-        // Add a new setting to the Cloud
-        function addSetting(type, inputId) {
-            const input = document.getElementById(inputId);
-            const val = input.value.trim();
-            if (!val) return;
-            
-            if (!appSettings[type].includes(val)) {
-                appSettings[type].push(val);
-                settingsRef.child(type).set(appSettings[type]);
-            }
-            input.value = "";
-        }
-
-        // Remove a setting from the Cloud
-        function removeSetting(type, val) {
-            if(confirm(`Remove "${val}" from your list?`)) {
-                appSettings[type] = appSettings[type].filter(item => item !== val);
-                settingsRef.child(type).set(appSettings[type]);
-            }
-        }
-
-// Build the dropdown menus in the main input form
-        function updateDropdowns() {
-            const rSelect = document.getElementById('radioInput');
-            const aSelect = document.getElementById('antennaInput');
-            const mSelect = document.getElementById('modeInput');
-            
-            // Remember what you currently have selected so it doesn't reset while typing
-            const curR = rSelect.value;
-            const curA = aSelect.value;
-            const curM = mSelect.value;
-
-            // Overwrite the hardcoded HTML with the dynamic Cloud lists
-            if (rSelect) rSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
-            if (aSelect) aSelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
-            if (mSelect) mSelect.innerHTML = appSettings.modes.map(i => `<option value="${i}">${i}</option>`).join('');
-
-            // Restore your selection if it still exists
-            if (appSettings.radios.includes(curR)) rSelect.value = curR;
-            if (appSettings.antennas.includes(curA)) aSelect.value = curA;
-            if (appSettings.modes.includes(curM)) mSelect.value = curM;
-        }
-        
-        // Draw the Admin lists in the Settings Panel
-        function renderAdminLists() {
-            ['radios', 'antennas', 'modes'].forEach(type => {
-                const listEl = document.getElementById(type + 'AdminList');
-                if(listEl) {
-                    listEl.innerHTML = appSettings[type].map(item => 
-                        `<li style="display:flex; justify-content:space-between; background:var(--table-hover); padding:5px 8px; border-radius:4px; border: 1px solid var(--border-color);">
-                            ${item} 
-                            <span style="color:#ef4444; cursor:pointer; font-weight:bold;" onclick="removeSetting('${type}', '${item}')">✖</span>
-                        </li>`
-                    ).join('');
-                }
-            });
-        }
-        
         let mybutton = document.getElementById("scrollTopBtn");
         window.onscroll = function() { 
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { 
-                mybutton.style.display = "block"; 
-            } else { 
-                mybutton.style.display = "none"; 
-            } 
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { mybutton.style.display = "block"; } 
+            else { mybutton.style.display = "none"; } 
         };
         function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
     </script>
-</body>
-</html>
+</body></html>
