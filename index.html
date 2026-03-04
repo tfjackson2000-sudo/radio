@@ -78,6 +78,7 @@
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
 
+        .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; font-size: 0.9em; text-transform: uppercase; }
         .input-card {
             background: var(--card-bg);
             padding: 20px;
@@ -675,48 +676,99 @@
             const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
             if (!selectedRadio) { grid.innerHTML = 'Add a radio in settings first.'; return; }
 
-            const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && !isNaN(parseInt(l.channel)));
+            // Pull logs for this radio that actually have a channel written in them
+            const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && l.channel.toString().trim() !== "");
             
-            let maxCh = 100; // Shows at least 100 channels by default to mimic a real radio
-            radioLogs.forEach(l => { if(parseInt(l.channel) > maxCh) maxCh = parseInt(l.channel); });
-            if (maxCh > 400) maxCh = 400; // Hard cap so we don't break the browser
-
             let html = '';
-            const channelMap = {};
-            radioLogs.forEach(l => { channelMap[parseInt(l.channel)] = l; });
-
-            for (let i = 1; i <= maxCh; i++) {
-                const log = channelMap[i];
+            
+            // Helper function to draw the individual squares
+            function renderSlot(chLabel, log) {
+                const cleanCh = chLabel.replace('CH ', '').trim();
                 if (log) {
                     let isConf = log.confirmed !== false;
                     let icon = isConf ? '✅' : '⏳';
-                    html += `
+                    return `
                         <div class="memory-slot" onclick="startEdit('${log.id}')" title="Click to edit">
                             <span class="status-icon">${icon}</span>
-                            <span class="ch-num">CH ${i}</span>
+                            <span class="ch-num">${chLabel}</span>
                             <span class="freq">${parseFloat(log.freq).toFixed(3)}</span>
                             <span class="station">${log.station || log.notes || 'No Name'}</span>
                         </div>`;
                 } else {
-                    html += `
-                        <div class="memory-slot empty-slot" onclick="openNewMemory(${i}, '${selectedRadio}')" title="Click to add frequency to this channel">
-                            <span class="ch-num">CH ${i}</span>
+                    return `
+                        <div class="memory-slot empty-slot" onclick="openNewMemory('${cleanCh}', '${selectedRadio}')" title="Click to add frequency to this channel">
+                            <span class="ch-num">${chLabel}</span>
                             <span class="freq">Empty</span>
                         </div>`;
                 }
             }
+
+            // --- REALISTIC PRO 2006 LAYOUT ---
+            if (selectedRadio.includes("Realistic Pro 2006")) {
+                const channelMap = {};
+                radioLogs.forEach(l => { channelMap[l.channel.toString().toUpperCase()] = l; });
+
+                // Draw 10 Banks of 40
+                for (let bank = 0; bank < 10; bank++) {
+                    html += `<div class="bank-header">Bank ${bank + 1} (Ch ${bank * 40 + 1} - ${(bank + 1) * 40})</div>`;
+                    for (let i = 1; i <= 40; i++) {
+                        let chNum = bank * 40 + i;
+                        html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]);
+                    }
+                }
+                
+                // Draw Monitor Memory (M1 - M10)
+                html += `<div class="bank-header">Monitor Memory (Scratchpad)</div>`;
+                for (let i = 1; i <= 10; i++) {
+                    html += renderSlot(`M${i}`, channelMap[`M${i}`]);
+                }
+                
+            } 
+            // --- MALAHIT DSP2 LAYOUT ---
+            else if (selectedRadio.includes("Malahit DSP2")) {
+                const channelMap = {};
+                radioLogs.forEach(l => { channelMap[l.channel.toString()] = l; });
+
+                // Draw 5 Pages of 10
+                for (let page = 1; page <= 5; page++) {
+                    html += `<div class="bank-header">Page ${page} (Ch ${(page-1)*10 + 1} - ${page*10})</div>`;
+                    for (let i = 1; i <= 10; i++) {
+                        let chNum = (page - 1) * 10 + i;
+                        html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]);
+                    }
+                }
+
+            } 
+            // --- DEFAULT LAYOUT (DM1701 & custom radios) ---
+            else {
+                const channelMap = {};
+                let maxCh = 100; // Shows at least 100 by default
+                radioLogs.forEach(l => { 
+                    let parsed = parseInt(l.channel);
+                    if(!isNaN(parsed)) {
+                        channelMap[parsed] = l; 
+                        if(parsed > maxCh) maxCh = parsed;
+                    }
+                });
+                if (maxCh > 400) maxCh = 400; 
+
+                html += `<div class="bank-header">Standard Memory Channels</div>`;
+                for (let i = 1; i <= maxCh; i++) {
+                    html += renderSlot(`CH ${i}`, channelMap[i]);
+                }
+            }
+            
             grid.innerHTML = html;
         }
 
         function openNewMemory(channel, radio) {
-            switchView('logbook'); // Switch to main tab
+            switchView('logbook'); 
             resetForm();
             expandForm();
             document.getElementById('channelInput').value = channel;
             document.getElementById('radioInput').value = radio;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
         let isFormCollapsed = false;
         function toggleForm() {
             isFormCollapsed = !isFormCollapsed;
