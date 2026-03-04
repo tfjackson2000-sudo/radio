@@ -63,6 +63,21 @@
             font-size: 0.85em;
         }
 
+        /* --- TABS & MEMORY BANK GRID --- */
+        .tab-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; border-bottom: none; opacity: 0.6; transition: 0.2s; margin-right: 5px; }
+        .tab-btn:hover { opacity: 0.8; }
+        .tab-btn.active { background: var(--primary); color: white; opacity: 1; border-color: var(--primary); }
+        
+        .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 60vh; overflow-y: auto; padding-right: 5px; }
+        .memory-slot { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .memory-slot:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .memory-slot .ch-num { font-size: 0.8em; font-weight: 800; color: var(--ch-color); display: block; margin-bottom: 5px; text-transform: uppercase; }
+        .memory-slot .freq { font-size: 1.2em; font-weight: bold; color: var(--text-main); display: block; }
+        .memory-slot .station { font-size: 0.8em; color: var(--text-sub); display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
+        .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; }
+        .empty-slot:hover { border-style: solid; opacity: 1; }
+
         .input-card {
             background: var(--card-bg);
             padding: 20px;
@@ -265,7 +280,7 @@
         }
         
         th:nth-child(1), td:nth-child(1) { width: 140px; } 
-        th:nth-child(2), td:nth-child(2) { width: 110px; }  /* Slightly wider for Confirmed icon */
+        th:nth-child(2), td:nth-child(2) { width: 110px; }  
         th:nth-child(3), td:nth-child(3) { width: 70px; }  
         th:nth-child(4), td:nth-child(4),
         th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
@@ -359,6 +374,11 @@
             <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
         </div>
     </header>
+
+    <div style="display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--primary);">
+        <button id="tab-logbook" class="tab-btn active" onclick="switchView('logbook')">📋 Main Logbook</button>
+        <button id="tab-memory" class="tab-btn" onclick="switchView('memory')">📻 Memory Banks</button>
+    </div>
 
     <div id="settingsCard" class="input-card" style="display: none; border: 2px dashed var(--primary);">
         <div class="card-header" onclick="toggleSettings()">
@@ -469,55 +489,63 @@
         </div>
     </div>
 
-    <div class="controls">
-        <h2>Your Logs</h2>
+    <div id="memoryBankContainer" style="display: none; margin-bottom: 25px;">
+        <div class="controls">
+            <h2>📻 Memory Banks</h2>
+            <select id="memoryBankRadioSelect" onchange="renderMemoryBank()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px;"></select>
+        </div>
+        <div id="memoryGrid" class="memory-grid"></div>
     </div>
 
-    <div class="radio-filters" id="radioFilterContainer"></div>
+    <div id="mainLogbookContainer">
+        <div class="controls">
+            <h2>Your Logs</h2>
+        </div>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
-        <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
-            <option value="All">All Frequencies</option>
-            <option value="Confirmed">✅ Confirmed Only</option>
-            <option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option>
-        </select>
-        <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
-            <option value="date">Sort: Newest First</option>
-            <option value="freq">Sort: Frequency</option>
-            <option value="channel">Sort: Memory Channel</option>
-            <option value="signal">Sort: Best Signal</option>
-            <option value="traffic">Sort: Busiest Traffic</option>
-        </select>
-    </div>
+        <div class="radio-filters" id="radioFilterContainer"></div>
 
-    <div class="table-container">
-        <table id="logTable">
-            <thead>
-                <tr>
-                    <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
-                    <th onclick="sortTable('freq', this)">Freq (MHz)</th>
-                    <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
-                    <th onclick="sortTable('station', this)">Station</th>
-                    <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
-                    <th onclick="sortTable('antenna', this)">Antenna</th>
-                    <th onclick="sortTable('signal', this)">Sig</th>
-                    <th onclick="sortTable('traffic', this)">Traf</th>
-                    <th onclick="sortTable('notes', this)">Notes</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
+            <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
+                <option value="All">All Frequencies</option>
+                <option value="Confirmed">✅ Confirmed Only</option>
+                <option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option>
+            </select>
+            <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
+                <option value="date">Sort: Newest First</option>
+                <option value="freq">Sort: Frequency</option>
+                <option value="channel">Sort: Memory Channel</option>
+                <option value="signal">Sort: Best Signal</option>
+                <option value="traffic">Sort: Busiest Traffic</option>
+            </select>
+        </div>
 
-    <div class="footer-stats" id="logCounter">Total Logs: 0</div>
+        <div class="table-container">
+            <table id="logTable">
+                <thead>
+                    <tr>
+                        <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
+                        <th onclick="sortTable('freq', this)">Freq (MHz)</th>
+                        <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
+                        <th onclick="sortTable('station', this)">Station</th>
+                        <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
+                        <th onclick="sortTable('antenna', this)">Antenna</th>
+                        <th onclick="sortTable('signal', this)">Sig</th>
+                        <th onclick="sortTable('traffic', this)">Traf</th>
+                        <th onclick="sortTable('notes', this)">Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-    <div class="danger-zone">
-        <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
-    </div>
+        <div class="footer-stats" id="logCounter">Total Logs: 0</div>
 
-    <script>
+        <div class="danger-zone">
+            <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
+        </div>
+    </div> <script>
         const firebaseConfig = {
             apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w",
             authDomain: "radio-logger-cloud.firebaseapp.com",
@@ -615,7 +643,79 @@
             });
             renderFilters();
             renderTable(); 
+            if (document.getElementById('memoryBankContainer') && document.getElementById('memoryBankContainer').style.display === 'block') {
+                renderMemoryBank();
+            }
         });
+
+        // --- MEMORY BANK VIEW LOGIC ---
+        function switchView(view) {
+            const isLog = view === 'logbook';
+            document.getElementById('mainLogbookContainer').style.display = isLog ? 'block' : 'none';
+            document.getElementById('memoryBankContainer').style.display = isLog ? 'none' : 'block';
+            
+            document.getElementById('tab-logbook').classList.toggle('active', isLog);
+            document.getElementById('tab-memory').classList.toggle('active', !isLog);
+
+            if (!isLog) {
+                updateMemoryBankDropdown();
+                renderMemoryBank();
+            }
+        }
+
+        function updateMemoryBankDropdown() {
+            const select = document.getElementById('memoryBankRadioSelect');
+            const current = select.value;
+            select.innerHTML = appSettings.radios.map(r => `<option value="${r}">${r}</option>`).join('');
+            if (appSettings.radios.includes(current)) select.value = current;
+        }
+
+        function renderMemoryBank() {
+            const grid = document.getElementById('memoryGrid');
+            const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
+            if (!selectedRadio) { grid.innerHTML = 'Add a radio in settings first.'; return; }
+
+            const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && !isNaN(parseInt(l.channel)));
+            
+            let maxCh = 100; // Shows at least 100 channels by default to mimic a real radio
+            radioLogs.forEach(l => { if(parseInt(l.channel) > maxCh) maxCh = parseInt(l.channel); });
+            if (maxCh > 400) maxCh = 400; // Hard cap so we don't break the browser
+
+            let html = '';
+            const channelMap = {};
+            radioLogs.forEach(l => { channelMap[parseInt(l.channel)] = l; });
+
+            for (let i = 1; i <= maxCh; i++) {
+                const log = channelMap[i];
+                if (log) {
+                    let isConf = log.confirmed !== false;
+                    let icon = isConf ? '✅' : '⏳';
+                    html += `
+                        <div class="memory-slot" onclick="startEdit('${log.id}')" title="Click to edit">
+                            <span class="status-icon">${icon}</span>
+                            <span class="ch-num">CH ${i}</span>
+                            <span class="freq">${parseFloat(log.freq).toFixed(3)}</span>
+                            <span class="station">${log.station || log.notes || 'No Name'}</span>
+                        </div>`;
+                } else {
+                    html += `
+                        <div class="memory-slot empty-slot" onclick="openNewMemory(${i}, '${selectedRadio}')" title="Click to add frequency to this channel">
+                            <span class="ch-num">CH ${i}</span>
+                            <span class="freq">Empty</span>
+                        </div>`;
+                }
+            }
+            grid.innerHTML = html;
+        }
+
+        function openNewMemory(channel, radio) {
+            switchView('logbook'); // Switch to main tab
+            resetForm();
+            expandForm();
+            document.getElementById('channelInput').value = channel;
+            document.getElementById('radioInput').value = radio;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         let isFormCollapsed = false;
         function toggleForm() {
@@ -995,8 +1095,6 @@
             document.getElementById('logCounter').innerText = "Total Displayed: " + count;
         }
 
-        // --- NEW LOCAL DB STARTER PACK INJECTION ---
-        
         function deleteLog(id) { if(confirm("Delete entry from Cloud?")) { db.ref('radioLogs/' + id).remove(); } }
         function clearData() { if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) { logsRef.remove(); } }
 
