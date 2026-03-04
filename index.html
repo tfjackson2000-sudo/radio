@@ -471,7 +471,6 @@
 
     <div class="controls">
         <h2>Your Logs</h2>
-        <button class="filter-btn" style="border-color: var(--edit-color); color: var(--edit-color);" onclick="loadLocalStarterPack()">📥 Load Local Starter DB</button>
     </div>
 
     <div class="radio-filters" id="radioFilterContainer"></div>
@@ -997,40 +996,7 @@
         }
 
         // --- NEW LOCAL DB STARTER PACK INJECTION ---
-        function loadLocalStarterPack() {
-            if(!confirm("Add 18 unconfirmed local Swansea/Cardiff frequencies to your DB?")) return;
-            
-            const localDB = [
-                { f: 156.000, m: "FM", s: "Marine Ch 0", n: "Search & Rescue" },
-                { f: 156.300, m: "FM", s: "Marine Ch 6", n: "Inter-ship safety" },
-                { f: 156.400, m: "FM", s: "Marine Ch 8", n: "Inter-ship communication" },
-                { f: 156.500, m: "FM", s: "Marine Ch 10", n: "Port Ops (Swansea Docks?)" },
-                { f: 156.600, m: "FM", s: "Marine Ch 12", n: "Port Operations" },
-                { f: 156.650, m: "FM", s: "Marine Ch 13", n: "Bridge-to-bridge" },
-                { f: 156.800, m: "FM", s: "Marine Ch 16", n: "Distress / Coastguard Milford Haven" },
-                { f: 161.500, m: "FM", s: "Marine Ch 10 Duplex", n: "Port Ops / Marina" },
-                { f: 119.250, m: "AM", s: "Cardiff Airport Radar", n: "EGFF Approach" },
-                { f: 133.100, m: "AM", s: "Cardiff Airport Dir", n: "EGFF Director" },
-                { f: 125.850, m: "AM", s: "Bristol Airport Radar", n: "EGGD Radar" },
-                { f: 133.850, m: "AM", s: "Bristol Airport App", n: "EGGD Approach" },
-                { f: 125.000, m: "AM", s: "London Info (West)", n: "Gen Aviation over Wales" },
-                { f: 145.625, m: "FM", s: "GB3WB Repeater", n: "2m Carmarthen/Swansea" },
-                { f: 433.100, m: "FM", s: "GB3CD Repeater", n: "70cm Cardiff" },
-                { f: 446.006, m: "FM", s: "PMR446 Ch 1", n: "Walkie-talkies (Scan 1-8)" },
-                { f: 446.093, m: "FM", s: "PMR446 Ch 8", n: "Walkie-talkies" },
-                { f: 446.106, m: "FM", s: "dPMR446 Ch 9", n: "Digital Walkie-talkies" }
-            ];
-
-            localDB.forEach(entry => {
-                logsRef.push({
-                    freq: entry.f, mode: entry.m, station: entry.s, notes: entry.n,
-                    radio: "Realistic Pro 2006", antenna: "Whip", signal: "5", traffic: "1", channel: "",
-                    confirmed: false, date: new Date().toISOString()
-                });
-            });
-            alert("Local DB added! Select 'Unconfirmed' in the filter to view them.");
-        }
-
+        
         function deleteLog(id) { if(confirm("Delete entry from Cloud?")) { db.ref('radioLogs/' + id).remove(); } }
         function clearData() { if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) { logsRef.remove(); } }
 
