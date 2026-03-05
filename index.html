@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -72,6 +72,7 @@
         .tab-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; border-bottom: none; opacity: 0.6; transition: 0.2s; margin-bottom: -2px; }
         .tab-btn:hover { opacity: 0.8; }
         .tab-btn.active { background: var(--primary); color: white; opacity: 1; border-color: var(--primary); }
+        .settings-tab { margin-left: auto; } /* Pushes to right on PC */
         
         .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 60vh; overflow-y: auto; padding-right: 5px; }
         .memory-slot { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -313,6 +314,8 @@
         /* MOBILE CARD LAYOUT                                   */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
+            .settings-tab { margin-left: 0; } /* Fixes the tab spacing on mobile */
+
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
             #statusFilter { width: 100% !important; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
@@ -345,7 +348,6 @@
 
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
 
-            /* Brings the pill back only for mobile devices! */
             .mobile-mode {
                 display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); 
                 border-radius: 4px; font-size: 0.8em; font-weight: bold;
@@ -377,8 +379,7 @@
         <button id="tab-logbook" class="tab-btn active" onclick="switchView('logbook')">📋 Main Logbook</button>
         <button id="tab-memory" class="tab-btn" onclick="switchView('memory')">📻 Memory Banks</button>
         <button id="tab-analytics" class="tab-btn" onclick="switchView('analytics')">📊 Analytics</button>
-        <div style="flex-grow: 1;"></div>
-        <button id="tab-settings" class="tab-btn" onclick="switchView('settings')">⚙️ Settings</button>
+        <button id="tab-settings" class="tab-btn settings-tab" onclick="switchView('settings')">⚙️ Settings</button>
     </div>
 
     <div id="settingsContainer" style="display: none; margin-bottom: 25px;">
@@ -660,7 +661,6 @@
                 modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"],
                 defaultRadio: data.defaultRadio || "Realistic Pro 2006",
                 defaultAntenna: data.defaultAntenna || "X30N",
-                // Loads your dictionary from the cloud, or sets a default starter pack
                 dictionary: data.dictionary || [
                     {f: "125.855", n: "Bristol Lulsgate"},
                     {f: "119.155", n: "Bristol Radar"},
@@ -702,7 +702,7 @@
             settingsRef.child('default' + type).set(val);
         }
 
-        // --- NEW DICTIONARY CRUD ---
+        // --- DICTIONARY CRUD ---
         function addDictEntry() {
             const freqInput = document.getElementById('newDictFreq');
             const nameInput = document.getElementById('newDictName');
@@ -711,13 +711,21 @@
             
             if (isNaN(freq) || !name) return alert("Please enter a valid frequency and name.");
             
-            appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); // Remove if exists
+            appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); // Remove if exists (overwrites)
             appSettings.dictionary.push({f: freq, n: name});
             appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f));
             
             settingsRef.child('dictionary').set(appSettings.dictionary);
             freqInput.value = "";
             nameInput.value = "";
+            nameInput.blur();
+        }
+
+        function editDictEntry(f, nEnc) {
+            document.getElementById('newDictFreq').value = f;
+            document.getElementById('newDictName').value = decodeURIComponent(nEnc);
+            document.getElementById('newDictName').focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function removeDictEntry(freq) {
@@ -733,12 +741,14 @@
             listEl.innerHTML = appSettings.dictionary.map(item => 
                 `<li style="display:flex; justify-content:space-between; align-items:center; background:var(--table-hover); padding:8px 12px; border-radius:6px; border: 1px solid var(--border-color);">
                     <span><strong style="color:var(--primary);">${item.f}</strong> - ${item.n}</span>
-                    <span style="color:#ef4444; cursor:pointer; font-weight:bold; margin-left:10px; font-size:1.2em;" onclick="removeDictEntry('${item.f}')" title="Delete">✖</span>
+                    <div>
+                        <span style="color:var(--edit-color); cursor:pointer; font-weight:bold; font-size:1.1em; margin-right: 15px;" onclick="editDictEntry('${item.f}', '${encodeURIComponent(item.n)}')" title="Edit">✏️</span>
+                        <span style="color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.2em;" onclick="removeDictEntry('${item.f}')" title="Delete">✖</span>
+                    </div>
                 </li>`
             ).join('');
         }
 
-        // --- NEW: RETROACTIVE STATION UPDATER ---
         function enrichStationData() {
             if(!confirm("This will scan your entire database and update generic names to their proper names based on your Master Dictionary. Proceed?")) return;
 
@@ -803,6 +813,13 @@
         let activeRadioFilter = 'All'; 
         let signalChartInstance = null;
         let trafficChartInstance = null; 
+
+        // Helper function for looking up station names in Analytics
+        const getStationName = (f) => { 
+            if (!appSettings.dictionary) return "Unknown Station";
+            let match = appSettings.dictionary.find(d => d.f === f); 
+            return match ? match.n : "Unknown Station"; 
+        };
 
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
@@ -888,11 +905,9 @@
             document.getElementById('memoryBankContainer').style.display = view === 'memory' ? 'block' : 'none';
             document.getElementById('analyticsContainer').style.display = view === 'analytics' ? 'block' : 'none';
             
-            // NEW SETTINGS TAB
             const settingsTab = document.getElementById('settingsContainer');
             if(settingsTab) settingsTab.style.display = view === 'settings' ? 'block' : 'none';
             
-            // Hide the Log Entry form completely if we aren't looking at the main logbook
             document.getElementById('formCard').style.display = view === 'logbook' ? 'block' : 'none';
             
             document.getElementById('tab-logbook').classList.toggle('active', view === 'logbook');
@@ -908,7 +923,6 @@
             }
         }
 
-        // Click a frequency to open analytics
         function openAnalyticsFor(freq) {
             switchView('analytics');
             const freqSelect = document.getElementById('analyticsFreqSelect');
@@ -936,9 +950,11 @@
                 }
             });
             const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-            document.getElementById('topFreqsList').innerHTML = sortedFreqs.map((f, i) => 
-                `<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz</span> <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`
-            ).join('');
+            document.getElementById('topFreqsList').innerHTML = sortedFreqs.map((f, i) => {
+                let sName = getStationName(f[0]);
+                let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
+                return `<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`;
+            }).join('');
 
             // 2. Top 10 Strongest Frequencies (Avg Signal > 1 log)
             const freqSignals = {};
@@ -962,9 +978,11 @@
             if (sortedStrongest.length === 0) {
                 document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`;
             } else {
-                document.getElementById('topStrongestList').innerHTML = sortedStrongest.map((item, i) => 
-                    `<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-${item.avg})</span></li>`
-                ).join('');
+                document.getElementById('topStrongestList').innerHTML = sortedStrongest.map((item, i) => {
+                    let sName = getStationName(item.f);
+                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
+                    return `<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-${item.avg})</span></li>`;
+                }).join('');
             }
 
             // 3. Setup Dropdown
@@ -973,7 +991,11 @@
             const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
             
             freqSelect.innerHTML = `<option value="ALL">All Frequencies Overview</option>` + 
-                uniqueFreqs.map(f => `<option value="${f}">${f} MHz</option>`).join('');
+                uniqueFreqs.map(f => {
+                    let sName = getStationName(f);
+                    let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`;
+                    return `<option value="${f}">${displayTxt}</option>`;
+                }).join('');
             
             if (uniqueFreqs.includes(currentVal)) {
                 freqSelect.value = currentVal;
