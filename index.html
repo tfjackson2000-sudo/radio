@@ -552,7 +552,7 @@
                     <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px; flex-grow: 1;"></select>
                     <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
                         <option value="line">Signal: Line Graph (Hourly Max)</option>
-                        <option value="scatter">Signal: Scatter/Heat Plot (Every Log)</option>
+                        <option value="scatter">Signal: Heatmap Scatter (Every Log)</option>
                     </select>
                 </div>
                 
@@ -1129,10 +1129,19 @@
                     datasets: finalSignalDatasets
                 },
                 options: {
-                    layout: { padding: { top: 15, right: 15 } }, // Fixes the top cutoff!
+                    clip: false, // Prevents cutting off dots on the absolute edge
+                    layout: { padding: { top: 25, right: 20 } }, // Adds extra headroom to the canvas
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, max: 10, title: { display: true, text: 'Signal (S-Meter)' } },
+                        y: { 
+                            beginAtZero: true, 
+                            max: 10.5, // Pushes the top gridline slightly higher than 10
+                            ticks: { 
+                                stepSize: 1, 
+                                callback: function(val) { return val <= 10 ? val : ''; } // Hides the 10.5 label
+                            },
+                            title: { display: true, text: 'Signal (S-Meter)' } 
+                        },
                         x: isScatter ? {
                             type: 'linear', position: 'bottom', min: 0, max: 24,
                             ticks: { stepSize: 1, callback: function(value) { return String(value).padStart(2, '0') + ':00'; } },
