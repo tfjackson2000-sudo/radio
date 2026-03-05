@@ -406,6 +406,20 @@
                 </div>
                 <ul id="modesAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
             </div>
+            
+            <div style="grid-column: 1 / -1; margin-top: 10px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary); font-size: 1.1em;">⚙️ Default Input Values</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label>Default Radio</label>
+                        <select id="defaultRadioSelect" onchange="setDefault('Radio', this.value)"></select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label>Default Antenna</label>
+                        <select id="defaultAntennaSelect" onchange="setDefault('Antenna', this.value)"></select>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -602,7 +616,7 @@
         const db = firebase.database();
         const logsRef = db.ref('radioLogs');
 
-        let appSettings = { radios: [], antennas: [], modes: [] };
+        let appSettings = { radios: [], antennas: [], modes: [], defaultRadio: "", defaultAntenna: "" };
         const settingsRef = db.ref('settings');
 
         settingsRef.on('value', (snapshot) => {
@@ -610,7 +624,9 @@
             appSettings = {
                 radios: data.radios || ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"],
                 antennas: data.antennas || ["GA800", "Whip", "X30N"],
-                modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"]
+                modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"],
+                defaultRadio: data.defaultRadio || "Realistic Pro 2006",
+                defaultAntenna: data.defaultAntenna || "X30N"
             };
             renderAdminLists();
             updateDropdowns(); 
@@ -632,6 +648,10 @@
                 appSettings[type] = appSettings[type].filter(item => item !== val);
                 settingsRef.child(type).set(appSettings[type]);
             }
+        }
+        
+        function setDefault(type, val) {
+            settingsRef.child('default' + type).set(val);
         }
 
         function renderAdminLists() {
@@ -659,8 +679,21 @@
             if (aSelect) aSelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
             if (mSelect) mSelect.innerHTML = appSettings.modes.map(i => `<option value="${i}">${i}</option>`).join('');
 
+            // Also update the Default Selectors in Settings
+            const defRSelect = document.getElementById('defaultRadioSelect');
+            const defASelect = document.getElementById('defaultAntennaSelect');
+            if (defRSelect) defRSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (defASelect) defASelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (defRSelect) defRSelect.value = appSettings.defaultRadio;
+            if (defASelect) defASelect.value = appSettings.defaultAntenna;
+
+            // Apply defaults dynamically if form currently has an empty/invalid value
             if (appSettings.radios.includes(curR)) rSelect.value = curR;
+            else if (rSelect) rSelect.value = appSettings.defaultRadio || appSettings.radios[0];
+
             if (appSettings.antennas.includes(curA)) aSelect.value = curA;
+            else if (aSelect) aSelect.value = appSettings.defaultAntenna || appSettings.antennas[0];
+
             if (appSettings.modes.includes(curM)) mSelect.value = curM;
         }
 
@@ -1340,6 +1373,11 @@
             document.getElementById('stationInput').value = '';
             document.getElementById('notesInput').value = '';
             document.getElementById('channelInput').value = '';
+            
+            // --- NEW: Snap form back to your chosen defaults! ---
+            document.getElementById('radioInput').value = appSettings.defaultRadio || appSettings.radios[0];
+            document.getElementById('antennaInput').value = appSettings.defaultAntenna || appSettings.antennas[0];
+            
             setSMeter(5);
             document.getElementById('confirmedInput').checked = true;
         }
