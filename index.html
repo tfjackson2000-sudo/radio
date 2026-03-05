@@ -348,6 +348,7 @@
 
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
 
+            /* Brings the pill back only for mobile devices! */
             .mobile-mode {
                 display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); 
                 border-radius: 4px; font-size: 0.8em; font-weight: bold;
@@ -379,6 +380,7 @@
         <button id="tab-logbook" class="tab-btn active" onclick="switchView('logbook')">📋 Main Logbook</button>
         <button id="tab-memory" class="tab-btn" onclick="switchView('memory')">📻 Memory Banks</button>
         <button id="tab-analytics" class="tab-btn" onclick="switchView('analytics')">📊 Analytics</button>
+        <div style="flex-grow: 1;"></div>
         <button id="tab-settings" class="tab-btn settings-tab" onclick="switchView('settings')">⚙️ Settings</button>
     </div>
 
@@ -550,7 +552,7 @@
                     <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px; flex-grow: 1;"></select>
                     <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
                         <option value="line">Signal: Line Graph (Hourly Max)</option>
-                        <option value="scatter">Signal: Scatter Plot (Every Log)</option>
+                        <option value="scatter">Signal: Scatter/Heat Plot (Every Log)</option>
                     </select>
                 </div>
                 
@@ -1054,7 +1056,11 @@
 
             const filteredLogs = cloudLogs.filter(l => parseFloat(l.freq).toFixed(3) === selectedFreq);
             const radiosUsed = [...new Set(filteredLogs.map(l => l.radio))];
+            
+            // Solid colors for borders/lines
             const radioColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+            // Transparent colors for our scatter "heat" effect (40% opacity)
+            const radioColorsAlpha = ['rgba(37, 99, 235, 0.4)', 'rgba(16, 185, 129, 0.4)', 'rgba(245, 158, 11, 0.4)', 'rgba(239, 68, 68, 0.4)', 'rgba(139, 92, 246, 0.4)'];
 
             let finalSignalDatasets = [];
             let trafficDatasets = [];
@@ -1071,9 +1077,9 @@
                     });
                     return {
                         label: radio || "Unknown Radio", data: dataPoints,
-                        backgroundColor: radioColors[index % radioColors.length],
-                        borderColor: radioColors[index % radioColors.length],
-                        pointRadius: 5, pointHoverRadius: 8
+                        backgroundColor: radioColorsAlpha[index % radioColorsAlpha.length], // Transparent fill!
+                        borderColor: radioColors[index % radioColors.length], // Solid outline!
+                        pointRadius: 6, pointHoverRadius: 8
                     };
                 });
             } else {
@@ -1123,6 +1129,7 @@
                     datasets: finalSignalDatasets
                 },
                 options: {
+                    layout: { padding: { top: 15, right: 15 } }, // Fixes the top cutoff!
                     responsive: true, maintainAspectRatio: false,
                     scales: {
                         y: { beginAtZero: true, max: 10, title: { display: true, text: 'Signal (S-Meter)' } },
