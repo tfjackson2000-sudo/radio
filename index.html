@@ -493,9 +493,15 @@
             <div class="input-card" style="margin-bottom: 0; grid-column: 1 / -1;">
                 <h3 style="margin-top: 0; color: var(--primary);">📈 Signal Strength over 24 Hours</h3>
                 <p style="margin: 0 0 15px 0; font-size: 0.85em; color: var(--text-sub);">Click a frequency in the logbook to instantly view its performance across different radios.</p>
+                
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                    <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px;"></select>
+                    <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px; flex-grow: 1;"></select>
+                    <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
+                        <option value="line">Line Graph (Hourly Max)</option>
+                        <option value="scatter">Scatter Plot (Every Log)</option>
+                    </select>
                 </div>
+                
                 <div style="height: 300px; width: 100%;">
                     <canvas id="signalChart"></canvas>
                 </div>
@@ -685,15 +691,17 @@
             switchView('analytics');
             const freqSelect = document.getElementById('analyticsFreqSelect');
             
-            // Allow DOM to catch up slightly then set the value
+            // Allow DOM to catch up slightly then set the value and scroll
             setTimeout(() => {
                 let options = Array.from(freqSelect.options).map(o => o.value);
                 if (options.includes(freq)) {
                     freqSelect.value = freq;
                     renderAnalytics(); // Re-render with selected frequency
                 }
+                
+                // Smoothly scroll down so the graph is perfectly centered!
+                document.getElementById('analyticsFreqSelect').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 50);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // --- ANALYTICS LOGIC ---
@@ -770,52 +778,78 @@
             }
             ctx.style.display = 'block';
 
+            // Check which chart style the user has toggled
+            const chartType = document.getElementById('chartTypeSelect').value;
+            const isScatter = chartType === 'scatter';
+
             // Filter logs for only the selected frequency
             const filteredLogs = cloudLogs.filter(l => parseFloat(l.freq).toFixed(3) === selectedFreq);
             
             // Figure out which radios have listened to this frequency
             const radiosUsed = [...new Set(filteredLogs.map(l => l.radio))];
-            
-            // Colors for our different lines
             const radioColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-            // Build the data sets for Chart.js
-            const datasets = radiosUsed.map((radio, index) => {
-                const dataPoints = Array(24).fill(null); // 24 hours of the day
-                
-                filteredLogs.filter(l => l.radio === radio).forEach(l => {
-                    const hour = new Date(l.date).getHours();
-                    const sig = parseInt(l.signal) || null;
+            let finalDatasets = [];
+
+            if (isScatter) {
+                // SCATTER PLOT LOGIC: Drops a point for every single log at its exact minute
+                finalDatasets = radiosUsed.map((radio, index) => {
+                    const dataPoints = [];
                     
-                    // Keep the highest signal logged for that specific hour
-                    if (sig !== null) {
-                        if (dataPoints[hour] === null || sig > dataPoints[hour]) {
-                            dataPoints[hour] = sig;
+                    filteredLogs.filter(l => l.radio === radio).forEach(l => {
+                        const d = new Date(l.date);
+                        const timeVal = d.getHours() + (d.getMinutes() / 60); // e.g., 10:30 becomes 10.5
+                        const sig = parseInt(l.signal);
+                        
+                        if (!isNaN(sig)) {
+                            dataPoints.push({ x: timeVal, y: sig });
                         }
-                    }
+                    });
+
+                    return {
+                        label: radio || "Unknown Radio",
+                        data: dataPoints,
+                        backgroundColor: radioColors[index % radioColors.length],
+                        borderColor: radioColors[index % radioColors.length],
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    };
                 });
+            } else {
+                // LINE GRAPH LOGIC: Calculates the absolute max S-Meter hit for each hour bucket
+                finalDatasets = radiosUsed.map((radio, index) => {
+                    const dataPoints = Array(24).fill(null); 
+                    
+                    filteredLogs.filter(l => l.radio === radio).forEach(l => {
+                        const hour = new Date(l.date).getHours();
+                        const sig = parseInt(l.signal);
+                        
+                        if (!isNaN(sig)) {
+                            if (dataPoints[hour] === null || sig > dataPoints[hour]) {
+                                dataPoints[hour] = sig;
+                            }
+                        }
+                    });
 
-                return {
-                    label: radio || "Unknown Radio",
-                    data: dataPoints,
-                    borderColor: radioColors[index % radioColors.length],
-                    backgroundColor: radioColors[index % radioColors.length],
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    tension: 0.3, // Curve the line slightly
-                    spanGaps: true // Connects the lines over hours where you didn't log anything
-                };
-            });
-
-            // X-Axis labels (00:00 to 23:00)
-            const labels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
+                    return {
+                        label: radio || "Unknown Radio",
+                        data: dataPoints,
+                        borderColor: radioColors[index % radioColors.length],
+                        backgroundColor: radioColors[index % radioColors.length],
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.3,
+                        spanGaps: true
+                    };
+                });
+            }
 
             // Draw it!
             signalChartInstance = new Chart(ctx, {
-                type: 'line',
+                type: isScatter ? 'scatter' : 'line',
                 data: {
-                    labels: labels,
-                    datasets: datasets
+                    labels: isScatter ? undefined : Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`),
+                    datasets: finalDatasets
                 },
                 options: {
                     responsive: true,
@@ -826,7 +860,17 @@
                             max: 10,
                             title: { display: true, text: 'Signal Strength (S-Meter)' }
                         },
-                        x: {
+                        x: isScatter ? {
+                            type: 'linear',
+                            position: 'bottom',
+                            min: 0,
+                            max: 24,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) { return String(value).padStart(2, '0') + ':00'; }
+                            },
+                            title: { display: true, text: 'Time of Day (Local Time)' }
+                        } : {
                             title: { display: true, text: 'Time of Day (Local Time)' }
                         }
                     },
@@ -835,7 +879,15 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': S-' + context.parsed.y;
+                                    if (isScatter) {
+                                        // Convert decimal time back to HH:MM for scatter tooltip
+                                        let h = Math.floor(context.parsed.x);
+                                        let m = Math.round((context.parsed.x - h) * 60);
+                                        let timeStr = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+                                        return context.dataset.label + ' at ' + timeStr + ' | S-' + context.parsed.y;
+                                    } else {
+                                        return context.dataset.label + ' | S-' + context.parsed.y;
+                                    }
                                 }
                             }
                         }
