@@ -462,20 +462,7 @@
                 </div>
                 <input type="hidden" id="signalInput" value="5">
             </div>
-            <div class="form-group">
-                <label>Traffic (1-10)</label>
-                <div class="traffic-container">
-                    <div class="traffic-block" data-val="1" onclick="setTraffic(1)"></div>
-                    <div class="traffic-block" data-val="2" onclick="setTraffic(2)"></div>
-                    <div class="traffic-block" data-val="3" onclick="setTraffic(3)"></div>
-                    <div class="traffic-block" data-val="4" onclick="setTraffic(4)"></div>
-                    <div class="traffic-block" data-val="5" onclick="setTraffic(5)"></div>
-                    <div class="traffic-block" data-val="6" onclick="setTraffic(6)"></div>
-                    <div class="traffic-block" data-val="7" onclick="setTraffic(7)"></div>
-                    <div class="traffic-block" data-val="8" onclick="setTraffic(8)"></div>
-                    <div class="traffic-block" data-val="9" onclick="setTraffic(9)"></div>
-                    <div class="traffic-block" data-val="10" onclick="setTraffic(10)"></div>
-                </div>
+            <input type="hidden" id="trafficInput" value="1">
                 <input type="hidden" id="trafficInput" value="1">
             </div>
             <div class="form-group" style="grid-column: 1 / -1;">
@@ -1044,13 +1031,32 @@
             db.ref('radioLogs/' + id).update({ confirmed: currentStatus });
         }
 
-        function renderTable() {
+       function renderTable() {
             const tbody = document.querySelector('#logTable tbody');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             tbody.innerHTML = '';
             
-            let displayLogs = [...cloudLogs];
+            // --- NEW AUTO-TRAFFIC CALCULATOR ---
+            const freqCounts = {};
+            cloudLogs.forEach(l => {
+                if (l.freq) {
+                    let f = parseFloat(l.freq).toFixed(3);
+                    freqCounts[f] = (freqCounts[f] || 0) + 1;
+                }
+            });
+            // Find the maximum hits any single frequency has received
+            let maxHits = Math.max(...Object.values(freqCounts), 1);
+            
+            // Inject the auto-calculated traffic score into our logs array
+            let displayLogs = cloudLogs.map(log => {
+                let f = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
+                let hits = freqCounts[f] || 1;
+                // Scale 1 to 10 based on the busiest frequency
+                let calculatedTraffic = Math.ceil((hits / maxHits) * 10); 
+                return { ...log, autoTraffic: calculatedTraffic };
+            });
+            // -----------------------------------
 
             if (activeRadioFilter !== 'All') {
                 displayLogs = displayLogs.filter(log => log.radio === activeRadioFilter);
@@ -1079,11 +1085,21 @@
                         let valA = parseInt(a.channel); let valB = parseInt(b.channel);
                         return currentSort.desc ? valB - valA : valA - valB;
                     }
+                    
                     let valA = a[currentSort.key] || ""; let valB = b[currentSort.key] || "";
-                    if (currentSort.key === 'signal' || currentSort.key === 'traffic' || currentSort.key === 'freq') {
+                    
+                    // Hook the new autoTraffic into the sorting engine
+                    if (currentSort.key === 'traffic') {
+                        valA = a.autoTraffic || 0;
+                        valB = b.autoTraffic || 0;
+                    } else if (currentSort.key === 'signal' || currentSort.key === 'freq') {
                         valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0;
+                    }
+
+                    if (currentSort.key === 'traffic' || currentSort.key === 'signal' || currentSort.key === 'freq') {
                         return currentSort.desc ? valB - valA : valA - valB;
                     }
+
                     if (valA < valB) return currentSort.desc ? 1 : -1;
                     if (valA > valB) return currentSort.desc ? -1 : 1;
                     return 0;
@@ -1096,7 +1112,10 @@
                 const formattedDate = formatRadioDate(log.date);
                 
                 let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
-                let displayTraffic = log.traffic ? `<div style="display:flex; align-items:center;">T-${log.traffic} ${generateMiniTraffic(log.traffic)}</div>` : "";
+                
+                // Render with AUTO traffic instead of manual
+                let displayTraffic = `<div style="display:flex; align-items:center;" title="Auto-Calculated">T-${log.autoTraffic} ${generateMiniTraffic(log.autoTraffic)}</div>`;
+                
                 let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : "";
                 let displayNotes = log.notes ? `<div class="expandable-note" onclick="toggleNote(this, event)" title="Tap to expand/collapse">${log.notes}</div>` : "";
 
