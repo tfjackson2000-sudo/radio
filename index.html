@@ -77,8 +77,8 @@
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
-
         .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; font-size: 0.9em; text-transform: uppercase; }
+
         .input-card {
             background: var(--card-bg);
             padding: 20px;
@@ -115,26 +115,21 @@
             color: var(--text-main); height: 44px; width: 100%;
         }
 
-        .s-meter-container, .traffic-container {
+        .s-meter-container {
             display: flex; gap: 3px; height: 44px; padding: 5px;
             background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 8px; width: 100%;
+            border-radius: 8px; width: 100%; align-items: flex-end;
         }
-        .s-meter-container { align-items: flex-end; }
-        .traffic-container { align-items: center; }
 
-        .s-meter-bar, .traffic-block {
-            flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s;
+        .s-meter-bar {
+            flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s; border-radius: 2px 2px 0 0;
         }
-        .s-meter-bar { border-radius: 2px 2px 0 0; }
-        .traffic-block { height: 100%; border-radius: 3px; }
 
-        [data-theme="dark"] .s-meter-bar, [data-theme="dark"] .traffic-block { background-color: #374151; }
-        .s-meter-bar:hover, .traffic-block:hover { opacity: 0.8; }
+        [data-theme="dark"] .s-meter-bar { background-color: #374151; }
+        .s-meter-bar:hover { opacity: 0.8; }
         .s-meter-bar.active-green { background-color: #10b981; }
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
         .s-meter-bar.active-red { background-color: #ef4444; }
-        .traffic-block.active { background-color: var(--traffic-color); }
 
         .s-meter-bar[data-val="1"] { height: 20%; }
         .s-meter-bar[data-val="2"] { height: 25%; }
@@ -207,9 +202,6 @@
             background: var(--primary) !important; color: white !important; 
             border-color: var(--primary) !important;
         }
-        
-        #memoryToggleBtn { border-color: var(--ch-color); color: var(--ch-color); }
-        #memoryToggleBtn.active { background: var(--ch-color) !important; color: white !important; }
 
         .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
         .filter-btn.active .filter-count { opacity: 0.9; }
@@ -379,6 +371,7 @@
     <div style="display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--primary);">
         <button id="tab-logbook" class="tab-btn active" onclick="switchView('logbook')">📋 Main Logbook</button>
         <button id="tab-memory" class="tab-btn" onclick="switchView('memory')">📻 Memory Banks</button>
+        <button id="tab-analytics" class="tab-btn" onclick="switchView('analytics')">📊 Analytics</button>
     </div>
 
     <div id="settingsCard" class="input-card" style="display: none; border: 2px dashed var(--primary);">
@@ -463,8 +456,7 @@
                 <input type="hidden" id="signalInput" value="5">
             </div>
             <input type="hidden" id="trafficInput" value="1">
-                <input type="hidden" id="trafficInput" value="1">
-            </div>
+            
             <div class="form-group" style="grid-column: 1 / -1;">
                 <label>Additional Notes</label>
                 <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
@@ -485,6 +477,33 @@
         <div id="memoryGrid" class="memory-grid"></div>
     </div>
 
+    <div id="analyticsContainer" style="display: none; margin-bottom: 25px;">
+        <div class="controls">
+            <h2>📊 Dashboard & Analytics</h2>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+            <div class="input-card" style="margin-bottom: 0;">
+                <h3 style="margin-top: 0; color: var(--primary);">🔥 Top 3 Busiest Frequencies</h3>
+                <ul id="topFreqsList" style="list-style: none; padding: 0; margin: 0; line-height: 1.8;"></ul>
+            </div>
+            
+            <div class="input-card" style="margin-bottom: 0;">
+                <h3 style="margin-top: 0; color: var(--primary);">🏆 Top Performing Hardware</h3>
+                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on average Signal Strength (S-Meter)</p>
+                <ul id="topHardwareList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
+            </div>
+
+            <div class="input-card" style="margin-bottom: 0; grid-column: 1 / -1;">
+                <h3 style="margin-top: 0; color: var(--primary);">⏰ Activity by Time of Day</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px;"></select>
+                </div>
+                <div id="timeOfDayStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="mainLogbookContainer">
         <div class="controls">
             <h2>Your Logs</h2>
@@ -503,8 +522,8 @@
                 <option value="date">Sort: Newest First</option>
                 <option value="freq">Sort: Frequency</option>
                 <option value="channel">Sort: Memory Channel</option>
+                <option value="traffic">Sort: Auto-Traffic</option>
                 <option value="signal">Sort: Best Signal</option>
-                <option value="traffic">Sort: Busiest Traffic</option>
             </select>
         </div>
 
@@ -519,7 +538,7 @@
                         <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
                         <th onclick="sortTable('antenna', this)">Antenna</th>
                         <th onclick="sortTable('signal', this)">Sig</th>
-                        <th onclick="sortTable('traffic', this)">Traf</th>
+                        <th onclick="sortTable('traffic', this)">Traf (Auto)</th>
                         <th onclick="sortTable('notes', this)">Notes</th>
                         <th>Actions</th>
                     </tr>
@@ -612,7 +631,6 @@
         let cloudLogs = []; 
         let currentSort = { key: 'date', desc: true };
         let activeRadioFilter = 'All'; 
-        let memoryBankMode = false; 
 
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
@@ -634,23 +652,99 @@
             if (document.getElementById('memoryBankContainer') && document.getElementById('memoryBankContainer').style.display === 'block') {
                 renderMemoryBank();
             }
+            if (document.getElementById('analyticsContainer') && document.getElementById('analyticsContainer').style.display === 'block') {
+                renderAnalytics();
+            }
         });
 
-        // --- MEMORY BANK VIEW LOGIC ---
+        // --- TAB VIEW LOGIC ---
         function switchView(view) {
-            const isLog = view === 'logbook';
-            document.getElementById('mainLogbookContainer').style.display = isLog ? 'block' : 'none';
-            document.getElementById('memoryBankContainer').style.display = isLog ? 'none' : 'block';
+            document.getElementById('mainLogbookContainer').style.display = view === 'logbook' ? 'block' : 'none';
+            document.getElementById('memoryBankContainer').style.display = view === 'memory' ? 'block' : 'none';
+            document.getElementById('analyticsContainer').style.display = view === 'analytics' ? 'block' : 'none';
             
-            document.getElementById('tab-logbook').classList.toggle('active', isLog);
-            document.getElementById('tab-memory').classList.toggle('active', !isLog);
+            document.getElementById('tab-logbook').classList.toggle('active', view === 'logbook');
+            document.getElementById('tab-memory').classList.toggle('active', view === 'memory');
+            document.getElementById('tab-analytics').classList.toggle('active', view === 'analytics');
 
-            if (!isLog) {
+            if (view === 'memory') {
                 updateMemoryBankDropdown();
                 renderMemoryBank();
+            } else if (view === 'analytics') {
+                renderAnalytics();
             }
         }
 
+        // --- ANALYTICS LOGIC ---
+        function renderAnalytics() {
+            if (cloudLogs.length === 0) return;
+
+            // 1. Top 3 Busiest Frequencies
+            const freqCounts = {};
+            cloudLogs.forEach(l => {
+                if (l.freq) {
+                    let f = parseFloat(l.freq).toFixed(3);
+                    freqCounts[f] = (freqCounts[f] || 0) + 1;
+                }
+            });
+            const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+            document.getElementById('topFreqsList').innerHTML = sortedFreqs.map((f, i) => 
+                `<li><strong>#${i+1}:</strong> ${f[0]} MHz <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`
+            ).join('');
+
+            // 2. Top Performing Hardware (Average Signal)
+            const hardwareStats = {};
+            cloudLogs.forEach(l => {
+                let sig = parseInt(l.signal);
+                if (!isNaN(sig)) {
+                    let combo = `${l.radio} + ${l.antenna}`;
+                    if(!hardwareStats[combo]) hardwareStats[combo] = { totalSig: 0, count: 0 };
+                    hardwareStats[combo].totalSig += sig;
+                    hardwareStats[combo].count += 1;
+                }
+            });
+            const sortedHardware = Object.entries(hardwareStats)
+                .map(([name, data]) => ({ name, avg: (data.totalSig / data.count).toFixed(1), count: data.count }))
+                .filter(h => h.count > 1) 
+                .sort((a, b) => b.avg - a.avg)
+                .slice(0, 3);
+            
+            document.getElementById('topHardwareList').innerHTML = sortedHardware.length ? sortedHardware.map((h, i) => 
+                `<li><strong>#${i+1}:</strong> ${h.name} <br><span style="color:var(--dup-color); font-weight:bold;">Avg S-Meter: ${h.avg}</span> <span style="color:var(--text-sub); font-size:0.8em;">(${h.count} logs)</span></li>`
+            ).join('') : "<li>Not enough data yet. Log the same hardware multiple times!</li>";
+
+            // 3. Time of Day Breakdown
+            const freqSelect = document.getElementById('analyticsFreqSelect');
+            if (freqSelect.options.length === 0) {
+                const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
+                freqSelect.innerHTML = `<option value="ALL">All Frequencies Overview</option>` + 
+                    uniqueFreqs.map(f => `<option value="${f}">${f} MHz</option>`).join('');
+            }
+
+            const selectedFreq = freqSelect.value;
+            const timeBuckets = { "Morning (06-12)": 0, "Afternoon (12-18)": 0, "Evening (18-00)": 0, "Night (00-06)": 0 };
+            
+            cloudLogs.forEach(l => {
+                let f = parseFloat(l.freq).toFixed(3);
+                if (selectedFreq === "ALL" || selectedFreq === f) {
+                    let hour = new Date(l.date).getHours();
+                    if (hour >= 6 && hour < 12) timeBuckets["Morning (06-12)"]++;
+                    else if (hour >= 12 && hour < 18) timeBuckets["Afternoon (12-18)"]++;
+                    else if (hour >= 18 && hour < 24) timeBuckets["Evening (18-00)"]++;
+                    else timeBuckets["Night (00-06)"]++;
+                }
+            });
+
+            document.getElementById('timeOfDayStats').innerHTML = Object.entries(timeBuckets).map(([period, count]) => `
+                <div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);">
+                    <div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">${period}</div>
+                    <div style="font-size:1.8em; font-weight:bold; color:var(--primary);">${count}</div>
+                    <div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div>
+                </div>
+            `).join('');
+        }
+
+        // --- MEMORY BANK LOGIC ---
         function updateMemoryBankDropdown() {
             const select = document.getElementById('memoryBankRadioSelect');
             const current = select.value;
@@ -663,12 +757,9 @@
             const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
             if (!selectedRadio) { grid.innerHTML = 'Add a radio in settings first.'; return; }
 
-            // Pull logs for this radio that actually have a channel written in them
             const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && l.channel.toString().trim() !== "");
-            
             let html = '';
             
-            // Helper function to draw the individual squares
             function renderSlot(chLabel, log) {
                 const cleanCh = chLabel.replace('CH ', '').trim();
                 if (log) {
@@ -690,12 +781,9 @@
                 }
             }
 
-            // --- REALISTIC PRO 2006 LAYOUT ---
             if (selectedRadio.includes("Realistic Pro 2006")) {
                 const channelMap = {};
                 radioLogs.forEach(l => { channelMap[l.channel.toString().toUpperCase()] = l; });
-
-                // Draw 10 Banks of 40
                 for (let bank = 0; bank < 10; bank++) {
                     html += `<div class="bank-header">Bank ${bank + 1} (Ch ${bank * 40 + 1} - ${(bank + 1) * 40})</div>`;
                     for (let i = 1; i <= 40; i++) {
@@ -703,20 +791,13 @@
                         html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]);
                     }
                 }
-                
-                // Draw Monitor Memory (M1 - M10)
                 html += `<div class="bank-header">Monitor Memory (Scratchpad)</div>`;
                 for (let i = 1; i <= 10; i++) {
                     html += renderSlot(`M${i}`, channelMap[`M${i}`]);
                 }
-                
-            } 
-            // --- MALAHIT DSP2 LAYOUT ---
-            else if (selectedRadio.includes("Malahit DSP2")) {
+            } else if (selectedRadio.includes("Malahit DSP2")) {
                 const channelMap = {};
                 radioLogs.forEach(l => { channelMap[l.channel.toString()] = l; });
-
-                // Draw 5 Pages of 10
                 for (let page = 1; page <= 5; page++) {
                     html += `<div class="bank-header">Page ${page} (Ch ${(page-1)*10 + 1} - ${page*10})</div>`;
                     for (let i = 1; i <= 10; i++) {
@@ -724,12 +805,9 @@
                         html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]);
                     }
                 }
-
-            } 
-            // --- DEFAULT LAYOUT (DM1701 & custom radios) ---
-            else {
+            } else {
                 const channelMap = {};
-                let maxCh = 100; // Shows at least 100 by default
+                let maxCh = 100;
                 radioLogs.forEach(l => { 
                     let parsed = parseInt(l.channel);
                     if(!isNaN(parsed)) {
@@ -738,13 +816,11 @@
                     }
                 });
                 if (maxCh > 400) maxCh = 400; 
-
                 html += `<div class="bank-header">Standard Memory Channels</div>`;
                 for (let i = 1; i <= maxCh; i++) {
                     html += renderSlot(`CH ${i}`, channelMap[i]);
                 }
             }
-            
             grid.innerHTML = html;
         }
 
@@ -756,6 +832,7 @@
             document.getElementById('radioInput').value = radio;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
         let isFormCollapsed = false;
         function toggleForm() {
             isFormCollapsed = !isFormCollapsed;
@@ -773,11 +850,6 @@
         function toggleSettings() {
             const settings = document.getElementById('settingsCard');
             settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function toggleMemoryBankMode() {
-            memoryBankMode = !memoryBankMode;
-            renderFilters(); renderTable();
         }
 
         function renderFilters() {
@@ -801,14 +873,6 @@
                 btn.onclick = () => { activeRadioFilter = radio; renderFilters(); renderTable(); };
                 container.appendChild(btn);
             });
-
-            const memBtn = document.createElement('button');
-            memBtn.id = "memoryToggleBtn";
-            memBtn.className = `filter-btn ${memoryBankMode ? 'active' : ''}`;
-            memBtn.innerHTML = memoryBankMode ? "📖 Memory Bank Mode: ON" : "📖 Memory Bank Mode: OFF";
-            memBtn.style.marginLeft = "auto"; 
-            memBtn.onclick = toggleMemoryBankMode;
-            container.appendChild(memBtn);
         }
 
         function setSMeter(val) {
@@ -821,15 +885,6 @@
                     else if (index < 8) bar.classList.add('active-yellow');
                     else bar.classList.add('active-red');
                 }
-            });
-        }
-
-        function setTraffic(val) {
-            document.getElementById('trafficInput').value = val;
-            const blocks = document.querySelectorAll('.traffic-block');
-            blocks.forEach((block, index) => {
-                block.classList.remove('active');
-                if (index < val) block.classList.add('active');
             });
         }
 
@@ -875,7 +930,7 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', () => { setSMeter(5); setTraffic(1); });
+        document.addEventListener('DOMContentLoaded', () => { setSMeter(5); });
 
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
@@ -902,7 +957,6 @@
         }
 
         function sortTable(key, element) {
-            if (memoryBankMode) return; 
             if (currentSort.key === key) { currentSort.desc = !currentSort.desc; } 
             else { currentSort.key = key; currentSort.desc = false; }
             document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
@@ -912,7 +966,6 @@
         }
 
         function handleMobileSort(key) {
-            if (memoryBankMode) return;
             currentSort.key = key;
             currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic'); 
             renderTable();
@@ -959,6 +1012,7 @@
         function startEdit(id) {
             const log = cloudLogs.find(l => l.id === id);
             if (!log) return;
+            switchView('logbook');
             expandForm(); 
 
             document.getElementById('editId').value = log.id;
@@ -975,10 +1029,6 @@
             if (isNaN(parsedSignal) || parsedSignal < 1 || parsedSignal > 10) { parsedSignal = 5; }
             setSMeter(parsedSignal);
 
-            let parsedTraffic = parseInt(log.traffic);
-            if (isNaN(parsedTraffic) || parsedTraffic < 1 || parsedTraffic > 10) { parsedTraffic = 1; }
-            setTraffic(parsedTraffic);
-
             document.getElementById('submitBtn').innerText = "Save Changes";
             document.getElementById('submitBtn').classList.add('btn-save');
             document.getElementById('formCard').classList.add('editing-mode');
@@ -990,7 +1040,7 @@
             document.getElementById('submitBtn').innerText = "Add to Log";
             document.getElementById('submitBtn').classList.remove('btn-save');
             document.getElementById('formCard').classList.remove('editing-mode');
-            setSMeter(5); setTraffic(1);
+            setSMeter(5);
             document.getElementById('channelInput').value = "";
             document.getElementById('confirmedInput').checked = true;
         }
@@ -1023,7 +1073,7 @@
             document.getElementById('stationInput').value = '';
             document.getElementById('notesInput').value = '';
             document.getElementById('channelInput').value = '';
-            setSMeter(5); setTraffic(1);
+            setSMeter(5);
             document.getElementById('confirmedInput').checked = true;
         }
 
@@ -1031,13 +1081,13 @@
             db.ref('radioLogs/' + id).update({ confirmed: currentStatus });
         }
 
-       function renderTable() {
+        function renderTable() {
             const tbody = document.querySelector('#logTable tbody');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             tbody.innerHTML = '';
             
-            // --- NEW AUTO-TRAFFIC CALCULATOR ---
+            // --- AUTO-TRAFFIC CALCULATOR ---
             const freqCounts = {};
             cloudLogs.forEach(l => {
                 if (l.freq) {
@@ -1045,18 +1095,14 @@
                     freqCounts[f] = (freqCounts[f] || 0) + 1;
                 }
             });
-            // Find the maximum hits any single frequency has received
             let maxHits = Math.max(...Object.values(freqCounts), 1);
             
-            // Inject the auto-calculated traffic score into our logs array
             let displayLogs = cloudLogs.map(log => {
                 let f = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000";
                 let hits = freqCounts[f] || 1;
-                // Scale 1 to 10 based on the busiest frequency
                 let calculatedTraffic = Math.ceil((hits / maxHits) * 10); 
                 return { ...log, autoTraffic: calculatedTraffic };
             });
-            // -----------------------------------
 
             if (activeRadioFilter !== 'All') {
                 displayLogs = displayLogs.filter(log => log.radio === activeRadioFilter);
@@ -1068,43 +1114,32 @@
                 displayLogs = displayLogs.filter(log => log.confirmed === false);
             }
 
-            if (memoryBankMode) {
-                displayLogs = displayLogs.filter(log => log.channel && log.channel.trim() !== "");
-                displayLogs.sort((a, b) => {
-                    let radioA = a.radio || ""; let radioB = b.radio || "";
-                    if (radioA !== radioB) return radioA.localeCompare(radioB);
-                    let chA = parseInt(a.channel) || 0; let chB = parseInt(b.channel) || 0;
-                    return chA - chB; 
-                });
-            } else {
-                displayLogs.sort((a, b) => {
-                    if (currentSort.key === 'channel') {
-                        let hasA = (a.channel !== "" && a.channel != null);
-                        let hasB = (b.channel !== "" && b.channel != null);
-                        if (hasA && !hasB) return -1; if (!hasA && hasB) return 1; if (!hasA && !hasB) return 0;
-                        let valA = parseInt(a.channel); let valB = parseInt(b.channel);
-                        return currentSort.desc ? valB - valA : valA - valB;
-                    }
-                    
-                    let valA = a[currentSort.key] || ""; let valB = b[currentSort.key] || "";
-                    
-                    // Hook the new autoTraffic into the sorting engine
-                    if (currentSort.key === 'traffic') {
-                        valA = a.autoTraffic || 0;
-                        valB = b.autoTraffic || 0;
-                    } else if (currentSort.key === 'signal' || currentSort.key === 'freq') {
-                        valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0;
-                    }
+            displayLogs.sort((a, b) => {
+                if (currentSort.key === 'channel') {
+                    let hasA = (a.channel !== "" && a.channel != null);
+                    let hasB = (b.channel !== "" && b.channel != null);
+                    if (hasA && !hasB) return -1; if (!hasA && hasB) return 1; if (!hasA && !hasB) return 0;
+                    let valA = parseInt(a.channel); let valB = parseInt(b.channel);
+                    return currentSort.desc ? valB - valA : valA - valB;
+                }
+                
+                let valA = a[currentSort.key] || ""; let valB = b[currentSort.key] || "";
+                
+                if (currentSort.key === 'traffic') {
+                    valA = a.autoTraffic || 0;
+                    valB = b.autoTraffic || 0;
+                } else if (currentSort.key === 'signal' || currentSort.key === 'freq') {
+                    valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0;
+                }
 
-                    if (currentSort.key === 'traffic' || currentSort.key === 'signal' || currentSort.key === 'freq') {
-                        return currentSort.desc ? valB - valA : valA - valB;
-                    }
+                if (currentSort.key === 'traffic' || currentSort.key === 'signal' || currentSort.key === 'freq') {
+                    return currentSort.desc ? valB - valA : valA - valB;
+                }
 
-                    if (valA < valB) return currentSort.desc ? 1 : -1;
-                    if (valA > valB) return currentSort.desc ? -1 : 1;
-                    return 0;
-                });
-            }
+                if (valA < valB) return currentSort.desc ? 1 : -1;
+                if (valA > valB) return currentSort.desc ? -1 : 1;
+                return 0;
+            });
 
             let count = 0;
             displayLogs.forEach(log => {
@@ -1112,8 +1147,6 @@
                 const formattedDate = formatRadioDate(log.date);
                 
                 let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : "";
-                
-                // Render with AUTO traffic instead of manual
                 let displayTraffic = `<div style="display:flex; align-items:center;" title="Auto-Calculated">T-${log.autoTraffic} ${generateMiniTraffic(log.autoTraffic)}</div>`;
                 
                 let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : "";
