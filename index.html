@@ -417,10 +417,13 @@
         
         <div id="formBody" class="form-body">
             <input type="hidden" id="editId">
+            
             <div class="form-group">
                 <label>Frequency (MHz)</label>
-                <input type="text" id="freqInput" placeholder="e.g. 14.250" inputmode="decimal">
+                <input type="text" id="freqInput" list="popularFreqs" placeholder="e.g. 14.250" inputmode="decimal" onchange="handleFreqInput()" onkeyup="handleFreqInput()">
+                <datalist id="popularFreqs"></datalist>
             </div>
+            
             <div class="form-group">
                 <label>Radio</label>
                 <select id="radioInput"></select>
@@ -665,7 +668,7 @@
         let currentSort = { key: 'date', desc: true };
         let activeRadioFilter = 'All'; 
         let signalChartInstance = null;
-        let trafficChartInstance = null; // New global for traffic chart
+        let trafficChartInstance = null; 
 
         logsRef.on('value', (snapshot) => {
             cloudLogs = [];
@@ -684,6 +687,8 @@
             });
             renderFilters();
             renderTable(); 
+            updateFreqDatalist(); // Refreshes the smart dropdown
+            
             if (document.getElementById('memoryBankContainer') && document.getElementById('memoryBankContainer').style.display === 'block') {
                 renderMemoryBank();
             }
@@ -691,6 +696,48 @@
                 renderAnalytics();
             }
         });
+
+        // --- NEW SMART INPUT LOGIC ---
+        function updateFreqDatalist() {
+            const freqCounts = {};
+            cloudLogs.forEach(l => {
+                if (l.freq) {
+                    let f = parseFloat(l.freq).toFixed(3);
+                    freqCounts[f] = (freqCounts[f] || 0) + 1;
+                }
+            });
+            // Sort busiest first so they appear at the top of the dropdown
+            const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]);
+            const datalist = document.getElementById('popularFreqs');
+            datalist.innerHTML = sortedFreqs.map(f => `<option value="${f[0]}">Logged ${f[1]} times</option>`).join('');
+        }
+
+        function handleFreqInput() {
+            const freqStr = document.getElementById('freqInput').value;
+            const freqVal = parseFloat(freqStr);
+            if (isNaN(freqVal)) return;
+
+            const modeSelect = document.getElementById('modeInput');
+            const stationInput = document.getElementById('stationInput');
+
+            // 1. Historical Auto-Fill (if we know it, fill the station name and mode!)
+            const existingLog = cloudLogs.find(l => parseFloat(l.freq).toFixed(3) === freqVal.toFixed(3));
+            if (existingLog) {
+                if (existingLog.mode) modeSelect.value = existingLog.mode;
+                if (!stationInput.value && existingLog.station) {
+                    stationInput.value = existingLog.station;
+                }
+                return; // Stop here, we don't need to guess the band
+            }
+
+            // 2. Band Guessing (if it's brand new)
+            if (freqVal >= 108.000 && freqVal <= 136.975) modeSelect.value = "AM"; // Airband
+            else if (freqVal >= 156.000 && freqVal <= 162.025) modeSelect.value = "FM"; // Marine
+            else if (freqVal >= 446.000 && freqVal <= 446.200) modeSelect.value = "FM"; // PMR446
+            else if (freqVal >= 144.000 && freqVal <= 146.000) modeSelect.value = "FM"; // 2m Amateur
+            else if (freqVal >= 430.000 && freqVal <= 440.000) modeSelect.value = "FM"; // 70cm Amateur
+            else if (freqVal >= 26.965 && freqVal <= 27.991) modeSelect.value = "FM"; // CB Radio
+        }
 
         // --- TAB VIEW LOGIC ---
         function switchView(view) {
@@ -721,7 +768,6 @@
                     freqSelect.value = freq;
                     renderAnalytics(); 
                 }
-                // Scroll down to beautifully frame the dropdown and graphs
                 document.getElementById('graphsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 50);
         }
