@@ -314,7 +314,7 @@
         /* MOBILE CARD LAYOUT                                   */
         /* ==================================================== */
         @media screen and (max-width: 800px) {
-            .settings-tab { margin-left: 0; } /* Fixes the tab spacing on mobile */
+            .settings-tab { margin-left: 0; } 
 
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
             #statusFilter { width: 100% !important; }
@@ -348,7 +348,6 @@
 
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
 
-            /* Brings the pill back only for mobile devices! */
             .mobile-mode {
                 display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); 
                 border-radius: 4px; font-size: 0.8em; font-weight: bold;
@@ -713,7 +712,7 @@
             
             if (isNaN(freq) || !name) return alert("Please enter a valid frequency and name.");
             
-            appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); // Remove if exists (overwrites)
+            appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq);
             appSettings.dictionary.push({f: freq, n: name});
             appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f));
             
@@ -808,6 +807,19 @@
             else if (aSelect) aSelect.value = appSettings.defaultAntenna || appSettings.antennas[0];
 
             if (appSettings.modes.includes(curM)) mSelect.value = curM;
+
+            // --- FIX: MEMORY BANK DROPDOWN LOADED INSTANTLY ---
+            const memSelect = document.getElementById('memoryBankRadioSelect');
+            if (memSelect) {
+                const curMem = memSelect.value;
+                memSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
+                if (appSettings.radios.includes(curMem) && curMem !== "") {
+                    memSelect.value = curMem;
+                } else {
+                    // Locks to your default radio automatically so it is NEVER blank!
+                    memSelect.value = appSettings.defaultRadio || appSettings.radios[0];
+                }
+            }
         }
 
         let cloudLogs = []; 
@@ -816,7 +828,6 @@
         let signalChartInstance = null;
         let trafficChartInstance = null; 
 
-        // Helper function for looking up station names in Analytics
         const getStationName = (f) => { 
             if (!appSettings.dictionary) return "Unknown Station";
             let match = appSettings.dictionary.find(d => d.f === f); 
@@ -873,14 +884,12 @@
             const stationInput = document.getElementById('stationInput');
             const freqKey = freqVal.toFixed(3);
 
-            // 1. Check Live Master Dictionary First
             const dictMatch = appSettings.dictionary.find(d => d.f === freqKey);
             if (dictMatch) {
                 stationInput.value = dictMatch.n;
                 if (freqVal >= 108 && freqVal <= 137) modeSelect.value = "AM";
                 else if (freqVal >= 137) modeSelect.value = "FM";
             } 
-            // 2. Historical Auto-Fill Fallback
             else {
                 const existingLog = cloudLogs.find(l => parseFloat(l.freq).toFixed(3) === freqKey);
                 if (existingLog) {
@@ -892,7 +901,6 @@
                 }
             }
 
-            // 3. Mathematical Band Guessing
             if (freqVal >= 108.000 && freqVal <= 136.975) modeSelect.value = "AM"; 
             else if (freqVal >= 156.000 && freqVal <= 162.025) modeSelect.value = "FM"; 
             else if (freqVal >= 446.000 && freqVal <= 446.200) modeSelect.value = "FM"; 
@@ -918,7 +926,6 @@
             document.getElementById('tab-settings').classList.toggle('active', view === 'settings');
 
             if (view === 'memory') {
-                updateMemoryBankDropdown();
                 renderMemoryBank();
             } else if (view === 'analytics') {
                 renderAnalytics();
@@ -943,7 +950,6 @@
         function renderAnalytics() {
             if (cloudLogs.length === 0) return;
 
-            // 1. Top 10 Busiest Frequencies
             const freqCounts = {};
             cloudLogs.forEach(l => {
                 if (l.freq) {
@@ -958,7 +964,6 @@
                 return `<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`;
             }).join('');
 
-            // 2. Top 10 Strongest Frequencies (Avg Signal > 1 log)
             const freqSignals = {};
             cloudLogs.forEach(l => {
                 if (l.freq) {
@@ -987,7 +992,6 @@
                 }).join('');
             }
 
-            // 3. Setup Dropdown
             const freqSelect = document.getElementById('analyticsFreqSelect');
             const currentVal = freqSelect.value;
             const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
@@ -1006,7 +1010,6 @@
             }
             const selectedFreq = freqSelect.value;
 
-            // 4. Time of Day Breakdown
             const timeBuckets = { "Morning (06-12)": 0, "Afternoon (12-18)": 0, "Evening (18-00)": 0, "Night (00-06)": 0 };
             
             cloudLogs.forEach(l => {
@@ -1028,7 +1031,6 @@
                 </div>
             `).join('');
 
-            // 5. Update the Charts!
             updateCharts(selectedFreq);
         }
 
@@ -1057,15 +1059,12 @@
             const filteredLogs = cloudLogs.filter(l => parseFloat(l.freq).toFixed(3) === selectedFreq);
             const radiosUsed = [...new Set(filteredLogs.map(l => l.radio))];
             
-            // Solid colors for borders/lines
             const radioColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-            // Transparent colors for our scatter "heat" effect (40% opacity)
             const radioColorsAlpha = ['rgba(37, 99, 235, 0.4)', 'rgba(16, 185, 129, 0.4)', 'rgba(245, 158, 11, 0.4)', 'rgba(239, 68, 68, 0.4)', 'rgba(139, 92, 246, 0.4)'];
 
             let finalSignalDatasets = [];
             let trafficDatasets = [];
 
-            // --- BUILD SIGNAL DATASETS ---
             if (isScatter) {
                 finalSignalDatasets = radiosUsed.map((radio, index) => {
                     const dataPoints = [];
@@ -1077,8 +1076,8 @@
                     });
                     return {
                         label: radio || "Unknown Radio", data: dataPoints,
-                        backgroundColor: radioColorsAlpha[index % radioColorsAlpha.length], // Transparent fill!
-                        borderColor: radioColors[index % radioColors.length], // Solid outline!
+                        backgroundColor: radioColorsAlpha[index % radioColorsAlpha.length], 
+                        borderColor: radioColors[index % radioColors.length], 
                         pointRadius: 6, pointHoverRadius: 8
                     };
                 });
@@ -1103,7 +1102,6 @@
                 });
             }
 
-            // --- BUILD TRAFFIC DATASETS ---
             trafficDatasets = radiosUsed.map((radio, index) => {
                 const countPoints = Array(24).fill(0);
                 filteredLogs.filter(l => l.radio === radio).forEach(l => {
@@ -1121,7 +1119,6 @@
 
             const hourLabels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
 
-            // --- DRAW SIGNAL CHART ---
             signalChartInstance = new Chart(ctxSignal, {
                 type: isScatter ? 'scatter' : 'line',
                 data: {
@@ -1129,16 +1126,16 @@
                     datasets: finalSignalDatasets
                 },
                 options: {
-                    clip: false, // Prevents cutting off dots on the absolute edge
-                    layout: { padding: { top: 25, right: 20, left: 10, bottom: 10 } }, // Adds extra headroom to the canvas
+                    clip: false, 
+                    layout: { padding: { top: 25, right: 20, left: 10, bottom: 10 } }, 
                     responsive: true, maintainAspectRatio: false,
                     scales: {
                         y: { 
                             beginAtZero: true, 
-                            max: 10.5, // Pushes the top gridline slightly higher than 10
+                            max: 10.5, 
                             ticks: { 
                                 stepSize: 1, 
-                                callback: function(val) { return val <= 10 ? val : ''; } // Hides the 10.5 label
+                                callback: function(val) { return val <= 10 ? val : ''; } 
                             },
                             title: { display: true, text: 'Signal (S-Meter)' } 
                         },
@@ -1168,7 +1165,6 @@
                 }
             });
 
-            // --- DRAW TRAFFIC CHART ---
             trafficChartInstance = new Chart(ctxTraffic, {
                 type: 'bar',
                 data: {
@@ -1204,7 +1200,7 @@
             const grid = document.getElementById('memoryGrid');
             if(!grid) return;
             const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
-            if (!selectedRadio) { grid.innerHTML = 'Add a radio in settings first.'; return; }
+            if (!selectedRadio) { grid.innerHTML = '<div style="padding: 20px; color: var(--text-sub);">Select a radio above to view its memory bank.</div>'; return; }
 
             const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && String(l.channel).trim() !== "");
             let html = '';
