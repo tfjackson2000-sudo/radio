@@ -435,8 +435,8 @@
         </div>
 
         <div class="input-card" style="margin-bottom: 15px;">
-            <h3 style="margin-top: 0; color: var(--edit-color);">📖 Master Dictionary</h3>
-            <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Map frequencies to station names for auto-filling and retroactive updating.</p>
+            <h3 style="margin-top: 0; color: var(--edit-color);">📖 Master Dictionary <span id="dictCount" style="font-size: 0.8em; color: var(--text-sub); font-weight: normal;">(0 entries)</span></h3>
+            <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Map frequencies to station names for auto-filling in the Logbook.</p>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <input type="text" id="newDictFreq" placeholder="Freq (e.g. 125.850)" style="flex: 1; min-width: 120px;" inputmode="decimal">
@@ -450,7 +450,6 @@
             <h4 style="margin: 0 0 10px 0; color: var(--edit-color);">🪄 Database Tools</h4>
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="enrichStationData()" class="btn-clear" style="background-color: var(--edit-color); font-size: 1em; padding: 10px 15px; margin-bottom: 10px;">✨ Auto-Enrich Old Logs using Dictionary</button>
                 <button onclick="exportForUniden()" class="btn-main" style="background-color: #10b981; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download Uniden UBC1260DN Export</button>
             </div>
         </div>
@@ -742,6 +741,12 @@
 
         function renderDictionary() {
             const listEl = document.getElementById('dictionaryList');
+            const countEl = document.getElementById('dictCount');
+            
+            if (countEl && appSettings.dictionary) {
+                countEl.innerText = `(${appSettings.dictionary.length} entries)`;
+            }
+            
             if(!listEl) return;
             listEl.innerHTML = appSettings.dictionary.map(item => 
                 `<li style="display:flex; justify-content:space-between; align-items:center; background:var(--table-hover); padding:8px 12px; border-radius:6px; border: 1px solid var(--border-color);">
@@ -754,43 +759,21 @@
             ).join('');
         }
 
-        function enrichStationData() {
-            if(!confirm("This will scan your entire database and update generic names to their proper names based on your Master Dictionary. Proceed?")) return;
-
-            let updatedCount = 0;
-            cloudLogs.forEach(log => {
-                if (log.freq) {
-                    let f = parseFloat(log.freq).toFixed(3);
-                    const dictMatch = appSettings.dictionary.find(d => d.f === f);
-                    
-                    if (dictMatch && log.station !== dictMatch.n) {
-                        db.ref('radioLogs/' + log.id).update({ station: dictMatch.n });
-                        updatedCount++;
-                    }
-                }
-            });
-            alert(`Successfully updated ${updatedCount} logs with improved station names!`);
-        }
-
-        // --- NEW: UNIDEN CSV EXPORT LOGIC ---
+        // --- UNIDEN CSV EXPORT LOGIC ---
         function exportForUniden() {
             if (cloudLogs.length === 0) return alert("No logs found to export.");
 
-            // 1. Gather Unique Frequencies
             const uniqueFreqs = {};
             cloudLogs.forEach(log => {
                 if(log.freq) {
-                    // Uniden generally accepts up to 4 decimal places
                     let f = parseFloat(log.freq).toFixed(4); 
                     
                     if (!uniqueFreqs[f]) {
-                        // Attempt to grab name from Master Dictionary or fallback to log station
                         let name = getStationName(parseFloat(log.freq).toFixed(3));
                         if (name === "Unknown Station") {
                             name = log.station || `Freq ${f}`;
                         }
                         
-                        // Clean up name: Remove commas (which break CSVs) and strictly limit to 16 chars for Uniden displays
                         name = name.replace(/,/g, '').substring(0, 16).trim();
 
                         uniqueFreqs[f] = {
@@ -801,18 +784,13 @@
                 }
             });
 
-            // 2. Build the CSV String with Exact Headers
             let csvContent = "Channel Name,Frequency,Modulation,Audio Type,Tone / Code,Delay,Lockout,Priority,Attenuator\n";
-
-            // Sort them numerically by frequency
             const sortedFreqs = Object.values(uniqueFreqs).sort((a, b) => parseFloat(a.frequency) - parseFloat(b.frequency));
 
             sortedFreqs.forEach(entry => {
-                // Hardcoding the required uniden parameters
                 csvContent += `${entry.channelName},${entry.frequency},AUTO,ALL,Search,2,Off,Off,Off\n`;
             });
 
-            // 3. Create the Download File
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
@@ -866,7 +844,6 @@
 
             if (appSettings.modes.includes(curM)) mSelect.value = curM;
 
-            // Instantly load the Memory Bank Dropdown behind the scenes
             const memSelect = document.getElementById('memoryBankRadioSelect');
             if (memSelect) {
                 const curMem = memSelect.value;
