@@ -436,11 +436,11 @@
 
         <div class="input-card" style="margin-bottom: 15px;">
             <h3 style="margin-top: 0; color: var(--edit-color);">📖 Master Dictionary <span id="dictCount" style="font-size: 0.8em; color: var(--text-sub); font-weight: normal;">(0 entries)</span></h3>
-            <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Map frequencies to station names for auto-filling in the Logbook.</p>
+            <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Map frequencies to station names for auto-filling in the Logbook. <strong>Max 16 Characters.</strong></p>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <input type="text" id="newDictFreq" placeholder="Freq (e.g. 125.850)" style="flex: 1; min-width: 120px;" inputmode="decimal">
-                <input type="text" id="newDictName" placeholder="Station Name" style="flex: 2; min-width: 150px;">
+                <input type="text" id="newDictName" placeholder="Station Name (Max 16)" style="flex: 2; min-width: 150px;" maxlength="16">
                 <button onclick="addDictEntry()" class="btn-main" style="margin-top: 0; width: auto; padding: 0 20px;">Add</button>
             </div>
             
@@ -487,8 +487,8 @@
                 <select id="modeInput"></select>
             </div>
             <div class="form-group">
-                <label>Station / Callsign</label>
-                <input type="text" id="stationInput" placeholder="Who are they?">
+                <label>Station / Callsign (Max 16)</label>
+                <input type="text" id="stationInput" placeholder="Who are they?" maxlength="16">
             </div>
             <div class="form-group">
                 <label>Signal (S-Meter)</label>
@@ -672,11 +672,11 @@
                     {f: "133.100", n: "Cardiff Director"},
                     {f: "125.850", n: "Bristol Radar"},
                     {f: "133.850", n: "Bristol Approach"},
-                    {f: "125.000", n: "London Info (West)"},
-                    {f: "145.625", n: "GB3WB Carmarthen Repeater"},
-                    {f: "433.100", n: "GB3CD Cardiff Repeater"},
-                    {f: "156.800", n: "Marine Ch 16 (Coastguard)"},
-                    {f: "156.000", n: "Marine Ch 0 (SAR)"}
+                    {f: "125.000", n: "London Info(W)"},
+                    {f: "145.625", n: "GB3WB Repeater"},
+                    {f: "433.100", n: "GB3CD Repeater"},
+                    {f: "156.800", n: "Marine Ch 16"},
+                    {f: "156.000", n: "Marine Ch 0 SAR"}
                 ]
             };
             renderAdminLists();
@@ -711,7 +711,9 @@
             const freqInput = document.getElementById('newDictFreq');
             const nameInput = document.getElementById('newDictName');
             const freq = parseFloat(freqInput.value).toFixed(3);
-            const name = nameInput.value.trim();
+            
+            // Hard cut it to 16 chars in JS just in case they paste something long
+            const name = nameInput.value.trim().substring(0, 16);
             
             if (isNaN(freq) || !name) return alert("Please enter a valid frequency and name.");
             
@@ -759,52 +761,38 @@
             ).join('');
         }
 
-        // --- UNIDEN CSV EXPORT LOGIC (UPDATED TO MERGE LISTS) ---
+        // --- UNIDEN CSV EXPORT LOGIC ---
         function exportForUniden() {
             const uniqueFreqs = {};
 
-            // 1. Grab everything from the Master Dictionary FIRST
             if (appSettings.dictionary && appSettings.dictionary.length > 0) {
                 appSettings.dictionary.forEach(dictItem => {
                     let f = parseFloat(dictItem.f).toFixed(4);
-                    // Strip commas and limit to 16 chars for Uniden displays
                     let name = dictItem.n.replace(/,/g, '').substring(0, 16).trim();
-                    uniqueFreqs[f] = {
-                        channelName: name,
-                        frequency: f
-                    };
+                    uniqueFreqs[f] = { channelName: name, frequency: f };
                 });
             }
 
-            // 2. Grab anything from the Logbook that ISN'T in the Master Dictionary
             cloudLogs.forEach(log => {
                 if(log.freq) {
                     let f = parseFloat(log.freq).toFixed(4); 
-                    
                     if (!uniqueFreqs[f]) {
                         let name = log.station || `Freq ${f}`;
                         name = name.replace(/,/g, '').substring(0, 16).trim();
-
-                        uniqueFreqs[f] = {
-                            channelName: name,
-                            frequency: f
-                        };
+                        uniqueFreqs[f] = { channelName: name, frequency: f };
                     }
                 }
             });
 
-            // Make sure we actually have something to export
             const sortedFreqs = Object.values(uniqueFreqs).sort((a, b) => parseFloat(a.frequency) - parseFloat(b.frequency));
             if (sortedFreqs.length === 0) return alert("No frequencies found to export.");
 
-            // Build the CSV String with Exact Headers
             let csvContent = "Channel Name,Frequency,Modulation,Audio Type,Tone / Code,Delay,Lockout,Priority,Attenuator\n";
 
             sortedFreqs.forEach(entry => {
                 csvContent += `${entry.channelName},${entry.frequency},AUTO,ALL,Search,2,Off,Off,Off\n`;
             });
 
-            // Create the Download File
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
@@ -1470,7 +1458,10 @@
             const channel = document.getElementById('channelInput').value;
             const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
-            const station = document.getElementById('stationInput').value.replace(/,/g, ";");
+            
+            // Hard cut it to 16 chars in JS just in case they paste something long
+            const station = document.getElementById('stationInput').value.replace(/,/g, ";").substring(0, 16);
+            
             const signalVal = document.getElementById('signalInput').value;
             const trafficVal = document.getElementById('trafficInput').value;
             const notesText = document.getElementById('notesInput').value;
