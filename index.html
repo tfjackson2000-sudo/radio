@@ -441,7 +441,8 @@
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <input type="text" id="newDictFreq" placeholder="Freq (e.g. 125.850)" style="flex: 1; min-width: 120px;" inputmode="decimal">
                 <input type="text" id="newDictName" placeholder="Station Name (Max 16)" style="flex: 2; min-width: 150px;" maxlength="16">
-                <button onclick="addDictEntry()" class="btn-main" style="margin-top: 0; width: auto; padding: 0 20px;">Add</button>
+                <button id="dictAddBtn" onclick="addDictEntry()" class="btn-main" style="margin-top: 0; width: auto; padding: 0 20px;">Add</button>
+                <button id="dictCancelBtn" onclick="cancelDictEdit()" class="btn-clear" style="display: none; margin-top: 0; width: auto; padding: 0 20px; background-color: #6b7280;">Cancel</button>
             </div>
             
             <ul id="dictionaryList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;"></ul>
@@ -711,8 +712,6 @@
             const freqInput = document.getElementById('newDictFreq');
             const nameInput = document.getElementById('newDictName');
             const freq = parseFloat(freqInput.value).toFixed(3);
-            
-            // Hard cut it to 16 chars in JS just in case they paste something long
             const name = nameInput.value.trim().substring(0, 16);
             
             if (isNaN(freq) || !name) return alert("Please enter a valid frequency and name.");
@@ -722,16 +721,33 @@
             appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f));
             
             settingsRef.child('dictionary').set(appSettings.dictionary);
-            freqInput.value = "";
-            nameInput.value = "";
-            nameInput.blur();
+            
+            // Reset the UI back to normal after saving
+            cancelDictEdit();
         }
 
         function editDictEntry(f, nEnc) {
             document.getElementById('newDictFreq').value = f;
             document.getElementById('newDictName').value = decodeURIComponent(nEnc);
+            
+            // Change button state
+            document.getElementById('dictAddBtn').innerText = "Save";
+            document.getElementById('dictAddBtn').style.backgroundColor = "var(--edit-color)";
+            document.getElementById('dictCancelBtn').style.display = "block";
+            
             document.getElementById('newDictName').focus();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to the input instead of the top of the page!
+            document.getElementById('newDictFreq').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cancelDictEdit() {
+            document.getElementById('newDictFreq').value = "";
+            document.getElementById('newDictName').value = "";
+            
+            // Reset button state
+            document.getElementById('dictAddBtn').innerText = "Add";
+            document.getElementById('dictAddBtn').style.backgroundColor = "var(--primary)";
+            document.getElementById('dictCancelBtn').style.display = "none";
         }
 
         function removeDictEntry(freq) {
@@ -1458,10 +1474,7 @@
             const channel = document.getElementById('channelInput').value;
             const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
-            
-            // Hard cut it to 16 chars in JS just in case they paste something long
-            const station = document.getElementById('stationInput').value.replace(/,/g, ";").substring(0, 16);
-            
+            const station = document.getElementById('stationInput').value.replace(/,/g, ";");
             const signalVal = document.getElementById('signalInput').value;
             const trafficVal = document.getElementById('trafficInput').value;
             const notesText = document.getElementById('notesInput').value;
