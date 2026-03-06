@@ -861,7 +861,7 @@
             });
             const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]);
             const datalist = document.getElementById('popularFreqs');
-            datalist.innerHTML = sortedFreqs.map(f => `<option value="${f[0]}">Logged ${f[1]} times</option>`).join('');
+            if(datalist) datalist.innerHTML = sortedFreqs.map(f => `<option value="${f[0]}">Logged ${f[1]} times</option>`).join('');
         }
 
         function handleFreqInput() {
@@ -1130,7 +1130,7 @@
                 },
                 options: {
                     clip: false, // Prevents cutting off dots on the absolute edge
-                    layout: { padding: { top: 25, right: 20 } }, // Adds extra headroom to the canvas
+                    layout: { padding: { top: 25, right: 20, left: 10, bottom: 10 } }, // Adds extra headroom to the canvas
                     responsive: true, maintainAspectRatio: false,
                     scales: {
                         y: { 
@@ -1202,10 +1202,12 @@
         // --- MEMORY BANK LOGIC ---
         function renderMemoryBank() {
             const grid = document.getElementById('memoryGrid');
+            if(!grid) return;
             const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
             if (!selectedRadio) { grid.innerHTML = 'Add a radio in settings first.'; return; }
 
-            const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && l.channel.toString().trim() !== "");
+            // Safely parse channels
+            const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && String(l.channel).trim() !== "");
             let html = '';
             
             function renderSlot(chLabel, log) {
@@ -1213,12 +1215,15 @@
                 if (log) {
                     let isConf = log.confirmed !== false;
                     let icon = isConf ? '✅' : '⏳';
+                    let fDisplay = parseFloat(log.freq);
+                    fDisplay = isNaN(fDisplay) ? "0.000" : fDisplay.toFixed(3);
+                    let stName = log.station || log.notes || 'No Name';
                     return `
                         <div class="memory-slot" onclick="startEdit('${log.id}')" title="Click to edit">
                             <span class="status-icon">${icon}</span>
                             <span class="ch-num">${chLabel}</span>
-                            <span class="freq">${parseFloat(log.freq).toFixed(3)}</span>
-                            <span class="station">${log.station || log.notes || 'No Name'}</span>
+                            <span class="freq">${fDisplay}</span>
+                            <span class="station">${stName}</span>
                         </div>`;
                 } else {
                     return `
@@ -1231,7 +1236,7 @@
 
             if (selectedRadio.includes("Realistic Pro 2006")) {
                 const channelMap = {};
-                radioLogs.forEach(l => { channelMap[l.channel.toString().toUpperCase()] = l; });
+                radioLogs.forEach(l => { channelMap[String(l.channel).toUpperCase()] = l; });
                 for (let bank = 0; bank < 10; bank++) {
                     html += `<div class="bank-header">Bank ${bank + 1} (Ch ${bank * 40 + 1} - ${(bank + 1) * 40})</div>`;
                     for (let i = 1; i <= 40; i++) {
@@ -1245,7 +1250,7 @@
                 }
             } else if (selectedRadio.includes("Malahit DSP2")) {
                 const channelMap = {};
-                radioLogs.forEach(l => { channelMap[l.channel.toString()] = l; });
+                radioLogs.forEach(l => { channelMap[String(l.channel)] = l; });
                 for (let page = 1; page <= 5; page++) {
                     html += `<div class="bank-header">Page ${page} (Ch ${(page-1)*10 + 1} - ${page*10})</div>`;
                     for (let i = 1; i <= 10; i++) {
