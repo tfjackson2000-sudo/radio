@@ -448,7 +448,11 @@
             
             <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0;">
             <h4 style="margin: 0 0 10px 0; color: var(--edit-color);">🪄 Database Tools</h4>
-            <button onclick="enrichStationData()" class="btn-clear" style="background-color: var(--edit-color); font-size: 1em; padding: 10px 15px;">✨ Auto-Enrich Old Logs using Dictionary</button>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="enrichStationData()" class="btn-clear" style="background-color: var(--edit-color); font-size: 1em; padding: 10px 15px; margin-bottom: 10px;">✨ Auto-Enrich Old Logs using Dictionary</button>
+                <button onclick="exportForUniden()" class="btn-main" style="background-color: #10b981; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download Uniden UBC1260DN Export</button>
+            </div>
         </div>
     </div>
 
@@ -712,7 +716,7 @@
             
             if (isNaN(freq) || !name) return alert("Please enter a valid frequency and name.");
             
-            appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq);
+            appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); 
             appSettings.dictionary.push({f: freq, n: name});
             appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f));
             
@@ -768,6 +772,60 @@
             alert(`Successfully updated ${updatedCount} logs with improved station names!`);
         }
 
+        // --- NEW: UNIDEN CSV EXPORT LOGIC ---
+        function exportForUniden() {
+            if (cloudLogs.length === 0) return alert("No logs found to export.");
+
+            // 1. Gather Unique Frequencies
+            const uniqueFreqs = {};
+            cloudLogs.forEach(log => {
+                if(log.freq) {
+                    // Uniden generally accepts up to 4 decimal places
+                    let f = parseFloat(log.freq).toFixed(4); 
+                    
+                    if (!uniqueFreqs[f]) {
+                        // Attempt to grab name from Master Dictionary or fallback to log station
+                        let name = getStationName(parseFloat(log.freq).toFixed(3));
+                        if (name === "Unknown Station") {
+                            name = log.station || `Freq ${f}`;
+                        }
+                        
+                        // Clean up name: Remove commas (which break CSVs) and strictly limit to 16 chars for Uniden displays
+                        name = name.replace(/,/g, '').substring(0, 16).trim();
+
+                        uniqueFreqs[f] = {
+                            channelName: name,
+                            frequency: f
+                        };
+                    }
+                }
+            });
+
+            // 2. Build the CSV String with Exact Headers
+            let csvContent = "Channel Name,Frequency,Modulation,Audio Type,Tone / Code,Delay,Lockout,Priority,Attenuator\n";
+
+            // Sort them numerically by frequency
+            const sortedFreqs = Object.values(uniqueFreqs).sort((a, b) => parseFloat(a.frequency) - parseFloat(b.frequency));
+
+            sortedFreqs.forEach(entry => {
+                // Hardcoding the required uniden parameters
+                csvContent += `${entry.channelName},${entry.frequency},AUTO,ALL,Search,2,Off,Off,Off\n`;
+            });
+
+            // 3. Create the Download File
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", "Uniden_UBC1260DN_Export.csv");
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function renderAdminLists() {
             ['radios', 'antennas', 'modes'].forEach(type => {
                 const listEl = document.getElementById(type + 'AdminList');
@@ -808,7 +866,7 @@
 
             if (appSettings.modes.includes(curM)) mSelect.value = curM;
 
-            // --- FIX: MEMORY BANK DROPDOWN LOADED INSTANTLY ---
+            // Instantly load the Memory Bank Dropdown behind the scenes
             const memSelect = document.getElementById('memoryBankRadioSelect');
             if (memSelect) {
                 const curMem = memSelect.value;
@@ -816,7 +874,6 @@
                 if (appSettings.radios.includes(curMem) && curMem !== "") {
                     memSelect.value = curMem;
                 } else {
-                    // Locks to your default radio automatically so it is NEVER blank!
                     memSelect.value = appSettings.defaultRadio || appSettings.radios[0];
                 }
             }
