@@ -722,7 +722,6 @@
             
             settingsRef.child('dictionary').set(appSettings.dictionary);
             
-            // Reset the UI back to normal after saving
             cancelDictEdit();
         }
 
@@ -730,13 +729,11 @@
             document.getElementById('newDictFreq').value = f;
             document.getElementById('newDictName').value = decodeURIComponent(nEnc);
             
-            // Change button state
             document.getElementById('dictAddBtn').innerText = "Save";
             document.getElementById('dictAddBtn').style.backgroundColor = "var(--edit-color)";
             document.getElementById('dictCancelBtn').style.display = "block";
             
             document.getElementById('newDictName').focus();
-            // Scroll to the input instead of the top of the page!
             document.getElementById('newDictFreq').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
@@ -744,7 +741,6 @@
             document.getElementById('newDictFreq').value = "";
             document.getElementById('newDictName').value = "";
             
-            // Reset button state
             document.getElementById('dictAddBtn').innerText = "Add";
             document.getElementById('dictAddBtn').style.backgroundColor = "var(--primary)";
             document.getElementById('dictCancelBtn').style.display = "none";
@@ -1474,7 +1470,7 @@
             const channel = document.getElementById('channelInput').value;
             const antenna = document.getElementById('antennaInput').value;
             const mode = document.getElementById('modeInput').value;
-            const station = document.getElementById('stationInput').value.replace(/,/g, ";");
+            const station = document.getElementById('stationInput').value.replace(/,/g, ";").substring(0, 16);
             const signalVal = document.getElementById('signalInput').value;
             const trafficVal = document.getElementById('trafficInput').value;
             const notesText = document.getElementById('notesInput').value;
@@ -1502,6 +1498,18 @@
                 logEntry.date = new Date().toISOString();
                 logsRef.push(logEntry);
             }
+
+            // --- NEW: AUTO-ADD TO DICTIONARY IF CONFIRMED & MISSING ---
+            if (isConfirmed && station.trim() !== "") {
+                const freqKey = parseFloat(freqVal).toFixed(3);
+                const dictMatch = appSettings.dictionary.find(d => d.f === freqKey);
+                if (!dictMatch) {
+                    appSettings.dictionary.push({f: freqKey, n: station.trim()});
+                    appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f));
+                    settingsRef.child('dictionary').set(appSettings.dictionary);
+                }
+            }
+
             resetForm();
         }
 
