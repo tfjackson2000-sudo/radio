@@ -101,6 +101,7 @@
         .memory-slot .station { font-size: 0.8em; color: var(--text-sub); display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); pointer-events: none; }
         
+        /* DELETE OVERLAY */
         .memory-slot .delete-overlay {
             display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(239, 68, 68, 0.95); color: white; border-radius: 8px;
@@ -858,7 +859,7 @@
             `).join('');
         }
 
-        // --- NEW: LONG PRESS MOBILE ENGINE (FIXED) ---
+        // --- LONG PRESS MOBILE ENGINE (FIXED) ---
         let touchTimer;
         let justLongPressed = false;
         let touchStartX = 0;
@@ -870,16 +871,22 @@
             touchStartY = ev.touches[0].clientY;
             justLongPressed = false;
             
+            // Hide any other active delete overlays instantly
+            document.querySelectorAll('.memory-slot').forEach(s => {
+                if(s !== el) s.classList.remove('show-delete');
+            });
+            
             touchTimer = setTimeout(() => {
                 justLongPressed = true;
-                document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
                 el.classList.add('show-delete');
                 if (navigator.vibrate) navigator.vibrate(50); 
-            }, 500); // Trigger after half a second
+            }, 500); // Trigger after exactly half a second
         }
 
-        function handleTouchEnd() {
+        function handleTouchEnd(el, ev) {
             clearTimeout(touchTimer);
+            // Reset the phantom click shield half a second after they lift their finger
+            setTimeout(() => { justLongPressed = false; }, 500);
         }
 
         function handleTouchMove(el, ev) {
@@ -887,30 +894,37 @@
             let moveX = ev.touches[0].clientX;
             let moveY = ev.touches[0].clientY;
             
-            // If finger moves more than 10 pixels, cancel timer AND hide existing overlay
-            if (Math.abs(moveX - touchStartX) > 10 || Math.abs(moveY - touchStartY) > 10) {
+            // If finger moves more than 15 pixels, cancel the timer completely
+            if (Math.abs(moveX - touchStartX) > 15 || Math.abs(moveY - touchStartY) > 15) {
                 clearTimeout(touchTimer);
-                el.classList.remove('show-delete');
+                
+                // If they scroll heavily (> 40px) while the bin is already open, hide it
+                if (justLongPressed && (Math.abs(moveX - touchStartX) > 40 || Math.abs(moveY - touchStartY) > 40)) {
+                    el.classList.remove('show-delete');
+                }
             }
         }
 
         function handleSlotRightClick(el, ev) {
             ev.preventDefault(); 
-            justLongPressed = true; 
-            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
+            document.querySelectorAll('.memory-slot').forEach(s => {
+                if(s !== el) s.classList.remove('show-delete');
+            });
             el.classList.add('show-delete');
         }
 
         function handleSlotClick(el, ev, logId) {
-            // Ignore the phantom click if we just triggered a long-press
-            if (justLongPressed) {
-                justLongPressed = false;
-                return; 
-            }
-            if (el.classList.contains('show-delete')) {
-                el.classList.remove('show-delete');
-                return;
-            }
+            // Block the phantom click that fires right after you lift your finger
+            if (justLongPressed) return; 
+
+            let hadDelete = el.classList.contains('show-delete');
+            
+            // Close any delete overlays
+            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
+
+            // If we just closed the delete overlay on THIS specific slot, do nothing else
+            if (hadDelete) return;
+
             startEdit(logId);
         }
 
@@ -929,6 +943,7 @@
         }
         
         function dragSlot(ev, logId, channel) {
+            // Instantly hide the red bin if they start dragging instead of tapping delete
             ev.target.classList.remove('show-delete');
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel}));
@@ -1608,7 +1623,7 @@
                             onclick="handleSlotClick(this, event, '${log.id}')" 
                             oncontextmenu="handleSlotRightClick(this, event)" 
                             ontouchstart="handleTouchStart(this, event)"
-                            ontouchend="handleTouchEnd()"
+                            ontouchend="handleTouchEnd(this, event)"
                             ontouchmove="handleTouchMove(this, event)"
                             title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
                             <span class="status-icon">${icon}</span>
