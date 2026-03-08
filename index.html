@@ -118,6 +118,19 @@
         .btn-clear-slot { background: rgba(239, 68, 68, 0.95); }
         .action-btn:active { filter: brightness(0.8); }
 
+        /* --- MOVE MODE BANNER --- */
+        #moveModeBanner {
+            display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 12px 20px; border-radius: 30px;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000;
+            align-items: center; gap: 15px; width: max-content; font-size: 0.9em;
+        }
+        #moveModeBanner button {
+            background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px;
+            border-radius: 15px; cursor: pointer; font-weight: bold;
+        }
+        .moving-source { opacity: 0.5; border: 2px dashed var(--primary) !important; transform: scale(0.95); }
+
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; cursor: pointer; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
         .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; text-transform: uppercase; }
@@ -585,6 +598,11 @@
         </div>
     </div>
 
+    <div id="moveModeBanner">
+        <span>Tap destination for CH <span id="moveSourceText"></span></span>
+        <button onclick="cancelMoveMode()">Cancel</button>
+    </div>
+
     <div id="assignModal" class="modal-overlay" style="display: none;">
         <div class="modal-box">
             <h3 style="margin-top: 0; color: var(--primary);">Assign Channel <span id="assignModalCh"></span></h3>
@@ -868,11 +886,13 @@
             `).join('');
         }
 
-        // --- LONG PRESS & MOVE ENGINE ---
+        // --- LONG PRESS & TAP-TO-MOVE ENGINE ---
         let touchTimer;
         let justLongPressed = false;
         let touchStartX = 0;
         let touchStartY = 0;
+        let activeMoveSourceId = null;
+        let activeMoveSourceCh = null;
 
         function handleTouchStart(el, ev) {
             if (!ev.touches || ev.touches.length === 0) return;
@@ -918,7 +938,12 @@
             el.classList.add('show-actions');
         }
 
-        function handleSlotClick(el, ev, logId) {
+        function handleSlotClick(el, ev, logId, channel) {
+            if (activeMoveSourceId) {
+                executeMoveOrSwap(channel);
+                return;
+            }
+
             if (justLongPressed) return; 
 
             let hadActions = el.classList.contains('show-actions');
@@ -937,27 +962,42 @@
         }
 
         function initiateMove(logId, currentCh) {
-            let targetCh = prompt(`Move Channel ${currentCh} to which slot?\n(e.g., 5, 12, M1)`);
-            if (!targetCh || targetCh.trim() === "") {
-                document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
+            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
+            activeMoveSourceId = logId;
+            activeMoveSourceCh = currentCh;
+            
+            document.getElementById('moveSourceText').innerText = currentCh;
+            document.getElementById('moveModeBanner').style.display = 'flex';
+            renderMemoryBank();
+        }
+
+        function cancelMoveMode() {
+            activeMoveSourceId = null;
+            activeMoveSourceCh = null;
+            document.getElementById('moveModeBanner').style.display = 'none';
+            renderMemoryBank();
+        }
+
+        function executeMoveOrSwap(targetCh) {
+            const targetChStr = String(targetCh).trim();
+            const sourceChStr = String(activeMoveSourceCh).trim();
+            
+            if (targetChStr === sourceChStr) {
+                cancelMoveMode();
                 return;
             }
-            
-            targetCh = targetCh.trim().toUpperCase();
-            const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
-            const targetLog = cloudLogs.find(l => l.radio === selectedRadio && String(l.channel).trim().toUpperCase() === targetCh);
-            
-            if (String(currentCh).trim().toUpperCase() === targetCh) return;
 
-            // Swap if target is full, otherwise just move
+            const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
+            const targetLog = cloudLogs.find(l => l.radio === selectedRadio && String(l.channel).trim() === targetChStr);
+
             if (targetLog) {
-                db.ref('radioLogs/' + logId).update({channel: targetCh});
-                db.ref('radioLogs/' + targetLog.id).update({channel: currentCh});
+                db.ref('radioLogs/' + activeMoveSourceId).update({channel: targetChStr});
+                db.ref('radioLogs/' + targetLog.id).update({channel: sourceChStr});
             } else {
-                db.ref('radioLogs/' + logId).update({channel: targetCh});
+                db.ref('radioLogs/' + activeMoveSourceId).update({channel: targetChStr});
             }
             
-            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
+            cancelMoveMode();
         }
 
         // --- DRAG AND DROP LOGIC (PC) ---
@@ -1041,7 +1081,6 @@
             }
         }
 
-        // Global click listener to close overlays
         document.addEventListener('click', function(e) {
             document.querySelectorAll('.expandable-note').forEach(note => {
                 if(!note.contains(e.target)) note.classList.remove('expanded');
@@ -1053,6 +1092,11 @@
 
         // --- QUICK ASSIGN MODAL LOGIC ---
         function openAssignModal(channel, radio) {
+            if (activeMoveSourceId) {
+                executeMoveOrSwap(channel);
+                return;
+            }
+
             document.getElementById('assignModalCh').innerText = channel;
             document.getElementById('assignModalRadio').value = radio; 
             
@@ -1616,7 +1660,7 @@
             });
         }
 
-        // --- MEMORY BANK LOGIC WITH DRAG & DROP & TOUCH EVENTS ---
+        // --- RENDER MEMORY BANK (UPDATED WITH MOVE STATE) ---
         function renderMemoryBank() {
             const grid = document.getElementById('memoryGrid');
             if(!grid) return;
@@ -1631,6 +1675,8 @@
             
             function renderSlot(chLabel, log) {
                 const cleanCh = chLabel.replace('CH ', '').trim();
+                const isMoving = (activeMoveSourceCh === cleanCh) ? 'moving-source' : '';
+
                 if (log) {
                     let isConf = log.confirmed !== false;
                     let icon = isConf ? '✅' : '⏳';
@@ -1639,18 +1685,18 @@
                     let stName = log.station || log.notes || 'No Name';
                     
                     return `
-                        <div class="memory-slot" ${dragAttr} 
+                        <div class="memory-slot ${isMoving}" ${dragAttr} 
                             ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" 
                             ondragend="handleDragEnd(event)"
                             ondragover="allowDrop(event)" 
                             ondragleave="dragLeave(event)" 
                             ondrop="dropSlot(event, '${cleanCh}')" 
-                            onclick="handleSlotClick(this, event, '${log.id}')" 
+                            onclick="handleSlotClick(this, event, '${log.id}', '${cleanCh}')" 
                             oncontextmenu="handleSlotRightClick(this, event)" 
                             ontouchstart="handleTouchStart(this, event)"
                             ontouchend="handleTouchEnd(this, event)"
                             ontouchmove="handleTouchMove(this, event)"
-                            title="Click to edit, Drag to swap/move, Right-click/Long-press for actions">
+                            title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
                             <span class="status-icon">${icon}</span>
                             <span class="ch-num">${chLabel}</span>
                             <span class="freq">${fDisplay}</span>
@@ -1662,7 +1708,7 @@
                         </div>`;
                 } else {
                     return `
-                        <div class="memory-slot empty-slot" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="openAssignModal('${cleanCh}', '${selectedRadio}')" title="Click to assign, or drag a dictionary item here">
+                        <div class="memory-slot empty-slot ${isMoving}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="openAssignModal('${cleanCh}', '${selectedRadio}')" title="Click to assign, or drag a dictionary item here">
                             <span class="ch-num">${chLabel}</span>
                             <span class="freq">Empty</span>
                         </div>`;
@@ -1807,6 +1853,8 @@
             });
             if (!isExpanded) { element.classList.add('expanded'); }
         }
+
+        document.addEventListener('DOMContentLoaded', () => { setSMeter(5); });
 
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
@@ -2100,8 +2148,6 @@
             else { mybutton.style.display = "none"; } 
         };
         function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
-        
-        document.addEventListener('DOMContentLoaded', () => { setSMeter(5); });
     </script>
 </body>
 </html>
