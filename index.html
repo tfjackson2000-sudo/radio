@@ -858,7 +858,7 @@
             `).join('');
         }
 
-        // --- LONG PRESS MOBILE ENGINE (FIXED) ---
+        // --- NEW: LONG PRESS MOBILE ENGINE (FIXED) ---
         let touchTimer;
         let justLongPressed = false;
         let touchStartX = 0;
@@ -875,7 +875,7 @@
                 document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
                 el.classList.add('show-delete');
                 if (navigator.vibrate) navigator.vibrate(50); 
-            }, 600);
+            }, 500); // Trigger after half a second
         }
 
         function handleTouchEnd() {
@@ -902,6 +902,7 @@
         }
 
         function handleSlotClick(el, ev, logId) {
+            // Ignore the phantom click if we just triggered a long-press
             if (justLongPressed) {
                 justLongPressed = false;
                 return; 
