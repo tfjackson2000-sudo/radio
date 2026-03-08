@@ -82,8 +82,14 @@
         .dict-drag-item:active { cursor: grabbing; transform: scale(0.98); }
         .dict-drag-item:hover { border-color: var(--primary); }
 
-        .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
-        .memory-slot { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
+        
+        .memory-slot { 
+            background: var(--card-bg); border: 1px solid var(--border-color); 
+            border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; 
+            transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden;
+        }
         .memory-slot:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         
         .memory-slot[draggable="true"] { cursor: grab; }
@@ -94,6 +100,18 @@
         .memory-slot .freq { font-size: 1.2em; font-weight: bold; color: var(--text-main); display: block; pointer-events: none; }
         .memory-slot .station { font-size: 0.8em; color: var(--text-sub); display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); pointer-events: none; }
+        
+        /* NEW: Delete Overlay */
+        .memory-slot .delete-overlay {
+            display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(239, 68, 68, 0.95); color: white; border-radius: 8px;
+            justify-content: center; align-items: center; font-weight: bold; font-size: 1.1em;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10;
+        }
+        .memory-slot.show-delete .delete-overlay {
+            opacity: 1; pointer-events: auto;
+        }
+
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; cursor: pointer; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
         .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; text-transform: uppercase; }
@@ -335,7 +353,6 @@
             .memory-layout { flex-direction: column; }
             .memory-sidebar { width: 100%; flex: none; max-height: 200px; padding: 10px; border-bottom: 2px solid var(--primary); margin-bottom: 15px; border-radius: 8px; } 
             .memory-main { width: 100%; }
-            /* FIX: Forced 2 Column Layout for Mobile to prevent awkward left-alignment */
             .memory-grid { grid-template-columns: repeat(2, 1fr); padding-right: 0; }
 
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
@@ -842,12 +859,42 @@
             `).join('');
         }
 
+        // --- NEW: LONG PRESS DELETE HANDLERS ---
+        function handleSlotRightClick(el, ev) {
+            ev.preventDefault(); 
+            // Hide any other active delete overlays
+            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
+            el.classList.add('show-delete');
+        }
+
+        function handleSlotClick(el, ev, logId) {
+            // If the delete overlay is showing, a normal click cancels it
+            if (el.classList.contains('show-delete')) {
+                el.classList.remove('show-delete');
+                return;
+            }
+            startEdit(logId);
+        }
+
+        function unassignChannel(logId, ch) {
+            if(confirm(`Clear Channel ${ch}?\n(The log will remain in your main logbook safely)`)) {
+                db.ref('radioLogs/' + logId).update({channel: ""});
+            } else {
+                document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
+            }
+        }
+
+        // --- DRAG AND DROP LOGIC ---
         function dragDict(ev, freq, nameEnc) {
             const name = decodeURIComponent(nameEnc);
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'dict', freq: freq, name: name}));
         }
         
         function dragSlot(ev, logId, channel) {
+            // Instantly hide the red overlay if you start dragging instead of tapping delete
+            ev.target.classList.remove('show-delete');
+            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
+
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel}));
         }
         
@@ -913,6 +960,17 @@
             }
         }
 
+        // Click outside handler to hide expandable notes AND delete overlays
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('.expandable-note').forEach(note => {
+                if(!note.contains(e.target)) note.classList.remove('expanded');
+            });
+            if(!e.target.closest('.memory-slot')) {
+                document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
+            }
+        });
+
+        // --- QUICK ASSIGN MODAL LOGIC ---
         function openAssignModal(channel, radio) {
             document.getElementById('assignModalCh').innerText = channel;
             document.getElementById('assignModalRadio').value = radio; 
@@ -1497,11 +1555,14 @@
                     let stName = log.station || log.notes || 'No Name';
                     
                     return `
-                        <div class="memory-slot" draggable="true" ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="startEdit('${log.id}')" title="Click to edit, Drag to swap/move">
+                        <div class="memory-slot" draggable="true" ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="handleSlotClick(this, event, '${log.id}')" oncontextmenu="handleSlotRightClick(this, event)" title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
                             <span class="status-icon">${icon}</span>
                             <span class="ch-num">${chLabel}</span>
                             <span class="freq">${fDisplay}</span>
                             <span class="station">${stName}</span>
+                            <div class="delete-overlay" onclick="event.stopPropagation(); unassignChannel('${log.id}', '${cleanCh}')">
+                                🗑️ Clear
+                            </div>
                         </div>`;
                 } else {
                     return `
