@@ -859,16 +859,41 @@
             `).join('');
         }
 
-        // --- NEW: LONG PRESS DELETE HANDLERS ---
+        // --- NEW: LONG PRESS MOBILE ENGINE ---
+        let touchTimer;
+        let justLongPressed = false;
+
+        function handleTouchStart(el, ev) {
+            justLongPressed = false;
+            touchTimer = setTimeout(() => {
+                justLongPressed = true;
+                document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
+                el.classList.add('show-delete');
+                if (navigator.vibrate) navigator.vibrate(50); // Haptic feedback!
+            }, 600);
+        }
+
+        function handleTouchEnd() {
+            clearTimeout(touchTimer);
+        }
+
+        function handleTouchMove() {
+            clearTimeout(touchTimer);
+        }
+
         function handleSlotRightClick(el, ev) {
             ev.preventDefault(); 
-            // Hide any other active delete overlays
+            justLongPressed = true; 
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
             el.classList.add('show-delete');
         }
 
         function handleSlotClick(el, ev, logId) {
-            // If the delete overlay is showing, a normal click cancels it
+            // Ignore the phantom click if we just triggered a long-press
+            if (justLongPressed) {
+                justLongPressed = false;
+                return; 
+            }
             if (el.classList.contains('show-delete')) {
                 el.classList.remove('show-delete');
                 return;
@@ -877,7 +902,7 @@
         }
 
         function unassignChannel(logId, ch) {
-            if(confirm(`Clear Channel ${ch}?\n(The log will remain in your main logbook safely)`)) {
+            if(confirm(`Clear Channel ${ch}?\n(The log will remain in your main database safely)`)) {
                 db.ref('radioLogs/' + logId).update({channel: ""});
             } else {
                 document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
@@ -891,10 +916,8 @@
         }
         
         function dragSlot(ev, logId, channel) {
-            // Instantly hide the red overlay if you start dragging instead of tapping delete
             ev.target.classList.remove('show-delete');
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
-
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel}));
         }
         
@@ -960,7 +983,7 @@
             }
         }
 
-        // Click outside handler to hide expandable notes AND delete overlays
+        // Global click listener to close overlays
         document.addEventListener('click', function(e) {
             document.querySelectorAll('.expandable-note').forEach(note => {
                 if(!note.contains(e.target)) note.classList.remove('expanded');
@@ -1535,7 +1558,7 @@
             });
         }
 
-        // --- MEMORY BANK LOGIC WITH DRAG & DROP ---
+        // --- MEMORY BANK LOGIC WITH DRAG & DROP & TOUCH EVENTS ---
         function renderMemoryBank() {
             const grid = document.getElementById('memoryGrid');
             if(!grid) return;
@@ -1555,7 +1578,17 @@
                     let stName = log.station || log.notes || 'No Name';
                     
                     return `
-                        <div class="memory-slot" draggable="true" ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="handleSlotClick(this, event, '${log.id}')" oncontextmenu="handleSlotRightClick(this, event)" title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
+                        <div class="memory-slot" draggable="true" 
+                            ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" 
+                            ondragover="allowDrop(event)" 
+                            ondragleave="dragLeave(event)" 
+                            ondrop="dropSlot(event, '${cleanCh}')" 
+                            onclick="handleSlotClick(this, event, '${log.id}')" 
+                            oncontextmenu="handleSlotRightClick(this, event)" 
+                            ontouchstart="handleTouchStart(this, event)"
+                            ontouchend="handleTouchEnd()"
+                            ontouchmove="handleTouchMove()"
+                            title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
                             <span class="status-icon">${icon}</span>
                             <span class="ch-num">${chLabel}</span>
                             <span class="freq">${fDisplay}</span>
