@@ -65,15 +65,15 @@
             font-size: 0.85em;
         }
 
-        /* Hides the AM/FM pill on PC natively */
         .mobile-mode { display: none; }
 
-        /* --- TABS & MEMORY BANK GRID --- */
+        /* --- TABS --- */
         .tab-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; border-bottom: none; opacity: 0.6; transition: 0.2s; margin-bottom: -2px; }
         .tab-btn:hover { opacity: 0.8; }
         .tab-btn.active { background: var(--primary); color: white; opacity: 1; border-color: var(--primary); }
-        .settings-tab { margin-left: auto; } /* Pushes to right on PC */
+        .settings-tab { margin-left: auto; } 
         
+        /* --- MEMORY BANK DRAG & DROP LAYOUT --- */
         .memory-layout { display: flex; gap: 20px; align-items: flex-start; }
         .memory-sidebar { flex: 0 0 250px; max-height: 65vh; overflow-y: auto; background: var(--card-bg); border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         .memory-main { flex: 1; min-width: 0; }
@@ -82,7 +82,7 @@
         .dict-drag-item:active { cursor: grabbing; transform: scale(0.98); }
         .dict-drag-item:hover { border-color: var(--primary); }
 
-        .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
+        .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
         .memory-slot { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .memory-slot:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         
@@ -333,7 +333,10 @@
             .settings-tab { margin-left: 0; } 
             
             .memory-layout { flex-direction: column; }
-            .memory-sidebar { width: 100%; flex: auto; max-height: 250px; padding: 10px; } 
+            .memory-sidebar { width: 100%; flex: none; max-height: 200px; padding: 10px; border-bottom: 2px solid var(--primary); margin-bottom: 15px; border-radius: 8px; } 
+            .memory-main { width: 100%; }
+            /* FIX: Forced 2 Column Layout for Mobile to prevent awkward left-alignment */
+            .memory-grid { grid-template-columns: repeat(2, 1fr); padding-right: 0; }
 
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
             #statusFilter { width: 100% !important; }
@@ -961,7 +964,6 @@
             openNewMemory(channel, radio); 
         }
 
-        // --- NEW: UNIDEN EXPORT LOGIC WITH 25MHZ LIMIT ---
         function exportForUniden() {
             const uniqueFreqs = {};
 
@@ -1106,7 +1108,6 @@
             }
         });
 
-        // --- NEW: SMART INPUT LOGIC (UPDATED FOR < 30 MHZ) ---
         function updateFreqDatalist() {
             const freqCounts = {};
             cloudLogs.forEach(l => {
@@ -1156,7 +1157,6 @@
             else if (freqVal >= 26.965 && freqVal <= 27.991) modeSelect.value = "FM"; 
         }
 
-        // --- TAB VIEW LOGIC ---
         function switchView(view) {
             document.getElementById('mainLogbookContainer').style.display = view === 'logbook' ? 'block' : 'none';
             document.getElementById('memoryBankContainer').style.display = view === 'memory' ? 'block' : 'none';
@@ -1203,7 +1203,6 @@
             renderAnalytics();
         }
 
-        // --- NEW: BAND FILTERED ANALYTICS LOGIC ---
         function renderAnalytics() {
             if (cloudLogs.length === 0) return;
             
@@ -1478,7 +1477,7 @@
             });
         }
 
-        // --- MEMORY BANK LOGIC ---
+        // --- MEMORY BANK LOGIC WITH DRAG & DROP ---
         function renderMemoryBank() {
             const grid = document.getElementById('memoryGrid');
             if(!grid) return;
@@ -1496,6 +1495,7 @@
                     let fDisplay = parseFloat(log.freq);
                     fDisplay = isNaN(fDisplay) ? "0.000" : fDisplay.toFixed(3);
                     let stName = log.station || log.notes || 'No Name';
+                    
                     return `
                         <div class="memory-slot" draggable="true" ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="startEdit('${log.id}')" title="Click to edit, Drag to swap/move">
                             <span class="status-icon">${icon}</span>
