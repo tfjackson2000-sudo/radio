@@ -851,15 +851,18 @@
                 return;
             }
 
+            const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+            const dragAttr = isTouch ? '' : 'draggable="true"';
+
             sb.innerHTML = appSettings.dictionary.map(item => `
-                <div class="dict-drag-item" draggable="true" ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')">
+                <div class="dict-drag-item" ${dragAttr} ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')">
                     <strong style="color:var(--primary);">${item.f}</strong><br>
                     <span style="color:var(--text-sub);">${item.n}</span>
                 </div>
             `).join('');
         }
 
-        // --- LONG PRESS MOBILE ENGINE (FIXED) ---
+        // --- NEW: LONG PRESS MOBILE ENGINE (FIXED) ---
         let touchTimer;
         let justLongPressed = false;
         let touchStartX = 0;
@@ -871,7 +874,6 @@
             touchStartY = ev.touches[0].clientY;
             justLongPressed = false;
             
-            // Hide any other active delete overlays instantly
             document.querySelectorAll('.memory-slot').forEach(s => {
                 if(s !== el) s.classList.remove('show-delete');
             });
@@ -880,12 +882,11 @@
                 justLongPressed = true;
                 el.classList.add('show-delete');
                 if (navigator.vibrate) navigator.vibrate(50); 
-            }, 500); // Trigger after exactly half a second
+            }, 500); 
         }
 
         function handleTouchEnd(el, ev) {
             clearTimeout(touchTimer);
-            // Reset the phantom click shield half a second after they lift their finger
             setTimeout(() => { justLongPressed = false; }, 500);
         }
 
@@ -894,11 +895,9 @@
             let moveX = ev.touches[0].clientX;
             let moveY = ev.touches[0].clientY;
             
-            // If finger moves more than 15 pixels, cancel the timer completely
             if (Math.abs(moveX - touchStartX) > 15 || Math.abs(moveY - touchStartY) > 15) {
                 clearTimeout(touchTimer);
                 
-                // If they scroll heavily (> 40px) while the bin is already open, hide it
                 if (justLongPressed && (Math.abs(moveX - touchStartX) > 40 || Math.abs(moveY - touchStartY) > 40)) {
                     el.classList.remove('show-delete');
                 }
@@ -907,6 +906,7 @@
 
         function handleSlotRightClick(el, ev) {
             ev.preventDefault(); 
+            justLongPressed = true; 
             document.querySelectorAll('.memory-slot').forEach(s => {
                 if(s !== el) s.classList.remove('show-delete');
             });
@@ -914,15 +914,10 @@
         }
 
         function handleSlotClick(el, ev, logId) {
-            // Block the phantom click that fires right after you lift your finger
             if (justLongPressed) return; 
 
             let hadDelete = el.classList.contains('show-delete');
-            
-            // Close any delete overlays
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
-
-            // If we just closed the delete overlay on THIS specific slot, do nothing else
             if (hadDelete) return;
 
             startEdit(logId);
@@ -943,14 +938,12 @@
         }
         
         function dragSlot(ev, logId, channel) {
-            // Instantly hide the red bin if they start dragging instead of tapping delete
             ev.target.classList.remove('show-delete');
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel}));
         }
 
         function handleDragEnd(ev) {
-            // Cleans up all visual clutter if a drag is canceled or completes
             document.querySelectorAll('.memory-slot').forEach(s => {
                 s.classList.remove('show-delete');
                 s.classList.remove('drag-over');
@@ -1019,7 +1012,6 @@
             }
         }
 
-        // Global click listener to close overlays
         document.addEventListener('click', function(e) {
             document.querySelectorAll('.expandable-note').forEach(note => {
                 if(!note.contains(e.target)) note.classList.remove('expanded');
@@ -1604,6 +1596,9 @@
             const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && String(l.channel).trim() !== "");
             let html = '';
             
+            const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+            const dragAttr = isTouch ? '' : 'draggable="true"';
+            
             function renderSlot(chLabel, log) {
                 const cleanCh = chLabel.replace('CH ', '').trim();
                 if (log) {
@@ -1614,7 +1609,7 @@
                     let stName = log.station || log.notes || 'No Name';
                     
                     return `
-                        <div class="memory-slot" draggable="true" 
+                        <div class="memory-slot" ${dragAttr} 
                             ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" 
                             ondragend="handleDragEnd(event)"
                             ondragover="allowDrop(event)" 
