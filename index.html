@@ -101,7 +101,6 @@
         .memory-slot .station { font-size: 0.8em; color: var(--text-sub); display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); pointer-events: none; }
         
-        /* NEW: Delete Overlay */
         .memory-slot .delete-overlay {
             display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(239, 68, 68, 0.95); color: white; border-radius: 8px;
@@ -859,17 +858,23 @@
             `).join('');
         }
 
-        // --- NEW: LONG PRESS MOBILE ENGINE ---
+        // --- LONG PRESS MOBILE ENGINE (FIXED) ---
         let touchTimer;
         let justLongPressed = false;
+        let touchStartX = 0;
+        let touchStartY = 0;
 
         function handleTouchStart(el, ev) {
+            if (!ev.touches || ev.touches.length === 0) return;
+            touchStartX = ev.touches[0].clientX;
+            touchStartY = ev.touches[0].clientY;
             justLongPressed = false;
+            
             touchTimer = setTimeout(() => {
                 justLongPressed = true;
                 document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
                 el.classList.add('show-delete');
-                if (navigator.vibrate) navigator.vibrate(50); // Haptic feedback!
+                if (navigator.vibrate) navigator.vibrate(50); 
             }, 600);
         }
 
@@ -877,8 +882,16 @@
             clearTimeout(touchTimer);
         }
 
-        function handleTouchMove() {
-            clearTimeout(touchTimer);
+        function handleTouchMove(el, ev) {
+            if (!ev.touches || ev.touches.length === 0) return;
+            let moveX = ev.touches[0].clientX;
+            let moveY = ev.touches[0].clientY;
+            
+            // If finger moves more than 10 pixels, cancel timer AND hide existing overlay
+            if (Math.abs(moveX - touchStartX) > 10 || Math.abs(moveY - touchStartY) > 10) {
+                clearTimeout(touchTimer);
+                el.classList.remove('show-delete');
+            }
         }
 
         function handleSlotRightClick(el, ev) {
@@ -889,7 +902,6 @@
         }
 
         function handleSlotClick(el, ev, logId) {
-            // Ignore the phantom click if we just triggered a long-press
             if (justLongPressed) {
                 justLongPressed = false;
                 return; 
@@ -919,6 +931,14 @@
             ev.target.classList.remove('show-delete');
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-delete'));
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel}));
+        }
+
+        function handleDragEnd(ev) {
+            // Cleans up all visual clutter if a drag is canceled or completes
+            document.querySelectorAll('.memory-slot').forEach(s => {
+                s.classList.remove('show-delete');
+                s.classList.remove('drag-over');
+            });
         }
         
         function allowDrop(ev) {
@@ -1580,6 +1600,7 @@
                     return `
                         <div class="memory-slot" draggable="true" 
                             ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" 
+                            ondragend="handleDragEnd(event)"
                             ondragover="allowDrop(event)" 
                             ondragleave="dragLeave(event)" 
                             ondrop="dropSlot(event, '${cleanCh}')" 
@@ -1587,7 +1608,7 @@
                             oncontextmenu="handleSlotRightClick(this, event)" 
                             ontouchstart="handleTouchStart(this, event)"
                             ontouchend="handleTouchEnd()"
-                            ontouchmove="handleTouchMove()"
+                            ontouchmove="handleTouchMove(this, event)"
                             title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
                             <span class="status-icon">${icon}</span>
                             <span class="ch-num">${chLabel}</span>
