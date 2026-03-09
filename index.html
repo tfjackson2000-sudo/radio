@@ -57,21 +57,11 @@
         }
 
         header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-            flex-wrap: wrap; 
-            gap: 10px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; 
         }
 
         h1 { 
-            margin: 0; 
-            color: var(--primary); 
-            font-size: 1.5rem; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
+            margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; 
         }
 
         .theme-toggle {
@@ -86,17 +76,9 @@
 
         /* --- TABS --- */
         .tab-btn { 
-            background: var(--card-bg); 
-            color: var(--text-main); 
-            border: 1px solid var(--border-color); 
-            padding: 10px 20px; 
-            border-radius: 8px 8px 0 0; 
-            cursor: pointer; 
-            font-weight: bold; 
-            border-bottom: none; 
-            opacity: 0.6; 
-            transition: 0.2s; 
-            margin-bottom: -2px; 
+            background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); 
+            padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; 
+            border-bottom: none; opacity: 0.6; transition: 0.2s; margin-bottom: -2px; 
         }
         .tab-btn:hover { opacity: 0.8; }
         .tab-btn.active { background: var(--primary); color: white; opacity: 1; border-color: var(--primary); }
@@ -114,10 +96,10 @@
         .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
         
         .memory-slot { 
-            background: var(--card-bg); border: 1px solid var(--border-color); 
-            border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; 
-            transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; 
+            text-align: center; cursor: pointer; transition: 0.2s; position: relative; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); user-select: none; -webkit-user-select: none; 
+            -webkit-touch-callout: none; overflow: hidden;
         }
         .memory-slot:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         
@@ -133,16 +115,10 @@
         /* ACTION OVERLAY (MOVE / CLEAR) */
         .memory-slot .action-overlay {
             display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10;
-            overflow: hidden;
+            border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; overflow: hidden;
         }
-        .memory-slot.show-actions .action-overlay {
-            opacity: 1; pointer-events: auto;
-        }
-        .action-btn {
-            flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-        }
+        .memory-slot.show-actions .action-overlay { opacity: 1; pointer-events: auto; }
+        .action-btn { flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
         .btn-move-slot { background: rgba(37, 99, 235, 0.95); }
         .btn-clear-slot { background: rgba(239, 68, 68, 0.95); }
         .action-btn:active { filter: brightness(0.8); }
@@ -154,12 +130,8 @@
             font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000;
             align-items: center; gap: 15px; width: max-content; font-size: 0.9em;
         }
-        #moveModeBanner button {
-            background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px;
-            border-radius: 15px; cursor: pointer; font-weight: bold;
-        }
+        #moveModeBanner button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold; }
         .moving-source { opacity: 0.5; border: 2px dashed var(--primary) !important; transform: scale(0.95); }
-
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; cursor: pointer; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
         .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; text-transform: uppercase; }
@@ -168,14 +140,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border-color); }
 
-        .input-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
-            border: 2px solid transparent;
-        }
+        .input-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; border: 2px solid transparent; }
         .editing-mode { border: 2px solid var(--edit-color); }
         [data-theme="dark"] .editing-mode { background: #2e263d; }
 
@@ -185,15 +150,10 @@
         
         .form-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; transition: opacity 0.2s ease; }
         .form-body.collapsed { display: none; }
-
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-sub); }
         
-        input, select {
-            padding: 12px; border: 1px solid var(--border-color);
-            border-radius: 8px; font-size: 16px; background-color: var(--card-bg);
-            color: var(--text-main); height: 44px; width: 100%;
-        }
+        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; background-color: var(--card-bg); color: var(--text-main); height: 44px; width: 100%; }
 
         .s-meter-container { display: flex; gap: 3px; height: 44px; padding: 5px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 100%; align-items: flex-end; }
         .s-meter-bar { flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s; border-radius: 2px 2px 0 0; }
@@ -203,41 +163,19 @@
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
         .s-meter-bar.active-red { background-color: #ef4444; }
 
-        .s-meter-bar[data-val="1"] { height: 20%; }
-        .s-meter-bar[data-val="2"] { height: 25%; }
-        .s-meter-bar[data-val="3"] { height: 35%; }
-        .s-meter-bar[data-val="4"] { height: 45%; }
-        .s-meter-bar[data-val="5"] { height: 55%; }
-        .s-meter-bar[data-val="6"] { height: 65%; }
-        .s-meter-bar[data-val="7"] { height: 75%; }
-        .s-meter-bar[data-val="8"] { height: 85%; }
-        .s-meter-bar[data-val="9"] { height: 95%; }
-        .s-meter-bar[data-val="10"] { height: 100%; }
+        .s-meter-bar[data-val="1"] { height: 20%; } .s-meter-bar[data-val="2"] { height: 25%; } .s-meter-bar[data-val="3"] { height: 35%; } .s-meter-bar[data-val="4"] { height: 45%; } .s-meter-bar[data-val="5"] { height: 55%; }
+        .s-meter-bar[data-val="6"] { height: 65%; } .s-meter-bar[data-val="7"] { height: 75%; } .s-meter-bar[data-val="8"] { height: 85%; } .s-meter-bar[data-val="9"] { height: 95%; } .s-meter-bar[data-val="10"] { height: 100%; }
 
         .mini-meter, .mini-traffic { display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px; }
-        .mini-meter { align-items: flex-end; }
-        .mini-traffic { align-items: center; }
-
+        .mini-meter { align-items: flex-end; } .mini-traffic { align-items: center; }
         .mini-bar, .mini-t-block { flex: 1; background-color: #e5e7eb; }
-        .mini-bar { border-radius: 1px 1px 0 0; }
-        .mini-t-block { height: 60%; border-radius: 1px; }
-
+        .mini-bar { border-radius: 1px 1px 0 0; } .mini-t-block { height: 60%; border-radius: 1px; }
         [data-theme="dark"] .mini-bar, [data-theme="dark"] .mini-t-block { background-color: #374151; }
-        .mini-bar.active-green { background-color: #10b981; }
-        .mini-bar.active-yellow { background-color: #f59e0b; }
-        .mini-bar.active-red { background-color: #ef4444; }
+        .mini-bar.active-green { background-color: #10b981; } .mini-bar.active-yellow { background-color: #f59e0b; } .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
 
-        .mini-bar[data-val="1"] { height: 20%; }
-        .mini-bar[data-val="2"] { height: 25%; }
-        .mini-bar[data-val="3"] { height: 35%; }
-        .mini-bar[data-val="4"] { height: 45%; }
-        .mini-bar[data-val="5"] { height: 55%; }
-        .mini-bar[data-val="6"] { height: 65%; }
-        .mini-bar[data-val="7"] { height: 75%; }
-        .mini-bar[data-val="8"] { height: 85%; }
-        .mini-bar[data-val="9"] { height: 95%; }
-        .mini-bar[data-val="10"] { height: 100%; }
+        .mini-bar[data-val="1"] { height: 20%; } .mini-bar[data-val="2"] { height: 25%; } .mini-bar[data-val="3"] { height: 35%; } .mini-bar[data-val="4"] { height: 45%; } .mini-bar[data-val="5"] { height: 55%; }
+        .mini-bar[data-val="6"] { height: 65%; } .mini-bar[data-val="7"] { height: 75%; } .mini-bar[data-val="8"] { height: 85%; } .mini-bar[data-val="9"] { height: 95%; } .mini-bar[data-val="10"] { height: 100%; }
 
         .btn-main { grid-column: 1 / -1; background-color: var(--primary); color: white; border: none; padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .btn-save { background-color: var(--edit-color) !important; }
@@ -248,9 +186,7 @@
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .controls h2 { margin: 0; }
-        
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
-
         .danger-zone { margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-color); display: flex; justify-content: flex-end; }
 
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
@@ -318,27 +254,23 @@
         /* ==================================================== */
         @media screen and (max-width: 800px) {
             .settings-tab { margin-left: 0; } 
-            
             .memory-layout { flex-direction: column; }
             .memory-sidebar { width: 100%; flex: none; max-height: 200px; padding: 10px; border-bottom: 2px solid var(--primary); margin-bottom: 15px; border-radius: 8px; } 
             .memory-main { width: 100%; }
             .memory-grid { grid-template-columns: repeat(2, 1fr); padding-right: 0; }
-
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
             #statusFilter { width: 100% !important; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
-
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
             table, tbody, tr, th, td { display: block; width: 100% !important; box-sizing: border-box; }
             thead { display: none; } 
-
             tr { margin-bottom: 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 15px; }
             td { display: grid !important; grid-template-columns: 105px 1fr; gap: 10px; align-items: center; text-align: left !important; border-bottom: 1px solid var(--border-color); padding: 10px 0; white-space: normal !important; overflow: visible !important; word-wrap: break-word; }
             td::before { content: attr(data-label); font-weight: bold; color: var(--text-sub); text-transform: uppercase; font-size: 0.8em; text-align: left; }
             td:nth-child(7), td:nth-child(8) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
-
+            
             .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
@@ -566,6 +498,13 @@
                 <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter</p>
                 <ul id="topStrongestList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleStrongestBtn" onclick="toggleStrongest()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: var(--edit-color); padding: 10px; font-weight: bold;">Show All</button>
+            </div>
+
+            <div class="input-card" style="margin-bottom: 0;">
+                <h3 style="margin-top: 0; color: #10b981;">🏆 Combined Score</h3>
+                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Combined Activity & Signal Score</p>
+                <ul id="topOverallList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
+                <button id="toggleOverallBtn" onclick="toggleOverall()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: #10b981; padding: 10px; font-weight: bold;">Show All</button>
             </div>
 
             <div class="input-card" style="margin-bottom: 0; grid-column: 1 / -1;" id="graphsCard">
@@ -1135,20 +1074,22 @@
         let showAllStrongest = false; 
         let showAllOverall = false; 
 
-        // UPDATED: Now returns a simple string. The red color logic uses the dictionary directly to stay safe!
+        // HELPER TO CHECK IF FREQUENCY IS CONFIRMED SITEWIDE
+        const isFreqConfirmed = (freqStr) => {
+            if (appSettings && appSettings.dictionary && appSettings.dictionary.some(d => d.f === freqStr)) return true;
+            if (cloudLogs && cloudLogs.some(l => l.freq && parseFloat(l.freq).toFixed(3) === freqStr && l.confirmed !== false)) return true;
+            return false;
+        };
+
         const getStationName = (f) => { 
             if (appSettings && appSettings.dictionary) {
                 let match = appSettings.dictionary.find(d => d.f === f); 
                 if (match) return match.n; 
             }
-            
             if (typeof cloudLogs !== 'undefined' && cloudLogs.length > 0) {
                 let fallbackLog = cloudLogs.find(l => l.freq && parseFloat(l.freq).toFixed(3) === f && l.station && l.station.trim() !== "");
-                if (fallbackLog) {
-                    return fallbackLog.station;
-                }
+                if (fallbackLog) return fallbackLog.station;
             }
-            
             return "Unknown Station"; 
         };
 
@@ -1323,57 +1264,57 @@
             let busiestHtml = "";
             freqsToDisplay.forEach((f, i) => {
                 let sName = getStationName(f[0]); 
-                let nameDisplay = sName !== "Unknown Station" ? " - " + sName : "";
+                let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
                 
-                // Color check!
-                let isConf = appSettings.dictionary && appSettings.dictionary.some(d => d.f === f[0]);
+                let isConf = isFreqConfirmed(f[0]);
                 let freqColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
                 
-                busiestHtml += '<li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">' +
-                    '<strong style="color:var(--primary); flex-shrink: 0;">#' + (i+1) + ':</strong> ' +
-                    '<span style="color:' + freqColor + '; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor(\'' + f[0] + '\')">' + f[0] + ' MHz' + nameDisplay + '</span> ' +
-                    '<span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(' + f[1] + ' logs)</span>' +
-                '</li>';
+                busiestHtml += `
+                    <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
+                        <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
+                    </li>`;
             });
             document.getElementById('topFreqsList').innerHTML = busiestHtml;
             
             const btnBusiest = document.getElementById('toggleBusiestBtn');
             if (sortedFreqs.length > 10) { 
                 btnBusiest.style.display = 'block'; 
-                btnBusiest.innerText = showAllBusiest ? "Show Top 10" : "Show All (" + sortedFreqs.length + ")"; 
+                btnBusiest.innerText = showAllBusiest ? `Show Top 10` : `Show All (${sortedFreqs.length})`; 
             } else { 
                 btnBusiest.style.display = 'none'; 
             }
 
-            // 2. SIGNAL STRENGTH (Removed the >1 log limit as requested)
-            const sortedStrongestFull = Object.entries(freqSignals).map(([f, data]) => ({ f: f, avg: (data.total / data.count).toFixed(1), count: data.count })).sort((a, b) => b.avg - a.avg || b.count - a.count);
+            // 2. SIGNAL STRENGTH
+            const sortedStrongestFull = Object.entries(freqSignals).map(([f, data]) => ({ f, avg: (data.total / data.count).toFixed(1), count: data.count })).sort((a, b) => b.avg - a.avg || b.count - a.count);
             const strongestToDisplay = showAllStrongest ? sortedStrongestFull : sortedStrongestFull.slice(0, 10);
             const btnStrongest = document.getElementById('toggleStrongestBtn');
             
             if (sortedStrongestFull.length === 0) { 
-                document.getElementById('topStrongestList').innerHTML = '<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to see average signal strength.</span></li>'; 
+                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`; 
                 btnStrongest.style.display = 'none';
             } else {
                 let strongestHtml = "";
                 strongestToDisplay.forEach((item, i) => { 
                     let sName = getStationName(item.f); 
-                    let nameDisplay = sName !== "Unknown Station" ? " - " + sName : ""; 
+                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
                     
-                    // Color check!
-                    let isConf = appSettings.dictionary && appSettings.dictionary.some(d => d.f === item.f);
+                    let isConf = isFreqConfirmed(item.f);
                     let freqColor = isConf ? "var(--edit-color)" : "var(--unconfirmed-text)";
                     
-                    strongestHtml += '<li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">' +
-                        '<strong style="color:var(--edit-color); flex-shrink: 0;">#' + (i+1) + ':</strong> ' +
-                        '<span style="color:' + freqColor + '; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor(\'' + item.f + '\')">' + item.f + ' MHz' + nameDisplay + '</span> ' +
-                        '<span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-' + item.avg + ')</span>' +
-                    '</li>';
+                    strongestHtml += `
+                        <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
+                            <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
+                        </li>`;
                 });
                 document.getElementById('topStrongestList').innerHTML = strongestHtml;
                 
                 if (sortedStrongestFull.length > 10) { 
                     btnStrongest.style.display = 'block'; 
-                    btnStrongest.innerText = showAllStrongest ? "Show Top 10" : "Show All (" + sortedStrongestFull.length + ")"; 
+                    btnStrongest.innerText = showAllStrongest ? `Show Top 10` : `Show All (${sortedStrongestFull.length})`; 
                 } else { 
                     btnStrongest.style.display = 'none'; 
                 }
@@ -1397,29 +1338,29 @@
             
             if (listOverall && btnOverall) {
                 if (overallScores.length === 0) { 
-                    listOverall.innerHTML = '<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>'; 
+                    listOverall.innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>`; 
                     btnOverall.style.display = 'none';
                 } else {
                     let overallHtml = "";
                     overallToDisplay.forEach((item, i) => { 
                         let sName = getStationName(item.f); 
-                        let nameDisplay = sName !== "Unknown Station" ? " - " + sName : ""; 
+                        let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
                         
-                        // Color check!
-                        let isConf = appSettings.dictionary && appSettings.dictionary.some(d => d.f === item.f);
+                        let isConf = isFreqConfirmed(item.f);
                         let freqColor = isConf ? "#10b981" : "var(--unconfirmed-text)";
                         
-                        overallHtml += '<li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">' +
-                            '<strong style="color:#10b981; flex-shrink: 0;">#' + (i+1) + ':</strong> ' +
-                            '<span style="color:' + freqColor + '; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor(\'' + item.f + '\')">' + item.f + ' MHz' + nameDisplay + '</span> ' +
-                            '<span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ' + item.score + ')</span>' +
-                        '</li>';
+                        overallHtml += `
+                            <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
+                                <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
+                            </li>`;
                     });
                     listOverall.innerHTML = overallHtml;
                     
                     if (overallScores.length > 10) { 
                         btnOverall.style.display = 'block'; 
-                        btnOverall.innerText = showAllOverall ? "Show Top 10" : "Show All (" + overallScores.length + ")"; 
+                        btnOverall.innerText = showAllOverall ? `Show Top 10` : `Show All (${overallScores.length})`; 
                     } else { 
                         btnOverall.style.display = 'none'; 
                     }
@@ -1430,11 +1371,11 @@
             const currentVal = freqSelect.value; 
             const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
             
-            let dropdownHtml = '<option value="ALL">All Frequencies Overview</option>';
+            let dropdownHtml = `<option value="ALL">All Frequencies Overview</option>`;
             uniqueFreqs.forEach(f => { 
                 let sName = getStationName(f); 
-                let displayTxt = sName !== "Unknown Station" ? f + " MHz - " + sName : f + " MHz"; 
-                dropdownHtml += '<option value="' + f + '">' + displayTxt + '</option>'; 
+                let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`; 
+                dropdownHtml += `<option value="${f}">${displayTxt}</option>`; 
             });
             freqSelect.innerHTML = dropdownHtml;
             
@@ -1460,7 +1401,7 @@
             
             let timeHtml = "";
             Object.entries(timeBuckets).forEach(([period, count]) => {
-                timeHtml += '<div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);"><div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">' + period + '</div><div style="font-size:1.8em; font-weight:bold; color:var(--primary);">' + count + '</div><div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div></div>';
+                timeHtml += `<div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);"><div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">${period}</div><div style="font-size:1.8em; font-weight:bold; color:var(--primary);">${count}</div><div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div></div>`;
             });
             document.getElementById('timeOfDayStats').innerHTML = timeHtml;
 
@@ -1831,7 +1772,7 @@
                     else if (i < 8) colorClass = "active-yellow"; 
                     else colorClass = "active-red"; 
                 } 
-                html += '<div class="mini-bar ' + colorClass + '" data-val="' + i + '"></div>'; 
+                html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`; 
             } 
             html += '</div>'; 
             return html; 
@@ -1843,7 +1784,7 @@
             let html = '<div class="mini-traffic">'; 
             for (let i = 1; i <= 10; i++) { 
                 let colorClass = (i <= num) ? "active" : ""; 
-                html += '<div class="mini-t-block ' + colorClass + '"></div>'; 
+                html += `<div class="mini-t-block ${colorClass}"></div>`; 
             } 
             html += '</div>'; 
             return html; 
