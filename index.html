@@ -1145,15 +1145,12 @@
         let showAllStrongest = false; 
         let showAllOverall = false; 
 
-        // UPDATED: Get Station Name now looks for unconfirmed logs as a backup!
         const getStationName = (f) => { 
-            // 1. Check Dictionary First
             if (appSettings && appSettings.dictionary) {
                 let match = appSettings.dictionary.find(d => d.f === f); 
                 if (match) return match.n; 
             }
             
-            // 2. Check for Unconfirmed Logs as Backup
             if (typeof cloudLogs !== 'undefined' && cloudLogs.length > 0) {
                 let fallbackLog = cloudLogs.find(l => l.freq && parseFloat(l.freq).toFixed(3) === f && l.station && l.station.trim() !== "");
                 if (fallbackLog) {
@@ -1336,7 +1333,12 @@
             freqsToDisplay.forEach((f, i) => {
                 let sName = getStationName(f[0]); 
                 let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
-                busiestHtml += `<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`;
+                busiestHtml += `
+                    <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
+                        <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
+                    </li>`;
             });
             document.getElementById('topFreqsList').innerHTML = busiestHtml;
             
@@ -1361,7 +1363,12 @@
                 strongestToDisplay.forEach((item, i) => { 
                     let sName = getStationName(item.f); 
                     let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
-                    strongestHtml += `<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-${item.avg})</span></li>`; 
+                    strongestHtml += `
+                        <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
+                            <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
+                        </li>`;
                 });
                 document.getElementById('topStrongestList').innerHTML = strongestHtml;
                 
@@ -1398,7 +1405,12 @@
                     overallToDisplay.forEach((item, i) => { 
                         let sName = getStationName(item.f); 
                         let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
-                        overallHtml += `<li style="margin-bottom: 5px;"><strong style="color:#10b981;">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Score: ${item.score})</span></li>`; 
+                        overallHtml += `
+                            <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
+                                <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
+                            </li>`;
                     });
                     listOverall.innerHTML = overallHtml;
                     
