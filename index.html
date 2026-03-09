@@ -114,6 +114,17 @@
         .memory-slot .station { font-size: 0.8em; color: var(--text-sub); display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); pointer-events: none; }
         
+        /* ACTION OVERLAY (MOVE / CLEAR) */
+        .memory-slot .action-overlay {
+            display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; overflow: hidden;
+        }
+        .memory-slot.show-actions .action-overlay { opacity: 1; pointer-events: auto; }
+        .action-btn { flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+        .btn-move-slot { background: rgba(37, 99, 235, 0.95); }
+        .btn-clear-slot { background: rgba(239, 68, 68, 0.95); }
+        .action-btn:active { filter: brightness(0.8); }
+
         /* TRASH BIN FOR CLEARING CHANNELS */
         .trash-bin {
             border: 2px dashed #ef4444; background: rgba(239, 68, 68, 0.05); color: #ef4444; 
@@ -253,9 +264,6 @@
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
         #scrollTopBtn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-
-        /* Class for styling unconfirmed list items in analytics */
-        .analytics-unconfirmed { color: var(--unconfirmed-text) !important; }
 
         /* ==================================================== */
         /* MOBILE CARD LAYOUT                                   */
@@ -1300,7 +1308,7 @@
                 busiestHtml += `
                     <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
-                        <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
                         <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
                     </li>`;
             });
@@ -1334,7 +1342,7 @@
                     strongestHtml += `
                         <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                             <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
-                            <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                             <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
                         </li>`;
                 });
@@ -1380,7 +1388,7 @@
                         overallHtml += `
                             <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                                 <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
-                                <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                                 <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
                             </li>`;
                     });
@@ -1648,6 +1656,10 @@
                             ondragleave="dragLeave(event)" 
                             ondrop="dropSlot(event, '${cleanCh}')" 
                             onclick="handleSlotClick(this, event, '${log.id}', '${cleanCh}')" 
+                            oncontextmenu="handleSlotRightClick(this, event)" 
+                            ontouchstart="handleTouchStart(this, event)" 
+                            ontouchend="handleTouchEnd(this, event)" 
+                            ontouchmove="handleTouchMove(this, event)" 
                             title="Click to edit, Drag to swap/move, Drag to Trash to clear">
                             <span class="status-icon">${icon}</span>
                             <span class="ch-num">${chLabel}</span>
@@ -2057,9 +2069,8 @@
                 let isConf = log.confirmed !== false; 
                 let confIcon = isConf ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
                 
-                // NEW: Use !important to guarantee the red color applies
-                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text) !important";
-                let clickableFreq = `<strong class="analytics-unconfirmed" style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
+                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
+                let clickableFreq = `<strong style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
 
                 const strRadio = String(log.radio || "").toLowerCase();
                 const strChannel = String(log.channel || "").toLowerCase();
