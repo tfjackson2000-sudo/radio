@@ -558,21 +558,21 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
             
             <div class="input-card" style="margin-bottom: 0;">
-                <h3 style="margin-top: 0; color: var(--primary);">🔥 Busiest Frequencies</h3>
+                <h3 style="margin-top: 0; color: var(--primary);">🔥 Most Active</h3>
                 <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Total Log Count</p>
                 <ul id="topFreqsList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleBusiestBtn" onclick="toggleBusiest()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: var(--primary); padding: 10px; font-weight: bold;">Show All</button>
             </div>
 
             <div class="input-card" style="margin-bottom: 0;">
-                <h3 style="margin-top: 0; color: var(--edit-color);">💪 Strongest Signals</h3>
+                <h3 style="margin-top: 0; color: var(--edit-color);">💪 Signal Strength</h3>
                 <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter</p>
                 <ul id="topStrongestList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleStrongestBtn" onclick="toggleStrongest()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: var(--edit-color); padding: 10px; font-weight: bold;">Show All</button>
             </div>
 
             <div class="input-card" style="margin-bottom: 0;">
-                <h3 style="margin-top: 0; color: #10b981;">🏆 Top Overall</h3>
+                <h3 style="margin-top: 0; color: #10b981;">🏆 Combined Score</h3>
                 <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Combined Activity & Signal Score</p>
                 <ul id="topOverallList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleOverallBtn" onclick="toggleOverall()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: #10b981; padding: 10px; font-weight: bold;">Show All</button>
@@ -738,9 +738,11 @@
         function editDictEntry(f, nEnc) {
             document.getElementById('newDictFreq').value = f; 
             document.getElementById('newDictName').value = decodeURIComponent(nEnc);
+            
             document.getElementById('dictAddBtn').innerText = "Save"; 
             document.getElementById('dictAddBtn').style.backgroundColor = "var(--edit-color)"; 
             document.getElementById('dictCancelBtn').style.display = "block";
+            
             document.getElementById('newDictName').focus(); 
             document.getElementById('newDictFreq').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
@@ -748,6 +750,7 @@
         function cancelDictEdit() {
             document.getElementById('newDictFreq').value = ""; 
             document.getElementById('newDictName').value = "";
+            
             document.getElementById('dictAddBtn').innerText = "Add"; 
             document.getElementById('dictAddBtn').style.backgroundColor = "var(--primary)"; 
             document.getElementById('dictCancelBtn').style.display = "none";
@@ -1312,52 +1315,52 @@
                 }
             });
 
-            // 1. BUSIEST
+            // 1. MOST ACTIVE
             const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]);
             const freqsToDisplay = showAllBusiest ? sortedFreqs : sortedFreqs.slice(0, 10);
             
             let busiestHtml = "";
             freqsToDisplay.forEach((f, i) => {
                 let sName = getStationName(f[0]); 
-                let nameDisplay = sName !== "Unknown Station" ? " - " + sName : "";
-                busiestHtml += '<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#' + (i+1) + ':</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor(\'' + f[0] + '\')">' + f[0] + ' MHz' + nameDisplay + '</span> <span style="color:var(--text-sub); font-size:0.85em;">(' + f[1] + ' logs)</span></li>';
+                let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
+                busiestHtml += `<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`;
             });
             document.getElementById('topFreqsList').innerHTML = busiestHtml;
             
             const btnBusiest = document.getElementById('toggleBusiestBtn');
             if (sortedFreqs.length > 10) { 
                 btnBusiest.style.display = 'block'; 
-                btnBusiest.innerText = showAllBusiest ? "Show Top 10" : "Show All (" + sortedFreqs.length + ")"; 
+                btnBusiest.innerText = showAllBusiest ? "Show Top 10" : `Show All (${sortedFreqs.length})`; 
             } else { 
                 btnBusiest.style.display = 'none'; 
             }
 
-            // 2. STRONGEST
+            // 2. SIGNAL STRENGTH
             const sortedStrongestFull = Object.entries(freqSignals).map(([f, data]) => ({ f, avg: (data.total / data.count).toFixed(1), count: data.count })).filter(item => item.count > 1).sort((a, b) => b.avg - a.avg || b.count - a.count);
             const strongestToDisplay = showAllStrongest ? sortedStrongestFull : sortedStrongestFull.slice(0, 10);
             const btnStrongest = document.getElementById('toggleStrongestBtn');
             
             if (sortedStrongestFull.length === 0) { 
-                document.getElementById('topStrongestList').innerHTML = '<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>'; 
+                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`; 
                 btnStrongest.style.display = 'none';
             } else {
                 let strongestHtml = "";
                 strongestToDisplay.forEach((item, i) => { 
                     let sName = getStationName(item.f); 
-                    let nameDisplay = sName !== "Unknown Station" ? " - " + sName : ""; 
-                    strongestHtml += '<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#' + (i+1) + ':</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor(\'' + item.f + '\')">' + item.f + ' MHz' + nameDisplay + '</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-' + item.avg + ')</span></li>'; 
+                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                    strongestHtml += `<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-${item.avg})</span></li>`; 
                 });
                 document.getElementById('topStrongestList').innerHTML = strongestHtml;
                 
                 if (sortedStrongestFull.length > 10) { 
                     btnStrongest.style.display = 'block'; 
-                    btnStrongest.innerText = showAllStrongest ? "Show Top 10" : "Show All (" + sortedStrongestFull.length + ")"; 
+                    btnStrongest.innerText = showAllStrongest ? "Show Top 10" : `Show All (${sortedStrongestFull.length})`; 
                 } else { 
                     btnStrongest.style.display = 'none'; 
                 }
             }
 
-            // 3. OVERALL SCORE
+            // 3. COMBINED SCORE
             const overallScores = [];
             Object.keys(freqCounts).forEach(f => {
                 if (freqSignals[f] && freqSignals[f].count > 0) {
@@ -1375,20 +1378,20 @@
             
             if (listOverall && btnOverall) {
                 if (overallScores.length === 0) { 
-                    listOverall.innerHTML = '<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>'; 
+                    listOverall.innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>`; 
                     btnOverall.style.display = 'none';
                 } else {
                     let overallHtml = "";
                     overallToDisplay.forEach((item, i) => { 
                         let sName = getStationName(item.f); 
-                        let nameDisplay = sName !== "Unknown Station" ? " - " + sName : ""; 
-                        overallHtml += '<li style="margin-bottom: 5px;"><strong style="color:#10b981;">#' + (i+1) + ':</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor(\'' + item.f + '\')">' + item.f + ' MHz' + nameDisplay + '</span> <span style="color:var(--text-sub); font-size:0.85em;">(Score: ' + item.score + ')</span></li>'; 
+                        let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                        overallHtml += `<li style="margin-bottom: 5px;"><strong style="color:#10b981;">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Score: ${item.score})</span></li>`; 
                     });
                     listOverall.innerHTML = overallHtml;
                     
                     if (overallScores.length > 10) { 
                         btnOverall.style.display = 'block'; 
-                        btnOverall.innerText = showAllOverall ? "Show Top 10" : "Show All (" + overallScores.length + ")"; 
+                        btnOverall.innerText = showAllOverall ? "Show Top 10" : `Show All (${overallScores.length})`; 
                     } else { 
                         btnOverall.style.display = 'none'; 
                     }
@@ -1399,11 +1402,11 @@
             const currentVal = freqSelect.value; 
             const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
             
-            let dropdownHtml = '<option value="ALL">All Frequencies Overview</option>';
+            let dropdownHtml = `<option value="ALL">All Frequencies Overview</option>`;
             uniqueFreqs.forEach(f => { 
                 let sName = getStationName(f); 
-                let displayTxt = sName !== "Unknown Station" ? f + " MHz - " + sName : f + " MHz"; 
-                dropdownHtml += '<option value="' + f + '">' + displayTxt + '</option>'; 
+                let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`; 
+                dropdownHtml += `<option value="${f}">${displayTxt}</option>`; 
             });
             freqSelect.innerHTML = dropdownHtml;
             
@@ -1429,7 +1432,7 @@
             
             let timeHtml = "";
             Object.entries(timeBuckets).forEach(([period, count]) => {
-                timeHtml += '<div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);"><div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">' + period + '</div><div style="font-size:1.8em; font-weight:bold; color:var(--primary);">' + count + '</div><div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div></div>';
+                timeHtml += `<div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);"><div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">${period}</div><div style="font-size:1.8em; font-weight:bold; color:var(--primary);">${count}</div><div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div></div>`;
             });
             document.getElementById('timeOfDayStats').innerHTML = timeHtml;
 
@@ -1798,7 +1801,7 @@
                     else if (i < 8) colorClass = "active-yellow"; 
                     else colorClass = "active-red"; 
                 } 
-                html += '<div class="mini-bar ' + colorClass + '" data-val="' + i + '"></div>'; 
+                html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`; 
             } 
             html += '</div>'; 
             return html; 
@@ -1810,7 +1813,7 @@
             let html = '<div class="mini-traffic">'; 
             for (let i = 1; i <= 10; i++) { 
                 let colorClass = (i <= num) ? "active" : ""; 
-                html += '<div class="mini-t-block ' + colorClass + '"></div>'; 
+                html += `<div class="mini-t-block ${colorClass}"></div>`; 
             } 
             html += '</div>'; 
             return html; 
