@@ -39,7 +39,9 @@
             --table-hover: #2d3748;
         }
 
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+        }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -52,8 +54,23 @@
             overflow-x: hidden; 
         }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        h1 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+        }
+
+        h1 { 
+            margin: 0; 
+            color: var(--primary); 
+            font-size: 1.5rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
 
         .theme-toggle {
             background: var(--card-bg);
@@ -65,10 +82,24 @@
             font-size: 0.85em;
         }
 
-        .mobile-mode { display: none; }
+        .mobile-mode { 
+            display: none; 
+        }
 
         /* --- TABS --- */
-        .tab-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; border-bottom: none; opacity: 0.6; transition: 0.2s; margin-bottom: -2px; }
+        .tab-btn { 
+            background: var(--card-bg); 
+            color: var(--text-main); 
+            border: 1px solid var(--border-color); 
+            padding: 10px 20px; 
+            border-radius: 8px 8px 0 0; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-bottom: none; 
+            opacity: 0.6; 
+            transition: 0.2s; 
+            margin-bottom: -2px; 
+        }
         .tab-btn:hover { opacity: 0.8; }
         .tab-btn.active { background: var(--primary); color: white; opacity: 1; border-color: var(--primary); }
         .settings-tab { margin-left: auto; } 
@@ -150,20 +181,11 @@
         .editing-mode { border: 2px solid var(--edit-color); }
         [data-theme="dark"] .editing-mode { background: #2e263d; }
 
-        .card-header {
-            display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; user-select: none;
-        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .card-header h2 { margin: 0; font-size: 1.1em; color: var(--primary); }
         .card-header span { font-weight: bold; font-size: 0.9em; opacity: 0.7; }
         
-        .form-body {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-            transition: opacity 0.2s ease;
-        }
+        .form-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; transition: opacity 0.2s ease; }
         .form-body.collapsed { display: none; }
 
         .form-group { display: flex; flex-direction: column; }
@@ -175,16 +197,8 @@
             color: var(--text-main); height: 44px; width: 100%;
         }
 
-        .s-meter-container {
-            display: flex; gap: 3px; height: 44px; padding: 5px;
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 8px; width: 100%; align-items: flex-end;
-        }
-
-        .s-meter-bar {
-            flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s; border-radius: 2px 2px 0 0;
-        }
-
+        .s-meter-container { display: flex; gap: 3px; height: 44px; padding: 5px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 100%; align-items: flex-end; }
+        .s-meter-bar { flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s; border-radius: 2px 2px 0 0; }
         [data-theme="dark"] .s-meter-bar { background-color: #374151; }
         .s-meter-bar:hover { opacity: 0.8; }
         .s-meter-bar.active-green { background-color: #10b981; }
@@ -202,9 +216,7 @@
         .s-meter-bar[data-val="9"] { height: 95%; }
         .s-meter-bar[data-val="10"] { height: 100%; }
 
-        .mini-meter, .mini-traffic {
-            display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px;
-        }
+        .mini-meter, .mini-traffic { display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px; }
         .mini-meter { align-items: flex-end; }
         .mini-traffic { align-items: center; }
 
@@ -229,10 +241,7 @@
         .mini-bar[data-val="9"] { height: 95%; }
         .mini-bar[data-val="10"] { height: 100%; }
 
-        .btn-main {
-            grid-column: 1 / -1; background-color: var(--primary); color: white; border: none;
-            padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px;
-        }
+        .btn-main { grid-column: 1 / -1; background-color: var(--primary); color: white; border: none; padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .btn-save { background-color: var(--edit-color) !important; }
 
         .search-container { margin-bottom: 15px; display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
@@ -244,98 +253,44 @@
         
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
-        .danger-zone {
-            margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-color);
-            display: flex; justify-content: flex-end;
-        }
+        .danger-zone { margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-color); display: flex; justify-content: flex-end; }
 
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
-        .filter-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color);
-            background: var(--card-bg); color: var(--text-main); cursor: pointer;
-            font-size: 0.85em; font-weight: 600; transition: all 0.2s ease;
-        }
+        .filter-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); cursor: pointer; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease; }
         .filter-btn:hover { background: #e5e7eb; }
         [data-theme="dark"] .filter-btn:hover { background: #374151; }
-        .filter-btn.active {
-            background: var(--primary) !important; color: white !important; 
-            border-color: var(--primary) !important;
-        }
-
+        .filter-btn.active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
         .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
         .filter-btn.active .filter-count { opacity: 0.9; }
 
-        .inline-pill {
-            display: inline-block; margin-left: 8px; padding: 2px 6px; 
-            background: #e5e7eb; color: var(--text-sub); border-radius: 4px; 
-            font-size: 0.8em; font-weight: bold;
-        }
+        .inline-pill { display: inline-block; margin-left: 8px; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
         .ch-pill { background: var(--ch-color); color: white; border-radius: 12px; margin-left: 6px; }
         [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
         .flex-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
         td.notes-cell { overflow: visible !important; position: relative; } 
-
-        .expandable-note {
-            display: -webkit-box;
-            -webkit-line-clamp: 1; 
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            cursor: pointer;
-            padding-left: 8px;
-            border-left: 3px solid var(--primary);
-            background-color: rgba(37, 99, 235, 0.05);
-            border-radius: 0 4px 4px 0;
-            transition: background-color 0.2s;
-            margin-top: 2px;
-            position: relative; 
-        }
+        .expandable-note { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; padding-left: 8px; border-left: 3px solid var(--primary); background-color: rgba(37, 99, 235, 0.05); border-radius: 0 4px 4px 0; transition: background-color 0.2s; margin-top: 2px; position: relative; }
         .expandable-note:hover { background-color: rgba(37, 99, 235, 0.1); }
         [data-theme="dark"] .expandable-note { background-color: rgba(59, 130, 246, 0.1); }
         [data-theme="dark"] .expandable-note:hover { background-color: rgba(59, 130, 246, 0.15); }
         
         @media screen and (max-width: 800px) {
-            .expandable-note.expanded {
-                -webkit-line-clamp: unset; 
-                display: block;
-                padding-top: 4px;
-                padding-bottom: 4px;
-            }
+            .expandable-note.expanded { -webkit-line-clamp: unset; display: block; padding-top: 4px; padding-bottom: 4px; }
         }
 
         @media screen and (min-width: 801px) {
-            .expandable-note.expanded {
-                position: absolute; z-index: 9999; top: 100%; 
-                right: 0; left: auto; min-width: 280px; max-width: 350px;
-                background: var(--card-bg) !important; border: 2px solid var(--primary);
-                border-radius: 8px; padding: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); 
-                white-space: normal; -webkit-line-clamp: unset; overflow: visible;
-                display: block; margin-top: 10px; 
-            }
-            .expandable-note.expanded::before {
-                content: ''; position: absolute; bottom: 100%; 
-                right: 15px; left: auto; border-width: 8px; border-style: solid;
-                border-color: transparent transparent var(--primary) transparent;
-            }
+            .expandable-note.expanded { position: absolute; z-index: 9999; top: 100%; right: 0; left: auto; min-width: 280px; max-width: 350px; background: var(--card-bg) !important; border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); white-space: normal; -webkit-line-clamp: unset; overflow: visible; display: block; margin-top: 10px; }
+            .expandable-note.expanded::before { content: ''; position: absolute; bottom: 100%; right: 15px; left: auto; border-width: 8px; border-style: solid; border-color: transparent transparent var(--primary) transparent; }
         }
 
-        .table-container { 
-            max-height: 65vh; overflow-y: auto; overflow-x: hidden;
-            background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-        }
-
+        .table-container { max-height: 65vh; overflow-y: auto; overflow-x: hidden; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { 
-            text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); 
-            font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
-        }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
         th:nth-child(1), td:nth-child(1) { width: 140px; } 
         th:nth-child(2), td:nth-child(2) { width: 110px; }  
         th:nth-child(3), td:nth-child(3) { width: 70px; }  
-        th:nth-child(4), td:nth-child(4),
-        th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
+        th:nth-child(4), td:nth-child(4), th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
         th:nth-child(5), td:nth-child(5) { width: 160px; } 
         th:nth-child(6), td:nth-child(6) { width: 80px; }  
         th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } 
@@ -358,10 +313,7 @@
         .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
-
-        #scrollTopBtn {
-            display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
+        #scrollTopBtn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
         /* ==================================================== */
         /* MOBILE CARD LAYOUT                                   */
@@ -379,44 +331,22 @@
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
 
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
-            
             table, tbody, tr, th, td { display: block; width: 100% !important; box-sizing: border-box; }
             thead { display: none; } 
 
-            tr {
-                margin-bottom: 15px; background: var(--card-bg); border: 1px solid var(--border-color);
-                border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 15px;
-            }
-
-            td {
-                display: grid !important; grid-template-columns: 105px 1fr; gap: 10px;
-                align-items: center; text-align: left !important;
-                border-bottom: 1px solid var(--border-color); padding: 10px 0;
-                white-space: normal !important; overflow: visible !important; word-wrap: break-word;
-            }
-
-            td::before {
-                content: attr(data-label); font-weight: bold; color: var(--text-sub);
-                text-transform: uppercase; font-size: 0.8em; text-align: left;
-            }
-
+            tr { margin-bottom: 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 15px; }
+            td { display: grid !important; grid-template-columns: 105px 1fr; gap: 10px; align-items: center; text-align: left !important; border-bottom: 1px solid var(--border-color); padding: 10px 0; white-space: normal !important; overflow: visible !important; word-wrap: break-word; }
+            td::before { content: attr(data-label); font-weight: bold; color: var(--text-sub); text-transform: uppercase; font-size: 0.8em; text-align: left; }
             td:nth-child(7), td:nth-child(8) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
-
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
 
-            .mobile-mode {
-                display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); 
-                border-radius: 4px; font-size: 0.8em; font-weight: bold;
-            }
+            .mobile-mode { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
             [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
-
             .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
-            
             .action-btns { width: 100%; display: flex; justify-content: stretch; gap: 10px; flex-wrap: wrap; }
             .action-btns button { flex: 1; padding: 10px; font-size: 1em; } 
         }
@@ -549,6 +479,7 @@
                 <label>Station / Callsign (Max 16)</label>
                 <input type="text" id="stationInput" placeholder="Who are they?" maxlength="16">
             </div>
+            
             <div class="form-group">
                 <label>Signal (S-Meter)</label>
                 <div class="s-meter-container">
@@ -565,12 +496,9 @@
                 </div>
                 <input type="hidden" id="signalInput" value="5">
             </div>
-            <input type="hidden" id="trafficInput" value="1">
             
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Additional Notes</label>
-                <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
-            </div>
+            <input type="hidden" id="trafficInput" value="1">
+            <div class="form-group" style="grid-column: 1 / -1;"><label>Additional Notes</label><input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear..."></div>
             <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; grid-column: 1 / -1; margin-top: 5px;">
                 <input type="checkbox" id="confirmedInput" checked style="width: 22px; height: 22px; cursor: pointer; flex-shrink: 0;">
                 <label for="confirmedInput" style="margin: 0; cursor: pointer; font-size: 0.95em;">✅ <strong>Confirmed Active</strong> (Uncheck to save to Local DB for testing)</label>
@@ -591,7 +519,6 @@
                 <p style="font-size: 0.8em; color: var(--text-sub); margin-top: 0;">Drag into slots below</p>
                 <div id="memorySidebarDict"></div>
             </div>
-            
             <div class="memory-main">
                 <div id="memoryGrid" class="memory-grid" style="margin-top: 0;"></div>
             </div>
@@ -608,9 +535,7 @@
             <h3 style="margin-top: 0; color: var(--primary);">Assign Channel <span id="assignModalCh"></span></h3>
             <p style="font-size: 0.85em; color: var(--text-sub);">Select a saved frequency from your Master Dictionary, or enter a brand new one manually.</p>
             <input type="hidden" id="assignModalRadio">
-            
             <select id="assignModalDictSelect" style="margin-bottom: 15px; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);"></select>
-            
             <div style="display: flex; gap: 10px; flex-direction: column;">
                 <button onclick="confirmAssignModal()" class="btn-main" style="margin-top: 0;">✅ Assign Dictionary Freq</button>
                 <button onclick="assignManualModal()" class="btn-clear" style="background-color: var(--edit-color); padding: 12px; border-radius: 8px;">✍️ Enter Details Manually</button>
@@ -630,7 +555,6 @@
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
-            
             <div class="input-card" style="margin-bottom: 0;">
                 <h3 style="margin-top: 0; color: var(--primary);">🔥 Busiest Frequencies</h3>
                 <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Total Log Count</p>
@@ -640,20 +564,14 @@
 
             <div class="input-card" style="margin-bottom: 0;">
                 <h3 style="margin-top: 0; color: var(--edit-color);">💪 Strongest Signals</h3>
-                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter</p>
+                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter (Min 2 logs)</p>
                 <ul id="topStrongestList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleStrongestBtn" onclick="toggleStrongest()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: var(--edit-color); padding: 10px; font-weight: bold;">Show All</button>
             </div>
 
-            <div class="input-card" style="margin-bottom: 0;">
-                <h3 style="margin-top: 0; color: #10b981;">🏆 Top Overall</h3>
-                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Combined Activity & Signal Score</p>
-                <ul id="topOverallList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
-                <button id="toggleOverallBtn" onclick="toggleOverall()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: #10b981; padding: 10px; font-weight: bold;">Show All</button>
-            </div>
-
             <div class="input-card" style="margin-bottom: 0; grid-column: 1 / -1;" id="graphsCard">
                 <h3 style="margin-top: 0; color: var(--primary);">📈 24-Hour Performance Graphs</h3>
+                <p style="margin: 0 0 15px 0; font-size: 0.85em; color: var(--text-sub);">Click a frequency in the logbook or top lists to instantly view its performance across different radios.</p>
                 <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
                     <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px; flex-grow: 1;"></select>
                     <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
@@ -687,12 +605,35 @@
         <div class="radio-filters" id="radioFilterContainer"></div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
-            <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;"><option value="All">All Frequencies</option><option value="Confirmed">✅ Confirmed Only</option><option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option></select>
-            <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)"><option value="date">Sort: Newest First</option><option value="freq">Sort: Frequency</option><option value="channel">Sort: Memory Channel</option><option value="traffic">Sort: Auto-Traffic</option><option value="signal">Sort: Best Signal</option></select>
+            <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
+                <option value="All">All Frequencies</option>
+                <option value="Confirmed">✅ Confirmed Only</option>
+                <option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option>
+            </select>
+            <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
+                <option value="date">Sort: Newest First</option>
+                <option value="freq">Sort: Frequency</option>
+                <option value="channel">Sort: Memory Channel</option>
+                <option value="traffic">Sort: Auto-Traffic</option>
+                <option value="signal">Sort: Best Signal</option>
+            </select>
         </div>
         <div class="table-container">
             <table id="logTable">
-                <thead><tr><th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th><th onclick="sortTable('freq', this)">Freq (MHz)</th><th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th><th onclick="sortTable('station', this)">Station</th><th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th><th onclick="sortTable('antenna', this)">Antenna</th><th onclick="sortTable('signal', this)">Sig</th><th onclick="sortTable('traffic', this)">Traf (Auto)</th><th onclick="sortTable('notes', this)">Notes</th><th>Actions</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
+                        <th onclick="sortTable('freq', this)">Freq (MHz)</th>
+                        <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
+                        <th onclick="sortTable('station', this)">Station</th>
+                        <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
+                        <th onclick="sortTable('antenna', this)">Antenna</th>
+                        <th onclick="sortTable('signal', this)">Sig</th>
+                        <th onclick="sortTable('traffic', this)">Traf (Auto)</th>
+                        <th onclick="sortTable('notes', this)">Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -804,18 +745,23 @@
         function renderDictionary() {
             const listEl = document.getElementById('dictionaryList'); 
             const countEl = document.getElementById('dictCount');
-            if (countEl && appSettings.dictionary) countEl.innerText = `(${appSettings.dictionary.length} entries)`;
+            if (countEl && appSettings.dictionary) {
+                countEl.innerText = `(${appSettings.dictionary.length} entries)`;
+            }
             if(!listEl) return;
             
-            listEl.innerHTML = appSettings.dictionary.map(item => {
-                return `<li style="display:flex; justify-content:space-between; align-items:center; background:var(--table-hover); padding:8px 12px; border-radius:6px; border: 1px solid var(--border-color);">
-                            <span><strong style="color:var(--primary);">${item.f}</strong> - ${item.n}</span>
-                            <div>
-                                <span style="color:var(--edit-color); cursor:pointer; font-weight:bold; font-size:1.1em; margin-right: 15px;" onclick="editDictEntry('${item.f}', '${encodeURIComponent(item.n)}')" title="Edit">✏️</span>
-                                <span style="color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.2em;" onclick="removeDictEntry('${item.f}')" title="Delete">✖</span>
-                            </div>
-                        </li>`;
-            }).join('');
+            let html = "";
+            appSettings.dictionary.forEach(item => {
+                html += `
+                    <li style="display:flex; justify-content:space-between; align-items:center; background:var(--table-hover); padding:8px 12px; border-radius:6px; border: 1px solid var(--border-color);">
+                        <span><strong style="color:var(--primary);">${item.f}</strong> - ${item.n}</span>
+                        <div>
+                            <span style="color:var(--edit-color); cursor:pointer; font-weight:bold; font-size:1.1em; margin-right: 15px;" onclick="editDictEntry('${item.f}', '${encodeURIComponent(item.n)}')" title="Edit">✏️</span>
+                            <span style="color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.2em;" onclick="removeDictEntry('${item.f}')" title="Delete">✖</span>
+                        </div>
+                    </li>`;
+            });
+            listEl.innerHTML = html;
         }
 
         function renderDictSidebar() {
@@ -828,12 +774,15 @@
             const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
             const dragAttr = isTouch ? '' : 'draggable="true"';
 
-            sb.innerHTML = appSettings.dictionary.map(item => {
-                return `<div class="dict-drag-item" ${dragAttr} ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')">
-                            <strong style="color:var(--primary);">${item.f}</strong><br>
-                            <span style="color:var(--text-sub);">${item.n}</span>
-                        </div>`;
-            }).join('');
+            let html = "";
+            appSettings.dictionary.forEach(item => {
+                html += `
+                    <div class="dict-drag-item" ${dragAttr} ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')">
+                        <strong style="color:var(--primary);">${item.f}</strong><br>
+                        <span style="color:var(--text-sub);">${item.n}</span>
+                    </div>`;
+            });
+            sb.innerHTML = html;
         }
 
         // --- LONG PRESS & TAP-TO-MOVE ENGINE ---
@@ -870,6 +819,7 @@
             if (!ev.touches || ev.touches.length === 0) return;
             let moveX = ev.touches[0].clientX; 
             let moveY = ev.touches[0].clientY;
+            
             if (Math.abs(moveX - touchStartX) > 15 || Math.abs(moveY - touchStartY) > 15) {
                 clearTimeout(touchTimer);
                 if (justLongPressed && (Math.abs(moveX - touchStartX) > 40 || Math.abs(moveY - touchStartY) > 40)) {
@@ -955,7 +905,10 @@
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel})); 
         }
         function handleDragEnd(ev) { 
-            document.querySelectorAll('.memory-slot').forEach(s => { s.classList.remove('show-actions'); s.classList.remove('drag-over'); }); 
+            document.querySelectorAll('.memory-slot').forEach(s => { 
+                s.classList.remove('show-actions'); 
+                s.classList.remove('drag-over'); 
+            }); 
         }
         function allowDrop(ev) { 
             ev.preventDefault(); 
@@ -1077,7 +1030,9 @@
             if (sortedFreqs.length === 0) return alert("No valid frequencies found for Uniden export (≥ 25 MHz).");
             
             let csvContent = "Channel Name,Frequency,Modulation,Audio Type,Tone / Code,Delay,Lockout,Priority,Attenuator\n";
-            sortedFreqs.forEach(entry => { csvContent += `${entry.channelName},${entry.frequency},AUTO,ALL,Search,2,Off,Off,Off\n`; });
+            sortedFreqs.forEach(entry => { 
+                csvContent += `${entry.channelName},${entry.frequency},AUTO,ALL,Search,2,Off,Off,Off\n`; 
+            });
             
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
             const link = document.createElement("a"); 
@@ -1123,15 +1078,23 @@
             if (defRSelect) defRSelect.value = appSettings.defaultRadio; 
             if (defASelect) defASelect.value = appSettings.defaultAntenna;
 
-            if (appSettings.radios.includes(curR)) rSelect.value = curR; else if (rSelect) rSelect.value = appSettings.defaultRadio || appSettings.radios[0];
-            if (appSettings.antennas.includes(curA)) aSelect.value = curA; else if (aSelect) aSelect.value = appSettings.defaultAntenna || appSettings.antennas[0];
+            if (appSettings.radios.includes(curR)) rSelect.value = curR; 
+            else if (rSelect) rSelect.value = appSettings.defaultRadio || appSettings.radios[0];
+            
+            if (appSettings.antennas.includes(curA)) aSelect.value = curA; 
+            else if (aSelect) aSelect.value = appSettings.defaultAntenna || appSettings.antennas[0];
+            
             if (appSettings.modes.includes(curM)) mSelect.value = curM;
 
             const memSelect = document.getElementById('memoryBankRadioSelect');
             if (memSelect) {
                 const curMem = memSelect.value; 
                 memSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
-                if (appSettings.radios.includes(curMem) && curMem !== "") memSelect.value = curMem; else memSelect.value = appSettings.defaultRadio || appSettings.radios[0];
+                if (appSettings.radios.includes(curMem) && curMem !== "") {
+                    memSelect.value = curMem; 
+                } else {
+                    memSelect.value = appSettings.defaultRadio || appSettings.radios[0];
+                }
             }
         }
 
@@ -1142,12 +1105,6 @@
         let trafficChartInstance = null; 
         let showAllBusiest = false; 
         let showAllStrongest = false; 
-        let showAllOverall = false; // Restored the variable but deactivated the list for safety
-
-        const getStationName = (f) => { 
-            let match = appSettings.dictionary.find(d => d.f === f); 
-            return match ? match.n : "Unknown Station"; 
-        };
 
         logsRef.on('value', (snapshot) => {
             try {
@@ -1155,7 +1112,6 @@
                 snapshot.forEach((childSnapshot) => {
                     let log = childSnapshot.val(); 
                     log.id = childSnapshot.key; 
-                    
                     if (!log.signal && log.notes) { 
                         let parsedNote = parseInt(log.notes); 
                         if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && String(log.notes).length <= 2) { 
@@ -1193,6 +1149,7 @@
             });
             const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]);
             const datalist = document.getElementById('popularFreqs');
+            
             if(datalist) {
                 let html = "";
                 sortedFreqs.forEach(f => {
@@ -1267,13 +1224,21 @@
             }, 50); 
         }
 
-        function toggleBusiest() { showAllBusiest = !showAllBusiest; renderAnalytics(); }
-        function toggleStrongest() { showAllStrongest = !showAllStrongest; renderAnalytics(); }
-        function toggleOverall() { showAllOverall = !showAllOverall; renderAnalytics(); }
+        function toggleBusiest() { 
+            showAllBusiest = !showAllBusiest; 
+            renderAnalytics(); 
+        }
+
+        function toggleStrongest() { 
+            showAllStrongest = !showAllStrongest; 
+            renderAnalytics(); 
+        }
 
         function renderAnalytics() {
             if (cloudLogs.length === 0) return;
+            
             const bandFilter = document.getElementById('analyticsBandFilter') ? document.getElementById('analyticsBandFilter').value : 'ALL';
+            
             let bandLogs = cloudLogs;
             if (bandFilter === 'VHF') bandLogs = cloudLogs.filter(l => parseFloat(l.freq) >= 30);
             if (bandFilter === 'HF') bandLogs = cloudLogs.filter(l => parseFloat(l.freq) < 30);
@@ -1302,6 +1267,7 @@
             // 1. BUSIEST
             const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]);
             const freqsToDisplay = showAllBusiest ? sortedFreqs : sortedFreqs.slice(0, 10);
+            
             let busiestHtml = "";
             freqsToDisplay.forEach((f, i) => {
                 let sName = getStationName(f[0]); 
@@ -1343,45 +1309,6 @@
                 }
             }
 
-            // 3. OVERALL SCORE (Currently Removed from HTML, safely calculates in background to avoid breaking)
-            const overallScores = [];
-            Object.keys(freqCounts).forEach(f => {
-                if (freqSignals[f] && freqSignals[f].count > 0) {
-                    let count = freqCounts[f]; 
-                    let avg = freqSignals[f].total / freqSignals[f].count; 
-                    let score = count * avg;
-                    overallScores.push({ f, score: Math.round(score), count, avg: avg.toFixed(1) });
-                }
-            });
-            
-            overallScores.sort((a, b) => b.score - a.score);
-            const overallToDisplay = showAllOverall ? overallScores : overallScores.slice(0, 10);
-            
-            const listOverall = document.getElementById('topOverallList');
-            const btnOverall = document.getElementById('toggleOverallBtn');
-            
-            if (listOverall && btnOverall) {
-                if (overallScores.length === 0) { 
-                    listOverall.innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>`; 
-                    btnOverall.style.display = 'none';
-                } else {
-                    let overallHtml = "";
-                    overallToDisplay.forEach((item, i) => { 
-                        let sName = getStationName(item.f); 
-                        let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
-                        overallHtml += `<li style="margin-bottom: 5px;"><strong style="color:#10b981;">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Score: ${item.score})</span></li>`; 
-                    });
-                    listOverall.innerHTML = overallHtml;
-                    
-                    if (overallScores.length > 10) { 
-                        btnOverall.style.display = 'block'; 
-                        btnOverall.innerText = showAllOverall ? "Show Top 10" : `Show All (${overallScores.length})`; 
-                    } else { 
-                        btnOverall.style.display = 'none'; 
-                    }
-                }
-            }
-
             const freqSelect = document.getElementById('analyticsFreqSelect'); 
             const currentVal = freqSelect.value; 
             const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
@@ -1402,6 +1329,7 @@
             const selectedFreq = freqSelect.value;
 
             const timeBuckets = { "Morning (06-12)": 0, "Afternoon (12-18)": 0, "Evening (18-00)": 0, "Night (00-06)": 0 };
+            
             bandLogs.forEach(l => {
                 let f = parseFloat(l.freq).toFixed(3);
                 if (selectedFreq === "ALL" || selectedFreq === f) {
@@ -1429,6 +1357,7 @@
             const msg = document.getElementById('noChartMsg');
             
             if (!ctxSignal || !ctxTraffic) return;
+            
             if (signalChartInstance) signalChartInstance.destroy(); 
             if (trafficChartInstance) trafficChartInstance.destroy();
             
@@ -1437,11 +1366,13 @@
                 msg.style.display = 'block'; 
                 return; 
             }
+            
             wrapper.style.display = 'block'; 
             msg.style.display = 'none';
 
             const chartType = document.getElementById('chartTypeSelect').value; 
             const isScatter = chartType === 'scatter';
+            
             const filteredLogs = bandLogs.filter(l => parseFloat(l.freq).toFixed(3) === selectedFreq);
             const radiosUsed = [...new Set(filteredLogs.map(l => l.radio))];
             
@@ -1460,7 +1391,14 @@
                         const sig = parseInt(l.signal); 
                         if (!isNaN(sig)) dataPoints.push({ x: timeVal, y: sig }); 
                     });
-                    return { label: radio || "Unknown Radio", data: dataPoints, backgroundColor: radioColorsAlpha[index % radioColorsAlpha.length], borderColor: radioColors[index % radioColors.length], pointRadius: 6, pointHoverRadius: 8 };
+                    return { 
+                        label: radio || "Unknown Radio", 
+                        data: dataPoints, 
+                        backgroundColor: radioColorsAlpha[index % radioColorsAlpha.length], 
+                        borderColor: radioColors[index % radioColors.length], 
+                        pointRadius: 6, 
+                        pointHoverRadius: 8 
+                    };
                 });
             } else {
                 finalSignalDatasets = radiosUsed.map((radio, index) => {
@@ -1468,9 +1406,22 @@
                     filteredLogs.filter(l => l.radio === radio).forEach(l => { 
                         const hour = new Date(l.date).getHours(); 
                         const sig = parseInt(l.signal); 
-                        if (!isNaN(sig)) { if (dataPoints[hour] === null || sig > dataPoints[hour]) { dataPoints[hour] = sig; } } 
+                        if (!isNaN(sig)) { 
+                            if (dataPoints[hour] === null || sig > dataPoints[hour]) { 
+                                dataPoints[hour] = sig; 
+                            } 
+                        } 
                     });
-                    return { label: radio || "Unknown Radio", data: dataPoints, borderColor: radioColors[index % radioColors.length], backgroundColor: radioColors[index % radioColors.length], borderWidth: 2, pointRadius: 4, tension: 0.3, spanGaps: true };
+                    return { 
+                        label: radio || "Unknown Radio", 
+                        data: dataPoints, 
+                        borderColor: radioColors[index % radioColors.length], 
+                        backgroundColor: radioColors[index % radioColors.length], 
+                        borderWidth: 2, 
+                        pointRadius: 4, 
+                        tension: 0.3, 
+                        spanGaps: true 
+                    };
                 });
             }
 
@@ -1480,7 +1431,13 @@
                     const hour = new Date(l.date).getHours(); 
                     countPoints[hour] += 1; 
                 });
-                return { label: radio || "Unknown Radio", data: countPoints, backgroundColor: radioColors[index % radioColors.length], borderColor: radioColors[index % radioColors.length], borderWidth: 1 };
+                return { 
+                    label: radio || "Unknown Radio", 
+                    data: countPoints, 
+                    backgroundColor: radioColors[index % radioColors.length], 
+                    borderColor: radioColors[index % radioColors.length], 
+                    borderWidth: 1 
+                };
             });
 
             const hourLabels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
@@ -1488,13 +1445,83 @@
             signalChartInstance = new Chart(ctxSignal, {
                 type: isScatter ? 'scatter' : 'line',
                 data: { labels: isScatter ? undefined : hourLabels, datasets: finalSignalDatasets },
-                options: { clip: false, layout: { padding: { top: 25, right: 20, left: 10, bottom: 10 } }, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10.5, ticks: { stepSize: 1, callback: function(val) { return val <= 10 ? val : ''; } }, title: { display: true, text: 'Signal (S-Meter)' } }, x: isScatter ? { type: 'linear', position: 'bottom', min: 0, max: 24, ticks: { stepSize: 1, callback: function(value) { return String(value).padStart(2, '0') + ':00'; } }, title: { display: true, text: 'Time of Day (Local)' } } : { title: { display: true, text: 'Time of Day (Local)' } } }, plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: function(context) { if (isScatter) { let h = Math.floor(context.parsed.x); let m = Math.round((context.parsed.x - h) * 60); let timeStr = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'); return context.dataset.label + ' at ' + timeStr + ' | S-' + context.parsed.y; } else { return context.dataset.label + ' | S-' + context.parsed.y; } } } } }
+                options: { 
+                    clip: false, 
+                    layout: { padding: { top: 25, right: 20, left: 10, bottom: 10 } }, 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            max: 10.5, 
+                            ticks: { 
+                                stepSize: 1, 
+                                callback: function(val) { return val <= 10 ? val : ''; } 
+                            }, 
+                            title: { display: true, text: 'Signal (S-Meter)' } 
+                        }, 
+                        x: isScatter ? { 
+                            type: 'linear', 
+                            position: 'bottom', 
+                            min: 0, max: 24, 
+                            ticks: { 
+                                stepSize: 1, 
+                                callback: function(value) { return String(value).padStart(2, '0') + ':00'; } 
+                            }, 
+                            title: { display: true, text: 'Time of Day (Local)' } 
+                        } : { 
+                            title: { display: true, text: 'Time of Day (Local)' } 
+                        } 
+                    }, 
+                    plugins: { 
+                        legend: { position: 'top' }, 
+                        tooltip: { 
+                            callbacks: { 
+                                label: function(context) { 
+                                    if (isScatter) { 
+                                        let h = Math.floor(context.parsed.x); 
+                                        let m = Math.round((context.parsed.x - h) * 60); 
+                                        let timeStr = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'); 
+                                        return context.dataset.label + ' at ' + timeStr + ' | S-' + context.parsed.y; 
+                                    } else { 
+                                        return context.dataset.label + ' | S-' + context.parsed.y; 
+                                    } 
+                                } 
+                            } 
+                        } 
+                    } 
+                }
             });
 
             trafficChartInstance = new Chart(ctxTraffic, {
                 type: 'bar',
                 data: { labels: hourLabels, datasets: trafficDatasets },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, stacked: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Number of Logs' } }, x: { stacked: true, title: { display: true, text: 'Time of Day (Local)' } } }, plugins: { legend: { position: 'none' }, tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.parsed.y + ' logs'; } } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            stacked: true, 
+                            ticks: { stepSize: 1 }, 
+                            title: { display: true, text: 'Number of Logs' } 
+                        }, 
+                        x: { 
+                            stacked: true, 
+                            title: { display: true, text: 'Time of Day (Local)' } 
+                        } 
+                    }, 
+                    plugins: { 
+                        legend: { position: 'none' }, 
+                        tooltip: { 
+                            callbacks: { 
+                                label: function(context) { 
+                                    return context.dataset.label + ': ' + context.parsed.y + ' logs'; 
+                                } 
+                            } 
+                        } 
+                    } 
+                }
             });
         }
 
@@ -1502,8 +1529,12 @@
         function renderMemoryBank() {
             const grid = document.getElementById('memoryGrid');
             if(!grid) return;
+            
             const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
-            if (!selectedRadio) { grid.innerHTML = '<div style="padding: 20px; color: var(--text-sub);">Select a radio above to view its memory bank.</div>'; return; }
+            if (!selectedRadio) { 
+                grid.innerHTML = '<div style="padding: 20px; color: var(--text-sub);">Select a radio above to view its memory bank.</div>'; 
+                return; 
+            }
 
             const radioLogs = cloudLogs.filter(l => l.radio === selectedRadio && l.channel && String(l.channel).trim() !== "");
             let html = '';
@@ -1535,7 +1566,10 @@
                             ontouchend="handleTouchEnd(this, event)" 
                             ontouchmove="handleTouchMove(this, event)" 
                             title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
-                            <span class="status-icon">${icon}</span><span class="ch-num">${chLabel}</span><span class="freq">${fDisplay}</span><span class="station">${stName}</span>
+                            <span class="status-icon">${icon}</span>
+                            <span class="ch-num">${chLabel}</span>
+                            <span class="freq">${fDisplay}</span>
+                            <span class="station">${stName}</span>
                             <div class="action-overlay">
                                 <button class="action-btn btn-move-slot" onclick="event.stopPropagation(); initiateMove('${log.id}', '${cleanCh}')">🔄<span>Move</span></button>
                                 <button class="action-btn btn-clear-slot" onclick="event.stopPropagation(); unassignChannel('${log.id}', '${cleanCh}')">🗑️<span>Clear</span></button>
@@ -1543,8 +1577,14 @@
                         </div>`;
                 } else {
                     return `
-                        <div class="memory-slot empty-slot ${isMoving}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="openAssignModal('${cleanCh}', '${selectedRadio}')" title="Click to assign, or drag a dictionary item here">
-                            <span class="ch-num">${chLabel}</span><span class="freq">Empty</span>
+                        <div class="memory-slot empty-slot ${isMoving}" 
+                            ondragover="allowDrop(event)" 
+                            ondragleave="dragLeave(event)" 
+                            ondrop="dropSlot(event, '${cleanCh}')" 
+                            onclick="openAssignModal('${cleanCh}', '${selectedRadio}')" 
+                            title="Click to assign, or drag a dictionary item here">
+                            <span class="ch-num">${chLabel}</span>
+                            <span class="freq">Empty</span>
                         </div>`;
                 }
             }
@@ -1552,6 +1592,7 @@
             if (selectedRadio.includes("Realistic Pro 2006")) {
                 const channelMap = {}; 
                 radioLogs.forEach(l => { channelMap[String(l.channel).toUpperCase()] = l; });
+                
                 for (let bank = 0; bank < 10; bank++) { 
                     html += `<div class="bank-header">Bank ${bank + 1} (Ch ${bank * 40 + 1} - ${(bank + 1) * 40})</div>`; 
                     for (let i = 1; i <= 40; i++) { 
@@ -1559,11 +1600,15 @@
                         html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]); 
                     } 
                 }
+                
                 html += `<div class="bank-header">Monitor Memory (Scratchpad)</div>`; 
-                for (let i = 1; i <= 10; i++) html += renderSlot(`M${i}`, channelMap[`M${i}`]);
+                for (let i = 1; i <= 10; i++) {
+                    html += renderSlot(`M${i}`, channelMap[`M${i}`]);
+                }
             } else if (selectedRadio.includes("Malahit DSP2")) {
                 const channelMap = {}; 
                 radioLogs.forEach(l => { channelMap[String(l.channel)] = l; });
+                
                 for (let page = 1; page <= 5; page++) { 
                     html += `<div class="bank-header">Page ${page} (Ch ${(page-1)*10 + 1} - ${page*10})</div>`; 
                     for (let i = 1; i <= 10; i++) { 
@@ -1581,48 +1626,124 @@
                         if(parsed > maxCh) maxCh = parsed; 
                     } 
                 });
+                
                 if (maxCh > 400) maxCh = 400; 
                 html += `<div class="bank-header">Standard Memory Channels</div>`; 
-                for (let i = 1; i <= maxCh; i++) html += renderSlot(`CH ${i}`, channelMap[i]);
+                for (let i = 1; i <= maxCh; i++) {
+                    html += renderSlot(`CH ${i}`, channelMap[i]);
+                }
             }
             grid.innerHTML = html;
         }
 
         function openNewMemory(channel, radio) {
-            switchView('logbook'); resetForm(); expandForm();
-            document.getElementById('channelInput').value = channel; document.getElementById('radioInput').value = radio; window.scrollTo({ top: 0, behavior: 'smooth' });
+            switchView('logbook'); 
+            resetForm(); 
+            expandForm();
+            document.getElementById('channelInput').value = channel; 
+            document.getElementById('radioInput').value = radio; 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         let isFormCollapsed = false;
         function toggleForm() {
-            isFormCollapsed = !isFormCollapsed; const body = document.getElementById('formBody'); const icon = document.getElementById('formToggleIcon');
-            if(isFormCollapsed) { body.classList.add('collapsed'); icon.innerText = "◀ (Show)"; } else { body.classList.remove('collapsed'); icon.innerText = "▼ (Hide)"; }
+            isFormCollapsed = !isFormCollapsed; 
+            const body = document.getElementById('formBody'); 
+            const icon = document.getElementById('formToggleIcon');
+            
+            if(isFormCollapsed) { 
+                body.classList.add('collapsed'); 
+                icon.innerText = "◀ (Show)"; 
+            } else { 
+                body.classList.remove('collapsed'); 
+                icon.innerText = "▼ (Hide)"; 
+            }
         }
-        function expandForm() { if(isFormCollapsed) toggleForm(); }
+        
+        function expandForm() { 
+            if(isFormCollapsed) toggleForm(); 
+        }
 
         function renderFilters() {
-            const container = document.getElementById('radioFilterContainer'); const baseRadios = appSettings.radios || []; const loggedRadios = cloudLogs.map(l => l.radio).filter(Boolean); const uniqueRadios = [...new Set([...baseRadios, ...loggedRadios])];
+            const container = document.getElementById('radioFilterContainer'); 
+            const baseRadios = appSettings.radios || []; 
+            const loggedRadios = cloudLogs.map(l => l.radio).filter(Boolean); 
+            const uniqueRadios = [...new Set([...baseRadios, ...loggedRadios])];
+            
             container.innerHTML = '';
-            const allBtn = document.createElement('button'); allBtn.className = `filter-btn ${activeRadioFilter === 'All' ? 'active' : ''}`; allBtn.innerHTML = `All <span class="filter-count">(${cloudLogs.length})</span>`; allBtn.onclick = () => { activeRadioFilter = 'All'; renderFilters(); renderTable(); }; container.appendChild(allBtn);
-            uniqueRadios.forEach(radio => { const count = cloudLogs.filter(l => l.radio === radio).length; const btn = document.createElement('button'); btn.className = `filter-btn ${activeRadioFilter === radio ? 'active' : ''}`; btn.innerHTML = `${radio} <span class="filter-count">(${count})</span>`; btn.onclick = () => { activeRadioFilter = radio; renderFilters(); renderTable(); }; container.appendChild(btn); });
+            
+            const allBtn = document.createElement('button'); 
+            allBtn.className = `filter-btn ${activeRadioFilter === 'All' ? 'active' : ''}`; 
+            allBtn.innerHTML = `All <span class="filter-count">(${cloudLogs.length})</span>`; 
+            allBtn.onclick = () => { activeRadioFilter = 'All'; renderFilters(); renderTable(); }; 
+            container.appendChild(allBtn);
+            
+            uniqueRadios.forEach(radio => { 
+                const count = cloudLogs.filter(l => l.radio === radio).length; 
+                const btn = document.createElement('button'); 
+                btn.className = `filter-btn ${activeRadioFilter === radio ? 'active' : ''}`; 
+                btn.innerHTML = `${radio} <span class="filter-count">(${count})</span>`; 
+                btn.onclick = () => { activeRadioFilter = radio; renderFilters(); renderTable(); }; 
+                container.appendChild(btn); 
+            });
         }
 
         function setSMeter(val) {
-            document.getElementById('signalInput').value = val; const bars = document.querySelectorAll('.s-meter-bar');
-            bars.forEach((bar, index) => { bar.classList.remove('active-green', 'active-yellow', 'active-red'); if (index < val) { if (index < 5) bar.classList.add('active-green'); else if (index < 8) bar.classList.add('active-yellow'); else bar.classList.add('active-red'); } });
+            document.getElementById('signalInput').value = val; 
+            const bars = document.querySelectorAll('.s-meter-bar');
+            bars.forEach((bar, index) => { 
+                bar.classList.remove('active-green', 'active-yellow', 'active-red'); 
+                if (index < val) { 
+                    if (index < 5) bar.classList.add('active-green'); 
+                    else if (index < 8) bar.classList.add('active-yellow'); 
+                    else bar.classList.add('active-red'); 
+                } 
+            });
         }
 
-        function generateMiniMeter(val) { let num = parseInt(val); if (isNaN(num) || num < 1) return ""; let html = '<div class="mini-meter">'; for (let i = 1; i <= 10; i++) { let colorClass = ""; if (i <= num) { if (i < 5) colorClass = "active-green"; else if (i < 8) colorClass = "active-yellow"; else colorClass = "active-red"; } html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`; } html += '</div>'; return html; }
-        function generateMiniTraffic(val) { let num = parseInt(val); if (isNaN(num) || num < 1) return ""; let html = '<div class="mini-traffic">'; for (let i = 1; i <= 10; i++) { let colorClass = (i <= num) ? "active" : ""; html += `<div class="mini-t-block ${colorClass}"></div>`; } html += '</div>'; return html; }
+        function generateMiniMeter(val) { 
+            let num = parseInt(val); 
+            if (isNaN(num) || num < 1) return ""; 
+            let html = '<div class="mini-meter">'; 
+            for (let i = 1; i <= 10; i++) { 
+                let colorClass = ""; 
+                if (i <= num) { 
+                    if (i < 5) colorClass = "active-green"; 
+                    else if (i < 8) colorClass = "active-yellow"; 
+                    else colorClass = "active-red"; 
+                } 
+                html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`; 
+            } 
+            html += '</div>'; 
+            return html; 
+        }
+        
+        function generateMiniTraffic(val) { 
+            let num = parseInt(val); 
+            if (isNaN(num) || num < 1) return ""; 
+            let html = '<div class="mini-traffic">'; 
+            for (let i = 1; i <= 10; i++) { 
+                let colorClass = (i <= num) ? "active" : ""; 
+                html += `<div class="mini-t-block ${colorClass}"></div>`; 
+            } 
+            html += '</div>'; 
+            return html; 
+        }
         
         function toggleNote(element, event) { 
             event.stopPropagation(); 
             const isExpanded = element.classList.contains('expanded'); 
-            document.querySelectorAll('.expandable-note').forEach(note => { note.classList.remove('expanded'); }); 
-            if (!isExpanded) { element.classList.add('expanded'); } 
+            document.querySelectorAll('.expandable-note').forEach(note => { 
+                note.classList.remove('expanded'); 
+            }); 
+            if (!isExpanded) { 
+                element.classList.add('expanded'); 
+            } 
         }
         
-        document.addEventListener('DOMContentLoaded', () => { setSMeter(5); });
+        document.addEventListener('DOMContentLoaded', () => { 
+            setSMeter(5); 
+        });
         
         function toggleTheme() { 
             const current = document.body.getAttribute('data-theme'); 
@@ -1649,8 +1770,11 @@
         }
         
         function sortTable(key, element) { 
-            if (currentSort.key === key) { currentSort.desc = !currentSort.desc; } 
-            else { currentSort.key = key; currentSort.desc = false; } 
+            if (currentSort.key === key) { 
+                currentSort.desc = !currentSort.desc; 
+            } else { 
+                currentSort.key = key; currentSort.desc = false; 
+            } 
             document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc')); 
             if(element) element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc'); 
             document.getElementById('mobileSort').value = key; 
