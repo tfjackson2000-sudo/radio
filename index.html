@@ -114,14 +114,13 @@
         .memory-slot .station { font-size: 0.8em; color: var(--text-sub); display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); pointer-events: none; }
         
-        /* ACTION OVERLAY (MOVE / CLEAR) */
+        /* ACTION OVERLAY (CLEAR ONLY) */
         .memory-slot .action-overlay {
             display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; overflow: hidden;
         }
         .memory-slot.show-actions .action-overlay { opacity: 1; pointer-events: auto; }
-        .action-btn { flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
-        .btn-move-slot { background: rgba(37, 99, 235, 0.95); }
+        .action-btn { flex: 1; border: none; color: white; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
         .btn-clear-slot { background: rgba(239, 68, 68, 0.95); }
         .action-btn:active { filter: brightness(0.8); }
 
@@ -134,6 +133,7 @@
         }
         #moveModeBanner button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold; }
         .moving-source { opacity: 0.5; border: 2px dashed var(--primary) !important; transform: scale(0.95); }
+
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; cursor: pointer; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
         .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; text-transform: uppercase; }
@@ -255,6 +255,9 @@
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
         #scrollTopBtn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
+        /* Class for styling unconfirmed list items in analytics */
+        .analytics-unconfirmed { color: var(--unconfirmed-text) !important; }
 
         /* ==================================================== */
         /* MOBILE CARD LAYOUT                                   */
@@ -790,7 +793,8 @@
             let moveX = ev.touches[0].clientX; 
             let moveY = ev.touches[0].clientY;
             
-            if (Math.abs(moveX - touchStartX) > 15 || Math.abs(moveY - touchStartY) > 15) {
+            // Increased to 25 to prevent tiny thumb-rolls from cancelling the long press
+            if (Math.abs(moveX - touchStartX) > 25 || Math.abs(moveY - touchStartY) > 25) {
                 clearTimeout(touchTimer);
                 if (justLongPressed && (Math.abs(moveX - touchStartX) > 40 || Math.abs(moveY - touchStartY) > 40)) {
                     el.classList.remove('show-actions');
@@ -1146,20 +1150,14 @@
         };
 
         const getStationData = (f) => { 
-            // 1. Check if it's in the Master Dictionary
             if (appSettings && appSettings.dictionary) {
                 let match = appSettings.dictionary.find(d => d.f === f); 
                 if (match) return { name: match.n, confirmed: true }; 
             }
-            
-            // 2. If not, look through logs for a borrowed name
             if (typeof cloudLogs !== 'undefined' && cloudLogs.length > 0) {
                 let fallbackLog = cloudLogs.find(l => l.freq && parseFloat(l.freq).toFixed(3) === f && l.station && l.station.trim() !== "");
-                if (fallbackLog) {
-                    return { name: fallbackLog.station, confirmed: false };
-                }
+                if (fallbackLog) return { name: fallbackLog.station, confirmed: false };
             }
-            
             return { name: "Unknown Station", confirmed: false }; 
         };
 
@@ -1701,7 +1699,6 @@
                             <span class="freq" style="color: ${freqColor};">${fDisplay}</span>
                             <span class="station">${stName}</span>
                             <div class="action-overlay">
-                                <button class="action-btn btn-move-slot" onclick="event.stopPropagation(); initiateMove('${log.id}', '${cleanCh}')">🔄<span>Move</span></button>
                                 <button class="action-btn btn-clear-slot" onclick="event.stopPropagation(); unassignChannel('${log.id}', '${cleanCh}')">🗑️<span>Clear</span></button>
                             </div>
                         </div>`;
@@ -2108,7 +2105,7 @@
                 let isConf = log.confirmed !== false; 
                 let confIcon = isConf ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
                 
-                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
+                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text) !important";
                 let clickableFreq = `<strong style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
 
                 const strRadio = String(log.radio || "").toLowerCase();
