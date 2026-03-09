@@ -23,7 +23,7 @@
             --text-sub: #555555;
             --border-color: #dddddd;
             --table-hover: #f9fafb;
-            --unconfirmed-text: #ef4444; /* Bright Red */
+            --unconfirmed-text: #ef4444; 
         }
 
         [data-theme="dark"] {
@@ -38,7 +38,7 @@
             --text-sub: #9ca3af;
             --border-color: #374151;
             --table-hover: #2d3748;
-            --unconfirmed-text: #f87171; /* Lighter Red for Dark Mode */
+            --unconfirmed-text: #f87171; 
         }
 
         *, *::before, *::after { 
@@ -57,11 +57,21 @@
         }
 
         header { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+            gap: 10px; 
         }
 
         h1 { 
-            margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; 
+            margin: 0; 
+            color: var(--primary); 
+            font-size: 1.5rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
         }
 
         .theme-toggle {
@@ -78,9 +88,17 @@
 
         /* --- TABS --- */
         .tab-btn { 
-            background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); 
-            padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; 
-            border-bottom: none; opacity: 0.6; transition: 0.2s; margin-bottom: -2px; 
+            background: var(--card-bg); 
+            color: var(--text-main); 
+            border: 1px solid var(--border-color); 
+            padding: 10px 20px; 
+            border-radius: 8px 8px 0 0; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-bottom: none; 
+            opacity: 0.6; 
+            transition: 0.2s; 
+            margin-bottom: -2px; 
         }
         .tab-btn:hover { opacity: 0.8; }
         .tab-btn.active { background: var(--primary); color: white; opacity: 1; border-color: var(--primary); }
@@ -91,17 +109,17 @@
         .memory-sidebar { flex: 0 0 250px; max-height: 65vh; overflow-y: auto; background: var(--card-bg); border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         .memory-main { flex: 1; min-width: 0; }
         
-        .dict-drag-item { padding: 10px; border: 1px solid var(--border-color); margin-bottom: 8px; border-radius: 6px; cursor: grab; background: var(--bg-color); font-size: 0.9em; transition: 0.2s; }
-        .dict-drag-item:active { cursor: grabbing; transform: scale(0.98); }
+        .dict-drag-item { padding: 10px; border: 1px solid var(--border-color); margin-bottom: 8px; border-radius: 6px; cursor: pointer; background: var(--bg-color); font-size: 0.9em; transition: 0.2s; }
+        .dict-drag-item:active { transform: scale(0.98); }
         .dict-drag-item:hover { border-color: var(--primary); }
 
         .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
         
         .memory-slot { 
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; 
-            text-align: center; cursor: pointer; transition: 0.2s; position: relative; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); user-select: none; -webkit-user-select: none; 
-            -webkit-touch-callout: none; overflow: hidden;
+            background: var(--card-bg); border: 1px solid var(--border-color); 
+            border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; 
+            transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden;
         }
         .memory-slot:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         
@@ -117,10 +135,16 @@
         /* ACTION OVERLAY (MOVE / CLEAR) */
         .memory-slot .action-overlay {
             display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; overflow: hidden;
+            border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10;
+            overflow: hidden;
         }
-        .memory-slot.show-actions .action-overlay { opacity: 1; pointer-events: auto; }
-        .action-btn { flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+        .memory-slot.show-actions .action-overlay {
+            opacity: 1; pointer-events: auto;
+        }
+        .action-btn {
+            flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+        }
         .btn-move-slot { background: rgba(37, 99, 235, 0.95); }
         .btn-clear-slot { background: rgba(239, 68, 68, 0.95); }
         .action-btn:active { filter: brightness(0.8); }
@@ -132,8 +156,12 @@
             font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000;
             align-items: center; gap: 15px; width: max-content; font-size: 0.9em;
         }
-        #moveModeBanner button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold; }
+        #moveModeBanner button {
+            background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px;
+            border-radius: 15px; cursor: pointer; font-weight: bold;
+        }
         .moving-source { opacity: 0.5; border: 2px dashed var(--primary) !important; transform: scale(0.95); }
+
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; cursor: pointer; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
         .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; text-transform: uppercase; }
@@ -142,7 +170,14 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border-color); }
 
-        .input-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; border: 2px solid transparent; }
+        .input-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            border: 2px solid transparent;
+        }
         .editing-mode { border: 2px solid var(--edit-color); }
         [data-theme="dark"] .editing-mode { background: #2e263d; }
 
@@ -152,10 +187,15 @@
         
         .form-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; transition: opacity 0.2s ease; }
         .form-body.collapsed { display: none; }
+
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-sub); }
         
-        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; background-color: var(--card-bg); color: var(--text-main); height: 44px; width: 100%; }
+        input, select {
+            padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 16px; background-color: var(--card-bg);
+            color: var(--text-main); height: 44px; width: 100%;
+        }
 
         .s-meter-container { display: flex; gap: 3px; height: 44px; padding: 5px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 100%; align-items: flex-end; }
         .s-meter-bar { flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s; border-radius: 2px 2px 0 0; }
@@ -165,19 +205,41 @@
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
         .s-meter-bar.active-red { background-color: #ef4444; }
 
-        .s-meter-bar[data-val="1"] { height: 20%; } .s-meter-bar[data-val="2"] { height: 25%; } .s-meter-bar[data-val="3"] { height: 35%; } .s-meter-bar[data-val="4"] { height: 45%; } .s-meter-bar[data-val="5"] { height: 55%; }
-        .s-meter-bar[data-val="6"] { height: 65%; } .s-meter-bar[data-val="7"] { height: 75%; } .s-meter-bar[data-val="8"] { height: 85%; } .s-meter-bar[data-val="9"] { height: 95%; } .s-meter-bar[data-val="10"] { height: 100%; }
+        .s-meter-bar[data-val="1"] { height: 20%; }
+        .s-meter-bar[data-val="2"] { height: 25%; }
+        .s-meter-bar[data-val="3"] { height: 35%; }
+        .s-meter-bar[data-val="4"] { height: 45%; }
+        .s-meter-bar[data-val="5"] { height: 55%; }
+        .s-meter-bar[data-val="6"] { height: 65%; }
+        .s-meter-bar[data-val="7"] { height: 75%; }
+        .s-meter-bar[data-val="8"] { height: 85%; }
+        .s-meter-bar[data-val="9"] { height: 95%; }
+        .s-meter-bar[data-val="10"] { height: 100%; }
 
         .mini-meter, .mini-traffic { display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px; }
-        .mini-meter { align-items: flex-end; } .mini-traffic { align-items: center; }
+        .mini-meter { align-items: flex-end; }
+        .mini-traffic { align-items: center; }
+
         .mini-bar, .mini-t-block { flex: 1; background-color: #e5e7eb; }
-        .mini-bar { border-radius: 1px 1px 0 0; } .mini-t-block { height: 60%; border-radius: 1px; }
+        .mini-bar { border-radius: 1px 1px 0 0; }
+        .mini-t-block { height: 60%; border-radius: 1px; }
+
         [data-theme="dark"] .mini-bar, [data-theme="dark"] .mini-t-block { background-color: #374151; }
-        .mini-bar.active-green { background-color: #10b981; } .mini-bar.active-yellow { background-color: #f59e0b; } .mini-bar.active-red { background-color: #ef4444; }
+        .mini-bar.active-green { background-color: #10b981; }
+        .mini-bar.active-yellow { background-color: #f59e0b; }
+        .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
 
-        .mini-bar[data-val="1"] { height: 20%; } .mini-bar[data-val="2"] { height: 25%; } .mini-bar[data-val="3"] { height: 35%; } .mini-bar[data-val="4"] { height: 45%; } .mini-bar[data-val="5"] { height: 55%; }
-        .mini-bar[data-val="6"] { height: 65%; } .mini-bar[data-val="7"] { height: 75%; } .mini-bar[data-val="8"] { height: 85%; } .mini-bar[data-val="9"] { height: 95%; } .mini-bar[data-val="10"] { height: 100%; }
+        .mini-bar[data-val="1"] { height: 20%; }
+        .mini-bar[data-val="2"] { height: 25%; }
+        .mini-bar[data-val="3"] { height: 35%; }
+        .mini-bar[data-val="4"] { height: 45%; }
+        .mini-bar[data-val="5"] { height: 55%; }
+        .mini-bar[data-val="6"] { height: 65%; }
+        .mini-bar[data-val="7"] { height: 75%; }
+        .mini-bar[data-val="8"] { height: 85%; }
+        .mini-bar[data-val="9"] { height: 95%; }
+        .mini-bar[data-val="10"] { height: 100%; }
 
         .btn-main { grid-column: 1 / -1; background-color: var(--primary); color: white; border: none; padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .btn-save { background-color: var(--edit-color) !important; }
@@ -188,7 +250,9 @@
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .controls h2 { margin: 0; }
+        
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
+
         .danger-zone { margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-color); display: flex; justify-content: flex-end; }
 
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
@@ -284,6 +348,10 @@
             td:nth-child(7), td:nth-child(8) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
+            table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: block !important; } /* Restored mode column visibility on mobile */
+
+            .mobile-mode { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+            [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
             
             .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
@@ -460,7 +528,7 @@
         <div class="memory-layout">
             <div class="memory-sidebar">
                 <h4 style="margin-top: 0; margin-bottom: 5px; color: var(--primary);">📖 Dictionary</h4>
-                <p style="font-size: 0.8em; color: var(--text-sub); margin-top: 0;">Drag into slots below</p>
+                <p style="font-size: 0.8em; color: var(--text-sub); margin-top: 0;">Tap to assign, or drag</p>
                 <div id="memorySidebarDict"></div>
             </div>
             <div class="memory-main">
@@ -745,7 +813,9 @@
             let html = "";
             appSettings.dictionary.forEach(item => {
                 html += `
-                    <div class="dict-drag-item" ${dragAttr} ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')">
+                    <div class="dict-drag-item" ${dragAttr} 
+                        ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')"
+                        onclick="initiateDictAssign('${item.f}', '${encodeURIComponent(item.n)}')">
                         <strong style="color:var(--primary);">${item.f}</strong><br>
                         <span style="color:var(--text-sub);">${item.n}</span>
                     </div>`;
@@ -753,13 +823,15 @@
             sb.innerHTML = html;
         }
 
-        // --- LONG PRESS & TAP-TO-MOVE ENGINE ---
+        // --- LONG PRESS & TAP-TO-MOVE / ASSIGN ENGINE ---
         let touchTimer; 
         let justLongPressed = false; 
         let touchStartX = 0; 
         let touchStartY = 0; 
         let activeMoveSourceId = null; 
         let activeMoveSourceCh = null;
+        let activeDictAssignFreq = null;
+        let activeDictAssignName = null;
 
         function handleTouchStart(el, ev) {
             if (!ev.touches || ev.touches.length === 0) return;
@@ -810,6 +882,10 @@
                 executeMoveOrSwap(channel); 
                 return; 
             }
+            if (activeDictAssignFreq) {
+                executeDictAssign(channel);
+                return;
+            }
             if (justLongPressed) return; 
 
             let hadActions = el.classList.contains('show-actions');
@@ -831,8 +907,22 @@
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
             activeMoveSourceId = logId; 
             activeMoveSourceCh = currentCh;
+            activeDictAssignFreq = null;
+            activeDictAssignName = null;
             
-            document.getElementById('moveSourceText').innerText = currentCh; 
+            document.getElementById('moveModeBanner').innerHTML = '<span>Tap destination for CH <strong>' + currentCh + '</strong></span><button onclick="cancelMoveMode()">Cancel</button>'; 
+            document.getElementById('moveModeBanner').style.display = 'flex';
+            renderMemoryBank();
+        }
+
+        function initiateDictAssign(freq, nameEnc) {
+            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
+            activeMoveSourceId = null; 
+            activeMoveSourceCh = null; 
+            activeDictAssignFreq = freq;
+            activeDictAssignName = decodeURIComponent(nameEnc);
+            
+            document.getElementById('moveModeBanner').innerHTML = '<span>Tap destination for <strong>' + freq + ' MHz</strong></span><button onclick="cancelMoveMode()">Cancel</button>'; 
             document.getElementById('moveModeBanner').style.display = 'flex';
             renderMemoryBank();
         }
@@ -840,6 +930,8 @@
         function cancelMoveMode() {
             activeMoveSourceId = null; 
             activeMoveSourceCh = null; 
+            activeDictAssignFreq = null;
+            activeDictAssignName = null;
             document.getElementById('moveModeBanner').style.display = 'none';
             renderMemoryBank();
         }
@@ -861,6 +953,30 @@
                 db.ref('radioLogs/' + targetLog.id).update({channel: sourceChStr});
             } else {
                 db.ref('radioLogs/' + activeMoveSourceId).update({channel: targetChStr});
+            }
+            cancelMoveMode();
+        }
+
+        function executeDictAssign(targetChannel) {
+            const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
+            const targetLog = cloudLogs.find(l => l.radio === selectedRadio && String(l.channel).trim() === String(targetChannel).trim());
+            
+            const freq = parseFloat(activeDictAssignFreq);
+            const name = activeDictAssignName;
+            const mode = (freq < 30) ? "USB" : ((freq >= 108 && freq <= 137) ? "AM" : "FM");
+
+            if (targetLog) {
+                if(!confirm(`Overwrite channel ${targetChannel} with ${name}?`)) {
+                    return; 
+                }
+                db.ref('radioLogs/' + targetLog.id).update({ freq: freq, station: name, mode: mode });
+            } else {
+                logsRef.push({ 
+                    freq: freq, station: name, radio: selectedRadio, channel: targetChannel, 
+                    antenna: appSettings.defaultAntenna || appSettings.antennas[0], 
+                    mode: mode, signal: "5", traffic: "1", notes: "", confirmed: true, 
+                    date: new Date().toISOString() 
+                });
             }
             cancelMoveMode();
         }
@@ -941,6 +1057,10 @@
             if (activeMoveSourceId) { 
                 executeMoveOrSwap(channel); 
                 return; 
+            }
+            if (activeDictAssignFreq) {
+                executeDictAssign(channel);
+                return;
             }
             
             document.getElementById('assignModalCh').innerText = channel; 
@@ -1088,23 +1208,23 @@
         let showAllStrongest = false; 
         let showAllOverall = false; 
 
-        // HELPER TO RETURN EITHER DICTIONARY NAME OR BORROWED NAME
-        const getStationData = (f) => { 
-            // 1. Check if it's in the Master Dictionary
+        // HELPER TO CHECK IF FREQUENCY IS CONFIRMED SITEWIDE
+        const isFreqConfirmed = (freqStr) => {
+            if (appSettings && appSettings.dictionary && appSettings.dictionary.some(d => d.f === freqStr)) return true;
+            if (cloudLogs && cloudLogs.some(l => l.freq && parseFloat(l.freq).toFixed(3) === freqStr && l.confirmed !== false)) return true;
+            return false;
+        };
+
+        const getStationName = (f) => { 
             if (appSettings && appSettings.dictionary) {
                 let match = appSettings.dictionary.find(d => d.f === f); 
-                if (match) return { name: match.n, confirmed: true }; 
+                if (match) return match.n; 
             }
-            
-            // 2. If not, look through logs for a borrowed name
             if (typeof cloudLogs !== 'undefined' && cloudLogs.length > 0) {
                 let fallbackLog = cloudLogs.find(l => l.freq && parseFloat(l.freq).toFixed(3) === f && l.station && l.station.trim() !== "");
-                if (fallbackLog) {
-                    return { name: fallbackLog.station, confirmed: false };
-                }
+                if (fallbackLog) return fallbackLog.station;
             }
-            
-            return { name: "Unknown Station", confirmed: false }; 
+            return "Unknown Station"; 
         };
 
         logsRef.on('value', (snapshot) => {
@@ -1277,13 +1397,16 @@
             
             let busiestHtml = "";
             freqsToDisplay.forEach((f, i) => {
-                let sData = getStationData(f[0]); 
-                let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : "";
+                let sName = getStationName(f[0]); 
+                let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
+                
+                let isConf = isFreqConfirmed(f[0]);
+                let freqColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
                 
                 busiestHtml += `
                     <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
-                        <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
                         <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
                     </li>`;
             });
@@ -1308,13 +1431,16 @@
             } else {
                 let strongestHtml = "";
                 strongestToDisplay.forEach((item, i) => { 
-                    let sData = getStationData(item.f); 
-                    let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : ""; 
+                    let sName = getStationName(item.f); 
+                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                    
+                    let isConf = isFreqConfirmed(item.f);
+                    let freqColor = isConf ? "var(--edit-color)" : "var(--unconfirmed-text)";
                     
                     strongestHtml += `
                         <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                             <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
-                            <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                             <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
                         </li>`;
                 });
@@ -1351,13 +1477,16 @@
                 } else {
                     let overallHtml = "";
                     overallToDisplay.forEach((item, i) => { 
-                        let sData = getStationData(item.f); 
-                        let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : ""; 
+                        let sName = getStationName(item.f); 
+                        let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                        
+                        let isConf = isFreqConfirmed(item.f);
+                        let freqColor = isConf ? "#10b981" : "var(--unconfirmed-text)";
                         
                         overallHtml += `
                             <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                                 <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
-                                <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                                 <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
                             </li>`;
                     });
@@ -1378,8 +1507,8 @@
             
             let dropdownHtml = `<option value="ALL">All Frequencies Overview</option>`;
             uniqueFreqs.forEach(f => { 
-                let sData = getStationData(f); 
-                let displayTxt = sData.name !== "Unknown Station" ? `${f} MHz - ${sData.name}` : `${f} MHz`; 
+                let sName = getStationName(f); 
+                let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`; 
                 dropdownHtml += `<option value="${f}">${displayTxt}</option>`; 
             });
             freqSelect.innerHTML = dropdownHtml;
@@ -1616,7 +1745,7 @@
                     fDisplay = isNaN(fDisplay) ? "0.000" : fDisplay.toFixed(3);
                     let stName = log.station || log.notes || 'No Name';
                     
-                    let freqColor = isConf ? "var(--text-main)" : "var(--unconfirmed-text)";
+                    let freqColor = isConf ? "var(--text-main)" : "var(--unconfirmed-text) !important";
                     
                     return `
                         <div class="memory-slot ${isMoving}" ${dragAttr} 
@@ -2042,7 +2171,7 @@
                 let isConf = log.confirmed !== false; 
                 let confIcon = isConf ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
                 
-                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
+                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text) !important";
                 let clickableFreq = `<strong style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
 
                 const strRadio = String(log.radio || "").toLowerCase();
