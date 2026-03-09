@@ -4,62 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Logger Pro (Cloud)</title>
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
-            --bg-color: #f4f4f9; --card-bg: #ffffff; --primary: #2563eb;
-            --traffic-color: #3b82f6; --edit-color: #7c3aed; --dup-color: #059669; 
-            --ch-color: #8b5cf6; --text-main: #1f2937; --text-sub: #555555;
-            --border-color: #dddddd; --table-hover: #f9fafb;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --traffic-color: #3b82f6; 
+            --edit-color: #7c3aed;
+            --dup-color: #059669; 
+            --ch-color: #8b5cf6; 
+            --text-main: #1f2937;
+            --text-sub: #555555;
+            --border-color: #dddddd;
+            --table-hover: #f9fafb;
         }
+
         [data-theme="dark"] {
-            --bg-color: #111827; --card-bg: #1f2937; --primary: #3b82f6;
-            --traffic-color: #60a5fa; --edit-color: #a78bfa; --dup-color: #34d399;
-            --ch-color: #a78bfa; --text-main: #f3f4f6; --text-sub: #9ca3af;
-            --border-color: #374151; --table-hover: #2d3748;
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --primary: #3b82f6;
+            --traffic-color: #60a5fa;
+            --edit-color: #a78bfa;
+            --dup-color: #34d399;
+            --ch-color: #a78bfa;
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --border-color: #374151;
+            --table-hover: #2d3748;
         }
+
         *, *::before, *::after { box-sizing: border-box; }
+
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-main); max-width: 1200px; margin: 0 auto; padding: 15px; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         h1 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
         .theme-toggle { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85em; }
         .mobile-mode { display: none; }
+
+        /* --- TABS --- */
         .tab-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; border-bottom: none; opacity: 0.6; transition: 0.2s; margin-bottom: -2px; }
         .tab-btn:hover { opacity: 0.8; }
         .tab-btn.active { background: var(--primary); color: white; opacity: 1; border-color: var(--primary); }
         .settings-tab { margin-left: auto; } 
+        
+        /* --- MEMORY BANK DRAG & DROP LAYOUT --- */
         .memory-layout { display: flex; gap: 20px; align-items: flex-start; }
         .memory-sidebar { flex: 0 0 250px; max-height: 65vh; overflow-y: auto; background: var(--card-bg); border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         .memory-main { flex: 1; min-width: 0; }
         .dict-drag-item { padding: 10px; border: 1px solid var(--border-color); margin-bottom: 8px; border-radius: 6px; cursor: grab; background: var(--bg-color); font-size: 0.9em; transition: 0.2s; }
         .dict-drag-item:active { cursor: grabbing; transform: scale(0.98); }
         .dict-drag-item:hover { border-color: var(--primary); }
+
         .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
         .memory-slot { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden; }
         .memory-slot:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .memory-slot[draggable="true"] { cursor: grab; }
         .memory-slot[draggable="true"]:active { cursor: grabbing; }
         .drag-over { border: 2px dashed var(--primary) !important; background-color: rgba(37, 99, 235, 0.1) !important; transform: scale(1.02); }
+
         .memory-slot .ch-num { font-size: 0.8em; font-weight: 800; color: var(--ch-color); display: block; margin-bottom: 5px; text-transform: uppercase; pointer-events: none; }
         .memory-slot .freq { font-size: 1.2em; font-weight: bold; color: var(--text-main); display: block; pointer-events: none; }
         .memory-slot .station { font-size: 0.8em; color: var(--text-sub); display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); pointer-events: none; }
+        
+        /* ACTION OVERLAY (MOVE / CLEAR) */
         .memory-slot .action-overlay { display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; overflow: hidden; }
         .memory-slot.show-actions .action-overlay { opacity: 1; pointer-events: auto; }
         .action-btn { flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
         .btn-move-slot { background: rgba(37, 99, 235, 0.95); }
         .btn-clear-slot { background: rgba(239, 68, 68, 0.95); }
         .action-btn:active { filter: brightness(0.8); }
+
+        /* --- MOVE MODE BANNER --- */
         #moveModeBanner { display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000; align-items: center; gap: 15px; width: max-content; font-size: 0.9em; }
         #moveModeBanner button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold; }
         .moving-source { opacity: 0.5; border: 2px dashed var(--primary) !important; transform: scale(0.95); }
+
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; cursor: pointer; }
         .empty-slot:hover { border-style: solid; opacity: 1; }
         .bank-header { grid-column: 1 / -1; background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; font-size: 0.9em; text-transform: uppercase; }
+
+        /* --- QUICK ASSIGN MODAL --- */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border-color); }
+
         .input-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; border: 2px solid transparent; }
         .editing-mode { border: 2px solid var(--edit-color); }
         [data-theme="dark"] .editing-mode { background: #2e263d; }
@@ -71,6 +105,7 @@
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-sub); }
         input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; background-color: var(--card-bg); color: var(--text-main); height: 44px; width: 100%; }
+
         .s-meter-container { display: flex; gap: 3px; height: 44px; padding: 5px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 100%; align-items: flex-end; }
         .s-meter-bar { flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s; border-radius: 2px 2px 0 0; }
         [data-theme="dark"] .s-meter-bar { background-color: #374151; }
@@ -78,19 +113,17 @@
         .s-meter-bar.active-green { background-color: #10b981; }
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
         .s-meter-bar.active-red { background-color: #ef4444; }
-        .s-meter-bar[data-val="1"]{height:20%} .s-meter-bar[data-val="2"]{height:25%} .s-meter-bar[data-val="3"]{height:35%} .s-meter-bar[data-val="4"]{height:45%} .s-meter-bar[data-val="5"]{height:55%} .s-meter-bar[data-val="6"]{height:65%} .s-meter-bar[data-val="7"]{height:75%} .s-meter-bar[data-val="8"]{height:85%} .s-meter-bar[data-val="9"]{height:95%} .s-meter-bar[data-val="10"]{height:100%}
+        .s-meter-bar[data-val="1"] { height: 20%; } .s-meter-bar[data-val="2"] { height: 25%; } .s-meter-bar[data-val="3"] { height: 35%; } .s-meter-bar[data-val="4"] { height: 45%; } .s-meter-bar[data-val="5"] { height: 55%; } .s-meter-bar[data-val="6"] { height: 65%; } .s-meter-bar[data-val="7"] { height: 75%; } .s-meter-bar[data-val="8"] { height: 85%; } .s-meter-bar[data-val="9"] { height: 95%; } .s-meter-bar[data-val="10"] { height: 100%; }
+
         .mini-meter, .mini-traffic { display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px; }
-        .mini-meter { align-items: flex-end; }
-        .mini-traffic { align-items: center; }
+        .mini-meter { align-items: flex-end; } .mini-traffic { align-items: center; }
         .mini-bar, .mini-t-block { flex: 1; background-color: #e5e7eb; }
-        .mini-bar { border-radius: 1px 1px 0 0; }
-        .mini-t-block { height: 60%; border-radius: 1px; }
+        .mini-bar { border-radius: 1px 1px 0 0; } .mini-t-block { height: 60%; border-radius: 1px; }
         [data-theme="dark"] .mini-bar, [data-theme="dark"] .mini-t-block { background-color: #374151; }
-        .mini-bar.active-green { background-color: #10b981; }
-        .mini-bar.active-yellow { background-color: #f59e0b; }
-        .mini-bar.active-red { background-color: #ef4444; }
+        .mini-bar.active-green { background-color: #10b981; } .mini-bar.active-yellow { background-color: #f59e0b; } .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
-        .mini-bar[data-val="1"]{height:20%} .mini-bar[data-val="2"]{height:25%} .mini-bar[data-val="3"]{height:35%} .mini-bar[data-val="4"]{height:45%} .mini-bar[data-val="5"]{height:55%} .mini-bar[data-val="6"]{height:65%} .mini-bar[data-val="7"]{height:75%} .mini-bar[data-val="8"]{height:85%} .mini-bar[data-val="9"]{height:95%} .mini-bar[data-val="10"]{height:100%}
+        .mini-bar[data-val="1"] { height: 20%; } .mini-bar[data-val="2"] { height: 25%; } .mini-bar[data-val="3"] { height: 35%; } .mini-bar[data-val="4"] { height: 45%; } .mini-bar[data-val="5"] { height: 55%; } .mini-bar[data-val="6"] { height: 65%; } .mini-bar[data-val="7"] { height: 75%; } .mini-bar[data-val="8"] { height: 85%; } .mini-bar[data-val="9"] { height: 95%; } .mini-bar[data-val="10"] { height: 100%; }
+
         .btn-main { grid-column: 1 / -1; background-color: var(--primary); color: white; border: none; padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .btn-save { background-color: var(--edit-color) !important; }
         .search-container { margin-bottom: 15px; display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
@@ -111,13 +144,19 @@
         .ch-pill { background: var(--ch-color); color: white; border-radius: 12px; margin-left: 6px; }
         [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
         .flex-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+
         td.notes-cell { overflow: visible !important; position: relative; } 
         .expandable-note { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; padding-left: 8px; border-left: 3px solid var(--primary); background-color: rgba(37, 99, 235, 0.05); border-radius: 0 4px 4px 0; transition: background-color 0.2s; margin-top: 2px; position: relative; }
         .expandable-note:hover { background-color: rgba(37, 99, 235, 0.1); }
         [data-theme="dark"] .expandable-note { background-color: rgba(59, 130, 246, 0.1); }
         [data-theme="dark"] .expandable-note:hover { background-color: rgba(59, 130, 246, 0.15); }
+        
         @media screen and (max-width: 800px) { .expandable-note.expanded { -webkit-line-clamp: unset; display: block; padding-top: 4px; padding-bottom: 4px; } }
-        @media screen and (min-width: 801px) { .expandable-note.expanded { position: absolute; z-index: 9999; top: 100%; right: 0; left: auto; min-width: 280px; max-width: 350px; background: var(--card-bg) !important; border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); white-space: normal; -webkit-line-clamp: unset; overflow: visible; display: block; margin-top: 10px; } .expandable-note.expanded::before { content: ''; position: absolute; bottom: 100%; right: 15px; left: auto; border-width: 8px; border-style: solid; border-color: transparent transparent var(--primary) transparent; } }
+        @media screen and (min-width: 801px) {
+            .expandable-note.expanded { position: absolute; z-index: 9999; top: 100%; right: 0; left: auto; min-width: 280px; max-width: 350px; background: var(--card-bg) !important; border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); white-space: normal; -webkit-line-clamp: unset; overflow: visible; display: block; margin-top: 10px; }
+            .expandable-note.expanded::before { content: ''; position: absolute; bottom: 100%; right: 15px; left: auto; border-width: 8px; border-style: solid; border-color: transparent transparent var(--primary) transparent; }
+        }
+
         .table-container { max-height: 65vh; overflow-y: auto; overflow-x: hidden; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -138,6 +177,7 @@
         tr:hover { background-color: var(--table-hover); }
         .ch-sort { color: var(--ch-color); padding-left: 6px; font-weight: 800; cursor: pointer; transition: 0.2s; }
         .ch-sort:hover { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+
         .action-btns { display: flex; gap: 4px; justify-content: center; }
         .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
@@ -145,6 +185,9 @@
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
         #scrollTopBtn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
+        /* ==================================================== */
+        /* MOBILE CARD LAYOUT                                   */
+        /* ==================================================== */
         @media screen and (max-width: 800px) {
             .settings-tab { margin-left: 0; } 
             .memory-layout { flex-direction: column; }
@@ -194,35 +237,72 @@
     </div>
 
     <div id="settingsContainer" style="display: none; margin-bottom: 25px;">
-        <div class="controls"><h2>⚙️ Settings & Administration</h2></div>
+        <div class="controls">
+            <h2>⚙️ Settings & Administration</h2>
+        </div>
+
         <div class="input-card" style="margin-bottom: 15px;">
             <h3 style="margin-top: 0; color: var(--primary);">📻 Hardware & Mode Lists</h3>
+            <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Add or remove options for your main entry form dropdowns.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                <div><label>Radios</label><div style="display: flex; gap: 5px; margin-bottom: 10px;"><input type="text" id="newRadioAdmin"><button onclick="addSetting('radios', 'newRadioAdmin')" class="btn-main" style="margin:0; padding:0 15px; width:auto;">Add</button></div><ul id="radiosAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul></div>
-                <div><label>Antennas</label><div style="display: flex; gap: 5px; margin-bottom: 10px;"><input type="text" id="newAntennaAdmin"><button onclick="addSetting('antennas', 'newAntennaAdmin')" class="btn-main" style="margin:0; padding:0 15px; width:auto;">Add</button></div><ul id="antennasAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul></div>
-                <div><label>Modes</label><div style="display: flex; gap: 5px; margin-bottom: 10px;"><input type="text" id="newModeAdmin"><button onclick="addSetting('modes', 'newModeAdmin')" class="btn-main" style="margin:0; padding:0 15px; width:auto;">Add</button></div><ul id="modesAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul></div>
+                <div>
+                    <label>Radios</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" id="newRadioAdmin" placeholder="Add Radio...">
+                        <button onclick="addSetting('radios', 'newRadioAdmin')" style="background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0 15px;">Add</button>
+                    </div>
+                    <ul id="radiosAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
+                </div>
+                <div>
+                    <label>Antennas</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" id="newAntennaAdmin" placeholder="Add Antenna...">
+                        <button onclick="addSetting('antennas', 'newAntennaAdmin')" style="background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0 15px;">Add</button>
+                    </div>
+                    <ul id="antennasAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
+                </div>
+                <div>
+                    <label>Modes</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" id="newModeAdmin" placeholder="Add Mode...">
+                        <button onclick="addSetting('modes', 'newModeAdmin')" style="background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0 15px;">Add</button>
+                    </div>
+                    <ul id="modesAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
+                </div>
             </div>
         </div>
         
         <div class="input-card" style="margin-bottom: 15px;">
             <h3 style="margin-top: 0; color: var(--primary);">⚙️ Default Input Values</h3>
+            <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">These choices will be pre-selected every time you load the page or reset the form.</p>
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 150px;"><label>Default Radio</label><select id="defaultRadioSelect" onchange="setDefault('Radio', this.value)"></select></div>
-                <div style="flex: 1; min-width: 150px;"><label>Default Antenna</label><select id="defaultAntennaSelect" onchange="setDefault('Antenna', this.value)"></select></div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label>Default Radio</label>
+                    <select id="defaultRadioSelect" onchange="setDefault('Radio', this.value)"></select>
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label>Default Antenna</label>
+                    <select id="defaultAntennaSelect" onchange="setDefault('Antenna', this.value)"></select>
+                </div>
             </div>
         </div>
 
         <div class="input-card" style="margin-bottom: 15px;">
             <h3 style="margin-top: 0; color: var(--edit-color);">📖 Master Dictionary <span id="dictCount" style="font-size: 0.8em; color: var(--text-sub); font-weight: normal;">(0 entries)</span></h3>
+            <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Map frequencies to station names for auto-filling in the Logbook. <strong>Max 16 Characters.</strong></p>
+            
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <input type="text" id="newDictFreq" placeholder="Freq (e.g. 125.850)" style="flex: 1; min-width: 120px;" inputmode="decimal">
                 <input type="text" id="newDictName" placeholder="Station Name (Max 16)" style="flex: 2; min-width: 150px;" maxlength="16">
                 <button id="dictAddBtn" onclick="addDictEntry()" class="btn-main" style="margin-top: 0; width: auto; padding: 0 20px;">Add</button>
                 <button id="dictCancelBtn" onclick="cancelDictEdit()" class="btn-clear" style="display: none; margin-top: 0; width: auto; padding: 0 20px; background-color: #6b7280;">Cancel</button>
             </div>
+            
             <ul id="dictionaryList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;"></ul>
+            
             <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0;">
             <h4 style="margin: 0 0 10px 0; color: var(--edit-color);">🪄 Database Tools</h4>
+            
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button onclick="exportForUniden()" class="btn-main" style="background-color: #10b981; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download Uniden UBC1260DN Export</button>
             </div>
@@ -230,25 +310,66 @@
     </div>
 
     <div id="formCard" class="input-card">
-        <div class="card-header" onclick="toggleForm()"><h2>📝 Log Entry</h2><span id="formToggleIcon">▼ (Hide)</span></div>
+        <div class="card-header" onclick="toggleForm()">
+            <h2>📝 Log Entry</h2>
+            <span id="formToggleIcon">▼ (Hide)</span>
+        </div>
+        
         <div id="formBody" class="form-body">
             <input type="hidden" id="editId">
-            <div class="form-group"><label>Frequency (MHz)</label><input type="text" id="freqInput" list="popularFreqs" inputmode="decimal" onchange="handleFreqInput()" onkeyup="handleFreqInput()"><datalist id="popularFreqs"></datalist></div>
-            <div class="form-group"><label>Radio</label><select id="radioInput"></select></div>
-            <div class="form-group"><label>Memory Ch. (Opt)</label><input type="text" id="channelInput" inputmode="numeric"></div>
-            <div class="form-group"><label>Antenna</label><select id="antennaInput"></select></div>
-            <div class="form-group"><label>Mode</label><select id="modeInput"></select></div>
-            <div class="form-group"><label>Station / Callsign (Max 16)</label><input type="text" id="stationInput" maxlength="16"></div>
+            
+            <div class="form-group">
+                <label>Frequency (MHz)</label>
+                <input type="text" id="freqInput" list="popularFreqs" placeholder="e.g. 14.250" inputmode="decimal" onchange="handleFreqInput()" onkeyup="handleFreqInput()">
+                <datalist id="popularFreqs"></datalist>
+            </div>
+            
+            <div class="form-group">
+                <label>Radio</label>
+                <select id="radioInput"></select>
+            </div>
+            <div class="form-group">
+                <label>Memory Ch. (Opt)</label>
+                <input type="text" id="channelInput" placeholder="e.g. 45" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>Antenna</label>
+                <select id="antennaInput"></select>
+            </div>
+            <div class="form-group">
+                <label>Mode</label>
+                <select id="modeInput"></select>
+            </div>
+            <div class="form-group">
+                <label>Station / Callsign (Max 16)</label>
+                <input type="text" id="stationInput" placeholder="Who are they?" maxlength="16">
+            </div>
             <div class="form-group">
                 <label>Signal (S-Meter)</label>
                 <div class="s-meter-container">
-                    <div class="s-meter-bar" data-val="1" onclick="setSMeter(1)"></div><div class="s-meter-bar" data-val="2" onclick="setSMeter(2)"></div><div class="s-meter-bar" data-val="3" onclick="setSMeter(3)"></div><div class="s-meter-bar" data-val="4" onclick="setSMeter(4)"></div><div class="s-meter-bar" data-val="5" onclick="setSMeter(5)"></div><div class="s-meter-bar" data-val="6" onclick="setSMeter(6)"></div><div class="s-meter-bar" data-val="7" onclick="setSMeter(7)"></div><div class="s-meter-bar" data-val="8" onclick="setSMeter(8)"></div><div class="s-meter-bar" data-val="9" onclick="setSMeter(9)"></div><div class="s-meter-bar" data-val="10" onclick="setSMeter(10)"></div>
+                    <div class="s-meter-bar" data-val="1" onclick="setSMeter(1)"></div>
+                    <div class="s-meter-bar" data-val="2" onclick="setSMeter(2)"></div>
+                    <div class="s-meter-bar" data-val="3" onclick="setSMeter(3)"></div>
+                    <div class="s-meter-bar" data-val="4" onclick="setSMeter(4)"></div>
+                    <div class="s-meter-bar" data-val="5" onclick="setSMeter(5)"></div>
+                    <div class="s-meter-bar" data-val="6" onclick="setSMeter(6)"></div>
+                    <div class="s-meter-bar" data-val="7" onclick="setSMeter(7)"></div>
+                    <div class="s-meter-bar" data-val="8" onclick="setSMeter(8)"></div>
+                    <div class="s-meter-bar" data-val="9" onclick="setSMeter(9)"></div>
+                    <div class="s-meter-bar" data-val="10" onclick="setSMeter(10)"></div>
                 </div>
                 <input type="hidden" id="signalInput" value="5">
             </div>
             <input type="hidden" id="trafficInput" value="1">
-            <div class="form-group" style="grid-column: 1 / -1;"><label>Additional Notes</label><input type="text" id="notesInput"></div>
-            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; grid-column: 1 / -1; margin-top: 5px;"><input type="checkbox" id="confirmedInput" checked style="width: 22px; height: 22px; cursor: pointer; flex-shrink: 0;"><label for="confirmedInput" style="margin: 0; cursor: pointer; font-size: 0.95em;">✅ <strong>Confirmed Active</strong> (Uncheck to save to Local DB for testing)</label></div>
+            
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Additional Notes</label>
+                <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
+            </div>
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; grid-column: 1 / -1; margin-top: 5px;">
+                <input type="checkbox" id="confirmedInput" checked style="width: 22px; height: 22px; cursor: pointer; flex-shrink: 0;">
+                <label for="confirmedInput" style="margin: 0; cursor: pointer; font-size: 0.95em;">✅ <strong>Confirmed Active</strong> (Uncheck to save to Local DB for testing)</label>
+            </div>
             <button id="submitBtn" class="btn-main" onclick="handleSubmit()">Add to Log</button>
         </div>
     </div>
@@ -258,20 +379,33 @@
             <h2>📻 Memory Banks</h2>
             <select id="memoryBankRadioSelect" onchange="renderMemoryBank()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px;"></select>
         </div>
+        
         <div class="memory-layout">
-            <div class="memory-sidebar"><h4 style="margin-top: 0; margin-bottom: 5px; color: var(--primary);">📖 Dictionary</h4><p style="font-size: 0.8em; color: var(--text-sub); margin-top: 0;">Drag into slots below</p><div id="memorySidebarDict"></div></div>
-            <div class="memory-main"><div id="memoryGrid" class="memory-grid" style="margin-top: 0;"></div></div>
+            <div class="memory-sidebar">
+                <h4 style="margin-top: 0; margin-bottom: 5px; color: var(--primary);">📖 Dictionary</h4>
+                <p style="font-size: 0.8em; color: var(--text-sub); margin-top: 0;">Drag into slots below</p>
+                <div id="memorySidebarDict"></div>
+            </div>
+            
+            <div class="memory-main">
+                <div id="memoryGrid" class="memory-grid" style="margin-top: 0;"></div>
+            </div>
         </div>
     </div>
 
-    <div id="moveModeBanner"><span>Tap destination for CH <span id="moveSourceText"></span></span><button onclick="cancelMoveMode()">Cancel</button></div>
+    <div id="moveModeBanner">
+        <span>Tap destination for CH <span id="moveSourceText"></span></span>
+        <button onclick="cancelMoveMode()">Cancel</button>
+    </div>
 
     <div id="assignModal" class="modal-overlay" style="display: none;">
         <div class="modal-box">
             <h3 style="margin-top: 0; color: var(--primary);">Assign Channel <span id="assignModalCh"></span></h3>
             <p style="font-size: 0.85em; color: var(--text-sub);">Select a saved frequency from your Master Dictionary, or enter a brand new one manually.</p>
             <input type="hidden" id="assignModalRadio">
+            
             <select id="assignModalDictSelect" style="margin-bottom: 15px; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);"></select>
+            
             <div style="display: flex; gap: 10px; flex-direction: column;">
                 <button onclick="confirmAssignModal()" class="btn-main" style="margin-top: 0;">✅ Assign Dictionary Freq</button>
                 <button onclick="assignManualModal()" class="btn-clear" style="background-color: var(--edit-color); padding: 12px; border-radius: 8px;">✍️ Enter Details Manually</button>
@@ -301,7 +435,7 @@
 
             <div class="input-card" style="margin-bottom: 0;">
                 <h3 style="margin-top: 0; color: var(--edit-color);">💪 Strongest Signals</h3>
-                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter</p>
+                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter (Min 2 logs)</p>
                 <ul id="topStrongestList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleStrongestBtn" onclick="toggleStrongest()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: var(--edit-color); padding: 10px; font-weight: bold;">Show All</button>
             </div>
@@ -317,16 +451,25 @@
                 <h3 style="margin-top: 0; color: var(--primary);">📈 24-Hour Performance Graphs</h3>
                 <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
                     <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px; flex-grow: 1;"></select>
-                    <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;"><option value="line">Signal: Line Graph (Hourly Max)</option><option value="scatter">Signal: Heatmap Scatter (Every Log)</option></select>
+                    <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
+                        <option value="line">Signal: Line Graph (Hourly Max)</option>
+                        <option value="scatter">Signal: Heatmap Scatter (Every Log)</option>
+                    </select>
                 </div>
                 <div id="chartsWrapper" style="display: none;">
                     <h4 style="margin: 0 0 10px 0; color: var(--text-main); text-align: center;">Signal Strength (S-Meter)</h4>
-                    <div style="height: 250px; width: 100%; margin-bottom: 30px;"><canvas id="signalChart"></canvas></div>
+                    <div style="height: 250px; width: 100%; margin-bottom: 30px;">
+                        <canvas id="signalChart"></canvas>
+                    </div>
                     <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0;">
                     <h4 style="margin: 0 0 10px 0; color: var(--text-main); text-align: center;">Traffic Busyness (Total Logs)</h4>
-                    <div style="height: 200px; width: 100%;"><canvas id="trafficChart"></canvas></div>
+                    <div style="height: 200px; width: 100%;">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
                 </div>
-                <div id="noChartMsg" style="text-align: center; padding: 30px; color: var(--text-sub); font-style: italic;">Select a specific frequency above to view its 24-hour performance graphs.</div>
+                <div id="noChartMsg" style="text-align: center; padding: 30px; color: var(--text-sub); font-style: italic;">
+                    Select a specific frequency above to view its 24-hour performance graphs.
+                </div>
             </div>
 
             <div class="input-card" style="margin-bottom: 0; grid-column: 1 / -1;">
@@ -337,25 +480,66 @@
     </div>
 
     <div id="mainLogbookContainer">
-        <div class="controls"><h2>Your Logs</h2></div>
+        <div class="controls">
+            <h2>Your Logs</h2>
+        </div>
+
         <div class="radio-filters" id="radioFilterContainer"></div>
+
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
-            <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;"><option value="All">All Frequencies</option><option value="Confirmed">✅ Confirmed Only</option><option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option></select>
-            <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)"><option value="date">Sort: Newest First</option><option value="freq">Sort: Frequency</option><option value="channel">Sort: Memory Channel</option><option value="traffic">Sort: Auto-Traffic</option><option value="signal">Sort: Best Signal</option></select>
+            <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
+                <option value="All">All Frequencies</option>
+                <option value="Confirmed">✅ Confirmed Only</option>
+                <option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option>
+            </select>
+            <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
+                <option value="date">Sort: Newest First</option>
+                <option value="freq">Sort: Frequency</option>
+                <option value="channel">Sort: Memory Channel</option>
+                <option value="traffic">Sort: Auto-Traffic</option>
+                <option value="signal">Sort: Best Signal</option>
+            </select>
         </div>
+
         <div class="table-container">
             <table id="logTable">
-                <thead><tr><th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th><th onclick="sortTable('freq', this)">Freq (MHz)</th><th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th><th onclick="sortTable('station', this)">Station</th><th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th><th onclick="sortTable('antenna', this)">Antenna</th><th onclick="sortTable('signal', this)">Sig</th><th onclick="sortTable('traffic', this)">Traf (Auto)</th><th onclick="sortTable('notes', this)">Notes</th><th>Actions</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
+                        <th onclick="sortTable('freq', this)">Freq (MHz)</th>
+                        <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
+                        <th onclick="sortTable('station', this)">Station</th>
+                        <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
+                        <th onclick="sortTable('antenna', this)">Antenna</th>
+                        <th onclick="sortTable('signal', this)">Sig</th>
+                        <th onclick="sortTable('traffic', this)">Traf (Auto)</th>
+                        <th onclick="sortTable('notes', this)">Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
                 <tbody></tbody>
             </table>
         </div>
+
         <div class="footer-stats" id="logCounter">Total Logs: 0</div>
-        <div class="danger-zone"><button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button></div>
+
+        <div class="danger-zone">
+            <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
+        </div>
     </div> 
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w", authDomain: "radio-logger-cloud.firebaseapp.com", databaseURL: "https://radio-logger-cloud-default-rtdb.europe-west1.firebasedatabase.app", projectId: "radio-logger-cloud", storageBucket: "radio-logger-cloud.firebasestorage.app", messagingSenderId: "501308146621", appId: "1:501308146621:web:b16456a55d252f9eafc8d4" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyB8efRF_TABTRudzt7M57omxDEsyP_iN6w", 
+            authDomain: "radio-logger-cloud.firebaseapp.com", 
+            databaseURL: "https://radio-logger-cloud-default-rtdb.europe-west1.firebasedatabase.app", 
+            projectId: "radio-logger-cloud", 
+            storageBucket: "radio-logger-cloud.firebasestorage.app", 
+            messagingSenderId: "501308146621", 
+            appId: "1:501308146621:web:b16456a55d252f9eafc8d4" 
+        };
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const logsRef = db.ref('radioLogs');
@@ -371,107 +555,216 @@
                 modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"],
                 defaultRadio: data.defaultRadio || "Realistic Pro 2006",
                 defaultAntenna: data.defaultAntenna || "X30N",
-                dictionary: data.dictionary || [{f:"125.855",n:"Bristol Lulsgate"},{f:"119.155",n:"Bristol Radar"},{f:"119.250",n:"Cardiff Radar"},{f:"133.100",n:"Cardiff Director"},{f:"125.850",n:"Bristol Radar"},{f:"133.850",n:"Bristol Approach"},{f:"125.000",n:"London Info(W)"},{f:"145.625",n:"GB3WB Repeater"},{f:"433.100",n:"GB3CD Repeater"},{f:"156.800",n:"Marine Ch 16"},{f:"156.000",n:"Marine Ch 0 SAR"}]
+                dictionary: data.dictionary || [
+                    {f:"125.855",n:"Bristol Lulsgate"}, {f:"119.155",n:"Bristol Radar"}, {f:"119.250",n:"Cardiff Radar"},
+                    {f:"133.100",n:"Cardiff Director"}, {f:"125.850",n:"Bristol Radar"}, {f:"133.850",n:"Bristol Approach"},
+                    {f:"125.000",n:"London Info(W)"}, {f:"145.625",n:"GB3WB Repeater"}, {f:"433.100",n:"GB3CD Repeater"},
+                    {f:"156.800",n:"Marine Ch 16"}, {f:"156.000",n:"Marine Ch 0 SAR"}
+                ]
             };
-            renderAdminLists(); updateDropdowns(); renderDictionary(); renderDictSidebar(); 
+            renderAdminLists(); 
+            updateDropdowns(); 
+            renderDictionary(); 
+            renderDictSidebar(); 
         });
 
-        function addSetting(type, inputId) { const input = document.getElementById(inputId); const val = input.value.trim(); if (!val) return; if (!appSettings[type].includes(val)) { appSettings[type].push(val); settingsRef.child(type).set(appSettings[type]); } input.value = ""; }
-        function removeSetting(type, val) { if(confirm(`Remove "${val}" from your list?`)) { appSettings[type] = appSettings[type].filter(item => item !== val); settingsRef.child(type).set(appSettings[type]); } }
-        function setDefault(type, val) { settingsRef.child('default' + type).set(val); }
+        function addSetting(type, inputId) { 
+            const input = document.getElementById(inputId); 
+            const val = input.value.trim(); 
+            if (!val) return; 
+            if (!appSettings[type].includes(val)) { 
+                appSettings[type].push(val); 
+                settingsRef.child(type).set(appSettings[type]); 
+            } 
+            input.value = ""; 
+        }
+
+        function removeSetting(type, val) { 
+            if(confirm(`Remove "${val}" from your list?`)) { 
+                appSettings[type] = appSettings[type].filter(item => item !== val); 
+                settingsRef.child(type).set(appSettings[type]); 
+            } 
+        }
+
+        function setDefault(type, val) { 
+            settingsRef.child('default' + type).set(val); 
+        }
 
         function addDictEntry() {
-            const freqInput = document.getElementById('newDictFreq'); const nameInput = document.getElementById('newDictName');
-            const freq = parseFloat(freqInput.value).toFixed(3); const name = nameInput.value.trim().substring(0, 16);
+            const freqInput = document.getElementById('newDictFreq'); 
+            const nameInput = document.getElementById('newDictName');
+            const freq = parseFloat(freqInput.value).toFixed(3); 
+            const name = nameInput.value.trim().substring(0, 16);
             if (isNaN(freq) || !name) return alert("Please enter a valid frequency and name.");
+            
             appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); 
             appSettings.dictionary.push({f: freq, n: name});
             appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f));
+            
             settingsRef.child('dictionary').set(appSettings.dictionary);
             cancelDictEdit();
         }
 
         function editDictEntry(f, nEnc) {
-            document.getElementById('newDictFreq').value = f; document.getElementById('newDictName').value = decodeURIComponent(nEnc);
-            document.getElementById('dictAddBtn').innerText = "Save"; document.getElementById('dictAddBtn').style.backgroundColor = "var(--edit-color)"; document.getElementById('dictCancelBtn').style.display = "block";
-            document.getElementById('newDictName').focus(); document.getElementById('newDictFreq').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('newDictFreq').value = f; 
+            document.getElementById('newDictName').value = decodeURIComponent(nEnc);
+            document.getElementById('dictAddBtn').innerText = "Save"; 
+            document.getElementById('dictAddBtn').style.backgroundColor = "var(--edit-color)"; 
+            document.getElementById('dictCancelBtn').style.display = "block";
+            document.getElementById('newDictName').focus(); 
+            document.getElementById('newDictFreq').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function cancelDictEdit() {
-            document.getElementById('newDictFreq').value = ""; document.getElementById('newDictName').value = "";
-            document.getElementById('dictAddBtn').innerText = "Add"; document.getElementById('dictAddBtn').style.backgroundColor = "var(--primary)"; document.getElementById('dictCancelBtn').style.display = "none";
+            document.getElementById('newDictFreq').value = ""; 
+            document.getElementById('newDictName').value = "";
+            document.getElementById('dictAddBtn').innerText = "Add"; 
+            document.getElementById('dictAddBtn').style.backgroundColor = "var(--primary)"; 
+            document.getElementById('dictCancelBtn').style.display = "none";
         }
 
-        function removeDictEntry(freq) { if(confirm(`Remove ${freq}?`)) { appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); settingsRef.child('dictionary').set(appSettings.dictionary); } }
+        function removeDictEntry(freq) { 
+            if(confirm(`Remove ${freq} from dictionary?`)) { 
+                appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); 
+                settingsRef.child('dictionary').set(appSettings.dictionary); 
+            } 
+        }
 
         function renderDictionary() {
-            const listEl = document.getElementById('dictionaryList'); const countEl = document.getElementById('dictCount');
+            const listEl = document.getElementById('dictionaryList'); 
+            const countEl = document.getElementById('dictCount');
             if (countEl && appSettings.dictionary) countEl.innerText = `(${appSettings.dictionary.length} entries)`;
             if(!listEl) return;
-            listEl.innerHTML = appSettings.dictionary.map(item => `<li style="display:flex; justify-content:space-between; align-items:center; background:var(--table-hover); padding:8px 12px; border-radius:6px; border: 1px solid var(--border-color);"><span><strong style="color:var(--primary);">${item.f}</strong> - ${item.n}</span><div><span style="color:var(--edit-color); cursor:pointer; font-weight:bold; font-size:1.1em; margin-right: 15px;" onclick="editDictEntry('${item.f}', '${encodeURIComponent(item.n)}')" title="Edit">✏️</span><span style="color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.2em;" onclick="removeDictEntry('${item.f}')" title="Delete">✖</span></div></li>`).join('');
+            
+            listEl.innerHTML = appSettings.dictionary.map(item => {
+                return `<li style="display:flex; justify-content:space-between; align-items:center; background:var(--table-hover); padding:8px 12px; border-radius:6px; border: 1px solid var(--border-color);">
+                            <span><strong style="color:var(--primary);">${item.f}</strong> - ${item.n}</span>
+                            <div>
+                                <span style="color:var(--edit-color); cursor:pointer; font-weight:bold; font-size:1.1em; margin-right: 15px;" onclick="editDictEntry('${item.f}', '${encodeURIComponent(item.n)}')" title="Edit">✏️</span>
+                                <span style="color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.2em;" onclick="removeDictEntry('${item.f}')" title="Delete">✖</span>
+                            </div>
+                        </li>`;
+            }).join('');
         }
 
         function renderDictSidebar() {
             const sb = document.getElementById('memorySidebarDict');
             if(!sb) return;
-            if (!appSettings.dictionary || appSettings.dictionary.length === 0) { sb.innerHTML = '<div style="font-size: 0.85em; color: var(--text-sub);">No dictionary items yet.</div>'; return; }
+            if (!appSettings.dictionary || appSettings.dictionary.length === 0) { 
+                sb.innerHTML = '<div style="font-size: 0.85em; color: var(--text-sub);">No dictionary items yet.</div>'; 
+                return; 
+            }
             const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
             const dragAttr = isTouch ? '' : 'draggable="true"';
-            sb.innerHTML = appSettings.dictionary.map(item => `<div class="dict-drag-item" ${dragAttr} ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')"><strong style="color:var(--primary);">${item.f}</strong><br><span style="color:var(--text-sub);">${item.n}</span></div>`).join('');
+
+            sb.innerHTML = appSettings.dictionary.map(item => {
+                return `<div class="dict-drag-item" ${dragAttr} ondragstart="dragDict(event, '${item.f}', '${encodeURIComponent(item.n)}')">
+                            <strong style="color:var(--primary);">${item.f}</strong><br>
+                            <span style="color:var(--text-sub);">${item.n}</span>
+                        </div>`;
+            }).join('');
         }
 
         // --- LONG PRESS & TAP-TO-MOVE ENGINE ---
-        let touchTimer; let justLongPressed = false; let touchStartX = 0; let touchStartY = 0; let activeMoveSourceId = null; let activeMoveSourceCh = null;
+        let touchTimer; 
+        let justLongPressed = false; 
+        let touchStartX = 0; 
+        let touchStartY = 0; 
+        let activeMoveSourceId = null; 
+        let activeMoveSourceCh = null;
 
         function handleTouchStart(el, ev) {
             if (!ev.touches || ev.touches.length === 0) return;
-            touchStartX = ev.touches[0].clientX; touchStartY = ev.touches[0].clientY; justLongPressed = false;
-            document.querySelectorAll('.memory-slot').forEach(s => { if(s !== el) s.classList.remove('show-actions'); });
-            touchTimer = setTimeout(() => { justLongPressed = true; el.classList.add('show-actions'); if (navigator.vibrate) navigator.vibrate(50); }, 500); 
+            touchStartX = ev.touches[0].clientX; 
+            touchStartY = ev.touches[0].clientY; 
+            justLongPressed = false;
+            
+            document.querySelectorAll('.memory-slot').forEach(s => { 
+                if(s !== el) s.classList.remove('show-actions'); 
+            });
+            
+            touchTimer = setTimeout(() => { 
+                justLongPressed = true; 
+                el.classList.add('show-actions'); 
+                if (navigator.vibrate) navigator.vibrate(50); 
+            }, 500); 
         }
-        function handleTouchEnd(el, ev) { clearTimeout(touchTimer); setTimeout(() => { justLongPressed = false; }, 500); }
+
+        function handleTouchEnd(el, ev) { 
+            clearTimeout(touchTimer); 
+            setTimeout(() => { justLongPressed = false; }, 500); 
+        }
+
         function handleTouchMove(el, ev) {
             if (!ev.touches || ev.touches.length === 0) return;
-            let moveX = ev.touches[0].clientX; let moveY = ev.touches[0].clientY;
+            let moveX = ev.touches[0].clientX; 
+            let moveY = ev.touches[0].clientY;
             if (Math.abs(moveX - touchStartX) > 15 || Math.abs(moveY - touchStartY) > 15) {
                 clearTimeout(touchTimer);
-                if (justLongPressed && (Math.abs(moveX - touchStartX) > 40 || Math.abs(moveY - touchStartY) > 40)) el.classList.remove('show-actions');
+                if (justLongPressed && (Math.abs(moveX - touchStartX) > 40 || Math.abs(moveY - touchStartY) > 40)) {
+                    el.classList.remove('show-actions');
+                }
             }
         }
+
         function handleSlotRightClick(el, ev) {
-            ev.preventDefault(); justLongPressed = true; 
-            document.querySelectorAll('.memory-slot').forEach(s => { if(s !== el) s.classList.remove('show-actions'); });
+            ev.preventDefault(); 
+            justLongPressed = true; 
+            document.querySelectorAll('.memory-slot').forEach(s => { 
+                if(s !== el) s.classList.remove('show-actions'); 
+            });
             el.classList.add('show-actions');
         }
+
         function handleSlotClick(el, ev, logId, channel) {
-            if (activeMoveSourceId) { executeMoveOrSwap(channel); return; }
+            if (activeMoveSourceId) { 
+                executeMoveOrSwap(channel); 
+                return; 
+            }
             if (justLongPressed) return; 
+
             let hadActions = el.classList.contains('show-actions');
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
             if (hadActions) return;
+
             startEdit(logId);
         }
+
         function unassignChannel(logId, ch) {
-            if(confirm(`Clear Channel ${ch}?`)) { db.ref('radioLogs/' + logId).update({channel: ""}); } 
-            else { document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions')); }
+            if(confirm(`Clear Channel ${ch}?`)) { 
+                db.ref('radioLogs/' + logId).update({channel: ""}); 
+            } else { 
+                document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions')); 
+            }
         }
 
-        // --- TAP-TO-MOVE LOGIC ---
         function initiateMove(logId, currentCh) {
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
-            activeMoveSourceId = logId; activeMoveSourceCh = currentCh;
-            document.getElementById('moveSourceText').innerText = currentCh; document.getElementById('moveModeBanner').style.display = 'flex';
+            activeMoveSourceId = logId; 
+            activeMoveSourceCh = currentCh;
+            document.getElementById('moveSourceText').innerText = currentCh; 
+            document.getElementById('moveModeBanner').style.display = 'flex';
             renderMemoryBank();
         }
+
         function cancelMoveMode() {
-            activeMoveSourceId = null; activeMoveSourceCh = null; document.getElementById('moveModeBanner').style.display = 'none';
+            activeMoveSourceId = null; 
+            activeMoveSourceCh = null; 
+            document.getElementById('moveModeBanner').style.display = 'none';
             renderMemoryBank();
         }
+
         function executeMoveOrSwap(targetCh) {
-            const targetChStr = String(targetCh).trim(); const sourceChStr = String(activeMoveSourceCh).trim();
-            if (targetChStr === sourceChStr) { cancelMoveMode(); return; }
+            const targetChStr = String(targetCh).trim(); 
+            const sourceChStr = String(activeMoveSourceCh).trim();
+            if (targetChStr === sourceChStr) { 
+                cancelMoveMode(); 
+                return; 
+            }
+            
             const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
             const targetLog = cloudLogs.find(l => l.radio === selectedRadio && String(l.channel).trim() === targetChStr);
+            
             if (targetLog) {
                 db.ref('radioLogs/' + activeMoveSourceId).update({channel: targetChStr});
                 db.ref('radioLogs/' + targetLog.id).update({channel: sourceChStr});
@@ -482,17 +775,39 @@
         }
 
         // --- DRAG AND DROP (PC) ---
-        function dragDict(ev, freq, nameEnc) { ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'dict', freq: freq, name: decodeURIComponent(nameEnc)})); }
-        function dragSlot(ev, logId, channel) { ev.target.classList.remove('show-actions'); document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions')); ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel})); }
-        function handleDragEnd(ev) { document.querySelectorAll('.memory-slot').forEach(s => { s.classList.remove('show-actions'); s.classList.remove('drag-over'); }); }
-        function allowDrop(ev) { ev.preventDefault(); let slot = ev.target.closest('.memory-slot'); if(slot) slot.classList.add('drag-over'); }
-        function dragLeave(ev) { let slot = ev.target.closest('.memory-slot'); if(slot) slot.classList.remove('drag-over'); }
+        function dragDict(ev, freq, nameEnc) { 
+            ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'dict', freq: freq, name: decodeURIComponent(nameEnc)})); 
+        }
+        function dragSlot(ev, logId, channel) { 
+            ev.target.classList.remove('show-actions'); 
+            document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions')); 
+            ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel})); 
+        }
+        function handleDragEnd(ev) { 
+            document.querySelectorAll('.memory-slot').forEach(s => { s.classList.remove('show-actions'); s.classList.remove('drag-over'); }); 
+        }
+        function allowDrop(ev) { 
+            ev.preventDefault(); 
+            let slot = ev.target.closest('.memory-slot'); 
+            if(slot) slot.classList.add('drag-over'); 
+        }
+        function dragLeave(ev) { 
+            let slot = ev.target.closest('.memory-slot'); 
+            if(slot) slot.classList.remove('drag-over'); 
+        }
         function dropSlot(ev, targetChannel) {
-            ev.preventDefault(); let slot = ev.target.closest('.memory-slot'); if(slot) slot.classList.remove('drag-over');
-            const dataStr = ev.dataTransfer.getData("text/plain"); if(!dataStr) return;
+            ev.preventDefault(); 
+            let slot = ev.target.closest('.memory-slot'); 
+            if(slot) slot.classList.remove('drag-over');
+            
+            const dataStr = ev.dataTransfer.getData("text/plain"); 
+            if(!dataStr) return;
+            
             try {
-                const data = JSON.parse(dataStr); const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
+                const data = JSON.parse(dataStr); 
+                const selectedRadio = document.getElementById('memoryBankRadioSelect').value;
                 const targetLog = cloudLogs.find(l => l.radio === selectedRadio && String(l.channel).trim() === String(targetChannel).trim());
+                
                 if (data.type === 'dict') {
                     if (targetLog) {
                         if(!confirm(`Overwrite channel ${targetChannel} with ${data.name}?`)) return;
@@ -502,48 +817,106 @@
                     }
                 } else if (data.type === 'slot') {
                     if (String(data.channel).trim() === String(targetChannel).trim()) return; 
-                    if (targetLog) { db.ref('radioLogs/' + data.logId).update({channel: targetChannel}); db.ref('radioLogs/' + targetLog.id).update({channel: data.channel});
-                    } else { db.ref('radioLogs/' + data.logId).update({channel: targetChannel}); }
+                    if (targetLog) { 
+                        db.ref('radioLogs/' + data.logId).update({channel: targetChannel}); 
+                        db.ref('radioLogs/' + targetLog.id).update({channel: data.channel});
+                    } else { 
+                        db.ref('radioLogs/' + data.logId).update({channel: targetChannel}); 
+                    }
                 }
-            } catch(err) { console.error(err); }
+            } catch(err) { 
+                console.error(err); 
+            }
         }
 
         document.addEventListener('click', function(e) {
-            document.querySelectorAll('.expandable-note').forEach(note => { if(!note.contains(e.target)) note.classList.remove('expanded'); });
-            if(!e.target.closest('.memory-slot')) document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
+            document.querySelectorAll('.expandable-note').forEach(note => { 
+                if(!note.contains(e.target)) note.classList.remove('expanded'); 
+            });
+            if(!e.target.closest('.memory-slot')) {
+                document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
+            }
         });
 
         function openAssignModal(channel, radio) {
             if (activeMoveSourceId) { executeMoveOrSwap(channel); return; }
-            document.getElementById('assignModalCh').innerText = channel; document.getElementById('assignModalRadio').value = radio; 
+            
+            document.getElementById('assignModalCh').innerText = channel; 
+            document.getElementById('assignModalRadio').value = radio; 
+            
             const sel = document.getElementById('assignModalDictSelect');
             sel.innerHTML = '<option value="">-- Select from Dictionary --</option>' + appSettings.dictionary.map(d => `<option value="${d.f}|${encodeURIComponent(d.n)}">${d.f} MHz - ${d.n}</option>`).join('');
+            
             document.getElementById('assignModal').style.display = 'flex';
         }
-        function closeAssignModal() { document.getElementById('assignModal').style.display = 'none'; }
+
+        function closeAssignModal() { 
+            document.getElementById('assignModal').style.display = 'none'; 
+        }
+
         function confirmAssignModal() {
-            const val = document.getElementById('assignModalDictSelect').value; const channel = document.getElementById('assignModalCh').innerText; const radio = document.getElementById('assignModalRadio').value;
+            const val = document.getElementById('assignModalDictSelect').value; 
+            const channel = document.getElementById('assignModalCh').innerText; 
+            const radio = document.getElementById('assignModalRadio').value;
+            
             if(val) {
-                const parts = val.split('|'); const freq = parseFloat(parts[0]); const name = decodeURIComponent(parts[1]);
+                const parts = val.split('|'); 
+                const freq = parseFloat(parts[0]); 
+                const name = decodeURIComponent(parts[1]);
                 logsRef.push({ freq: freq, station: name, radio: radio, channel: channel, antenna: appSettings.defaultAntenna || appSettings.antennas[0], mode: (freq < 30) ? "USB" : ((freq >= 108 && freq <= 137) ? "AM" : "FM"), signal: "5", traffic: "1", notes: "", confirmed: true, date: new Date().toISOString() });
                 closeAssignModal();
-            } else { alert('Please select a frequency first.'); }
+            } else { 
+                alert('Please select a frequency first.'); 
+            }
         }
-        function assignManualModal() { const channel = document.getElementById('assignModalCh').innerText; const radio = document.getElementById('assignModalRadio').value; closeAssignModal(); openNewMemory(channel, radio); }
+
+        function assignManualModal() { 
+            const channel = document.getElementById('assignModalCh').innerText; 
+            const radio = document.getElementById('assignModalRadio').value; 
+            closeAssignModal(); 
+            openNewMemory(channel, radio); 
+        }
 
         function exportForUniden() {
             const uniqueFreqs = {};
             if (appSettings.dictionary && appSettings.dictionary.length > 0) {
-                appSettings.dictionary.forEach(dictItem => { let fVal = parseFloat(dictItem.f); if (fVal >= 25.000) { let f = fVal.toFixed(4); let name = dictItem.n.replace(/,/g, '').substring(0, 16).trim(); uniqueFreqs[f] = { channelName: name, frequency: f }; } });
+                appSettings.dictionary.forEach(dictItem => { 
+                    let fVal = parseFloat(dictItem.f); 
+                    if (fVal >= 25.000) { 
+                        let f = fVal.toFixed(4); 
+                        let name = dictItem.n.replace(/,/g, '').substring(0, 16).trim(); 
+                        uniqueFreqs[f] = { channelName: name, frequency: f }; 
+                    } 
+                });
             }
             cloudLogs.forEach(log => {
-                if(log.freq) { let fVal = parseFloat(log.freq); if (fVal >= 25.000) { let f = fVal.toFixed(4); if (!uniqueFreqs[f]) { let name = log.station || `Freq ${f}`; name = name.replace(/,/g, '').substring(0, 16).trim(); uniqueFreqs[f] = { channelName: name, frequency: f }; } } }
+                if(log.freq) { 
+                    let fVal = parseFloat(log.freq); 
+                    if (fVal >= 25.000) { 
+                        let f = fVal.toFixed(4); 
+                        if (!uniqueFreqs[f]) { 
+                            let name = log.station || `Freq ${f}`; 
+                            name = name.replace(/,/g, '').substring(0, 16).trim(); 
+                            uniqueFreqs[f] = { channelName: name, frequency: f }; 
+                        } 
+                    } 
+                }
             });
             const sortedFreqs = Object.values(uniqueFreqs).sort((a, b) => parseFloat(a.frequency) - parseFloat(b.frequency));
             if (sortedFreqs.length === 0) return alert("No valid frequencies found for Uniden export (≥ 25 MHz).");
+            
             let csvContent = "Channel Name,Frequency,Modulation,Audio Type,Tone / Code,Delay,Lockout,Priority,Attenuator\n";
             sortedFreqs.forEach(entry => { csvContent += `${entry.channelName},${entry.frequency},AUTO,ALL,Search,2,Off,Off,Off\n`; });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "Uniden_UBC1260DN_Export.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
+            const link = document.createElement("a"); 
+            const url = URL.createObjectURL(blob); 
+            link.setAttribute("href", url); 
+            link.setAttribute("download", "Uniden_UBC1260DN_Export.csv"); 
+            link.style.visibility = 'hidden'; 
+            document.body.appendChild(link); 
+            link.click(); 
+            document.body.removeChild(link);
         }
 
         function renderAdminLists() {
@@ -554,79 +927,167 @@
         }
 
         function updateDropdowns() {
-            const rSelect = document.getElementById('radioInput'); const aSelect = document.getElementById('antennaInput'); const mSelect = document.getElementById('modeInput');
-            const curR = rSelect ? rSelect.value : ""; const curA = aSelect ? aSelect.value : ""; const curM = mSelect ? mSelect.value : "";
+            const rSelect = document.getElementById('radioInput'); 
+            const aSelect = document.getElementById('antennaInput'); 
+            const mSelect = document.getElementById('modeInput');
+            const curR = rSelect ? rSelect.value : ""; 
+            const curA = aSelect ? aSelect.value : ""; 
+            const curM = mSelect ? mSelect.value : "";
+
             if (rSelect) rSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
             if (aSelect) aSelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
             if (mSelect) mSelect.innerHTML = appSettings.modes.map(i => `<option value="${i}">${i}</option>`).join('');
-            const defRSelect = document.getElementById('defaultRadioSelect'); const defASelect = document.getElementById('defaultAntennaSelect');
+
+            const defRSelect = document.getElementById('defaultRadioSelect'); 
+            const defASelect = document.getElementById('defaultAntennaSelect');
+            
             if (defRSelect) defRSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
             if (defASelect) defASelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
-            if (defRSelect) defRSelect.value = appSettings.defaultRadio; if (defASelect) defASelect.value = appSettings.defaultAntenna;
+            if (defRSelect) defRSelect.value = appSettings.defaultRadio; 
+            if (defASelect) defASelect.value = appSettings.defaultAntenna;
+
             if (appSettings.radios.includes(curR)) rSelect.value = curR; else if (rSelect) rSelect.value = appSettings.defaultRadio || appSettings.radios[0];
             if (appSettings.antennas.includes(curA)) aSelect.value = curA; else if (aSelect) aSelect.value = appSettings.defaultAntenna || appSettings.antennas[0];
             if (appSettings.modes.includes(curM)) mSelect.value = curM;
+
             const memSelect = document.getElementById('memoryBankRadioSelect');
             if (memSelect) {
-                const curMem = memSelect.value; memSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
+                const curMem = memSelect.value; 
+                memSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
                 if (appSettings.radios.includes(curMem) && curMem !== "") memSelect.value = curMem; else memSelect.value = appSettings.defaultRadio || appSettings.radios[0];
             }
         }
 
-        let cloudLogs = []; let currentSort = { key: 'date', desc: true }; let activeRadioFilter = 'All'; 
-        let signalChartInstance = null; let trafficChartInstance = null; 
-        let showAllBusiest = false; let showAllStrongest = false; let showAllOverall = false;
+        let cloudLogs = []; 
+        let currentSort = { key: 'date', desc: true }; 
+        let activeRadioFilter = 'All'; 
+        let signalChartInstance = null; 
+        let trafficChartInstance = null; 
+        let showAllBusiest = false; 
+        let showAllStrongest = false; 
+        let showAllOverall = false;
 
-        const getStationName = (f) => { let match = appSettings.dictionary.find(d => d.f === f); return match ? match.n : "Unknown Station"; };
+        const getStationName = (f) => { 
+            let match = appSettings.dictionary.find(d => d.f === f); 
+            return match ? match.n : "Unknown Station"; 
+        };
 
         logsRef.on('value', (snapshot) => {
-            cloudLogs = [];
-            snapshot.forEach((childSnapshot) => {
-                let log = childSnapshot.val(); log.id = childSnapshot.key; 
-                if (!log.signal && log.notes) { let parsedNote = parseInt(log.notes); if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && log.notes.length <= 2) { log.signal = log.notes; log.notes = ""; } }
-                if (!log.traffic) log.traffic = ""; if (!log.channel) log.channel = ""; cloudLogs.push(log);
-            });
-            renderFilters(); renderTable(); updateFreqDatalist(); 
-            if (document.getElementById('memoryBankContainer') && document.getElementById('memoryBankContainer').style.display === 'block') renderMemoryBank();
-            if (document.getElementById('analyticsContainer') && document.getElementById('analyticsContainer').style.display === 'block') renderAnalytics();
+            try {
+                cloudLogs = [];
+                snapshot.forEach((childSnapshot) => {
+                    let log = childSnapshot.val(); 
+                    log.id = childSnapshot.key; 
+                    
+                    // Safety check to ensure strings are parsed correctly without crashing
+                    if (!log.signal && log.notes) { 
+                        let parsedNote = parseInt(log.notes); 
+                        if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && String(log.notes).length <= 2) { 
+                            log.signal = log.notes; 
+                            log.notes = ""; 
+                        } 
+                    }
+                    if (!log.traffic) log.traffic = ""; 
+                    if (!log.channel) log.channel = ""; 
+                    cloudLogs.push(log);
+                });
+                
+                renderFilters(); 
+                renderTable(); 
+                updateFreqDatalist(); 
+                
+                if (document.getElementById('memoryBankContainer') && document.getElementById('memoryBankContainer').style.display === 'block') {
+                    renderMemoryBank();
+                }
+                if (document.getElementById('analyticsContainer') && document.getElementById('analyticsContainer').style.display === 'block') {
+                    renderAnalytics();
+                }
+            } catch(e) {
+                console.error("Error loading DB: ", e);
+            }
         });
 
         function updateFreqDatalist() {
-            const freqCounts = {}; cloudLogs.forEach(l => { if (l.freq) { let f = parseFloat(l.freq).toFixed(3); freqCounts[f] = (freqCounts[f] || 0) + 1; } });
+            const freqCounts = {}; 
+            cloudLogs.forEach(l => { 
+                if (l.freq) { 
+                    let f = parseFloat(l.freq).toFixed(3); 
+                    freqCounts[f] = (freqCounts[f] || 0) + 1; 
+                } 
+            });
             const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]);
             const datalist = document.getElementById('popularFreqs');
             if(datalist) datalist.innerHTML = sortedFreqs.map(f => `<option value="${f[0]}">Logged ${f[1]} times</option>`).join('');
         }
 
         function handleFreqInput() {
-            const freqStr = document.getElementById('freqInput').value; const freqVal = parseFloat(freqStr); if (isNaN(freqVal)) return;
-            const modeSelect = document.getElementById('modeInput'); const stationInput = document.getElementById('stationInput'); const freqKey = freqVal.toFixed(3);
+            const freqStr = document.getElementById('freqInput').value; 
+            const freqVal = parseFloat(freqStr); 
+            if (isNaN(freqVal)) return;
+
+            const modeSelect = document.getElementById('modeInput'); 
+            const stationInput = document.getElementById('stationInput'); 
+            const freqKey = freqVal.toFixed(3);
+
             const dictMatch = appSettings.dictionary.find(d => d.f === freqKey);
             if (dictMatch) {
                 stationInput.value = dictMatch.n;
-                if (freqVal < 30.0) modeSelect.value = "USB"; else if (freqVal >= 108 && freqVal <= 137) modeSelect.value = "AM"; else if (freqVal >= 137) modeSelect.value = "FM";
+                if (freqVal < 30.0) modeSelect.value = "USB"; 
+                else if (freqVal >= 108 && freqVal <= 137) modeSelect.value = "AM"; 
+                else if (freqVal >= 137) modeSelect.value = "FM";
             } else {
                 const existingLog = cloudLogs.find(l => parseFloat(l.freq).toFixed(3) === freqKey);
-                if (existingLog) { if (existingLog.mode) modeSelect.value = existingLog.mode; if (!stationInput.value && existingLog.station) stationInput.value = existingLog.station; return; }
+                if (existingLog) { 
+                    if (existingLog.mode) modeSelect.value = existingLog.mode; 
+                    if (!stationInput.value && existingLog.station) stationInput.value = existingLog.station; 
+                    return; 
+                }
             }
-            if (freqVal < 30.000) modeSelect.value = "USB"; else if (freqVal >= 108.000 && freqVal <= 136.975) modeSelect.value = "AM"; else if (freqVal >= 156.000 && freqVal <= 162.025) modeSelect.value = "FM"; else if (freqVal >= 446.000 && freqVal <= 446.200) modeSelect.value = "FM"; else if (freqVal >= 144.000 && freqVal <= 146.000) modeSelect.value = "FM"; else if (freqVal >= 430.000 && freqVal <= 440.000) modeSelect.value = "FM"; else if (freqVal >= 26.965 && freqVal <= 27.991) modeSelect.value = "FM"; 
+
+            if (freqVal < 30.000) modeSelect.value = "USB"; 
+            else if (freqVal >= 108.000 && freqVal <= 136.975) modeSelect.value = "AM"; 
+            else if (freqVal >= 156.000 && freqVal <= 162.025) modeSelect.value = "FM"; 
+            else if (freqVal >= 446.000 && freqVal <= 446.200) modeSelect.value = "FM"; 
+            else if (freqVal >= 144.000 && freqVal <= 146.000) modeSelect.value = "FM"; 
+            else if (freqVal >= 430.000 && freqVal <= 440.000) modeSelect.value = "FM"; 
+            else if (freqVal >= 26.965 && freqVal <= 27.991) modeSelect.value = "FM"; 
         }
 
         function switchView(view) {
             document.getElementById('mainLogbookContainer').style.display = view === 'logbook' ? 'block' : 'none';
             document.getElementById('memoryBankContainer').style.display = view === 'memory' ? 'block' : 'none';
             document.getElementById('analyticsContainer').style.display = view === 'analytics' ? 'block' : 'none';
-            const settingsTab = document.getElementById('settingsContainer'); if(settingsTab) settingsTab.style.display = view === 'settings' ? 'block' : 'none';
+            
+            const settingsTab = document.getElementById('settingsContainer'); 
+            if(settingsTab) settingsTab.style.display = view === 'settings' ? 'block' : 'none';
+            
             document.getElementById('formCard').style.display = view === 'logbook' ? 'block' : 'none';
-            document.getElementById('tab-logbook').classList.toggle('active', view === 'logbook'); document.getElementById('tab-memory').classList.toggle('active', view === 'memory'); document.getElementById('tab-analytics').classList.toggle('active', view === 'analytics'); document.getElementById('tab-settings').classList.toggle('active', view === 'settings');
-            if (view === 'memory') renderMemoryBank(); else if (view === 'analytics') renderAnalytics();
+            
+            document.getElementById('tab-logbook').classList.toggle('active', view === 'logbook'); 
+            document.getElementById('tab-memory').classList.toggle('active', view === 'memory'); 
+            document.getElementById('tab-analytics').classList.toggle('active', view === 'analytics'); 
+            document.getElementById('tab-settings').classList.toggle('active', view === 'settings');
+
+            if (view === 'memory') renderMemoryBank(); 
+            else if (view === 'analytics') renderAnalytics();
         }
 
-        function openAnalyticsFor(freq) { switchView('analytics'); const freqSelect = document.getElementById('analyticsFreqSelect'); setTimeout(() => { let options = Array.from(freqSelect.options).map(o => o.value); if (options.includes(freq)) { freqSelect.value = freq; renderAnalytics(); } document.getElementById('graphsCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); }
+        function openAnalyticsFor(freq) { 
+            switchView('analytics'); 
+            const freqSelect = document.getElementById('analyticsFreqSelect'); 
+            setTimeout(() => { 
+                let options = Array.from(freqSelect.options).map(o => o.value); 
+                if (options.includes(freq)) { 
+                    freqSelect.value = freq; 
+                    renderAnalytics(); 
+                } 
+                document.getElementById('graphsCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+            }, 50); 
+        }
 
         function toggleBusiest() { showAllBusiest = !showAllBusiest; renderAnalytics(); }
         function toggleStrongest() { showAllStrongest = !showAllStrongest; renderAnalytics(); }
-        function toggleOverall() { showAllOverall = !showAllOverall; renderAnalytics(); } // NEW TOGGLE
+        function toggleOverall() { showAllOverall = !showAllOverall; renderAnalytics(); }
 
         function renderAnalytics() {
             if (cloudLogs.length === 0) return;
@@ -636,13 +1097,23 @@
             if (bandFilter === 'HF') bandLogs = cloudLogs.filter(l => parseFloat(l.freq) < 30);
 
             const freqCounts = {};
-            bandLogs.forEach(l => { if (l.freq) { let f = parseFloat(l.freq).toFixed(3); freqCounts[f] = (freqCounts[f] || 0) + 1; } });
+            bandLogs.forEach(l => { 
+                if (l.freq) { 
+                    let f = parseFloat(l.freq).toFixed(3); 
+                    freqCounts[f] = (freqCounts[f] || 0) + 1; 
+                } 
+            });
             
             const freqSignals = {};
             bandLogs.forEach(l => {
                 if (l.freq) {
-                    let f = parseFloat(l.freq).toFixed(3); let sig = parseInt(l.signal);
-                    if (!isNaN(sig)) { if (!freqSignals[f]) freqSignals[f] = { total: 0, count: 0 }; freqSignals[f].total += sig; freqSignals[f].count += 1; }
+                    let f = parseFloat(l.freq).toFixed(3); 
+                    let sig = parseInt(l.signal);
+                    if (!isNaN(sig)) { 
+                        if (!freqSignals[f]) freqSignals[f] = { total: 0, count: 0 }; 
+                        freqSignals[f].total += sig; 
+                        freqSignals[f].count += 1; 
+                    }
                 }
             });
 
@@ -650,42 +1121,89 @@
             const sortedFreqs = Object.entries(freqCounts).sort((a, b) => b[1] - a[1]);
             const freqsToDisplay = showAllBusiest ? sortedFreqs : sortedFreqs.slice(0, 10);
             document.getElementById('topFreqsList').innerHTML = freqsToDisplay.map((f, i) => {
-                let sName = getStationName(f[0]); let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
+                let sName = getStationName(f[0]); 
+                let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
                 return `<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`;
             }).join('');
+            
             const btnBusiest = document.getElementById('toggleBusiestBtn');
-            if (sortedFreqs.length > 10) { btnBusiest.style.display = 'block'; btnBusiest.innerText = showAllBusiest ? "Show Top 10" : `Show All (${sortedFreqs.length})`; } else { btnBusiest.style.display = 'none'; }
+            if (sortedFreqs.length > 10) { 
+                btnBusiest.style.display = 'block'; 
+                btnBusiest.innerText = showAllBusiest ? "Show Top 10" : `Show All (${sortedFreqs.length})`; 
+            } else { 
+                btnBusiest.style.display = 'none'; 
+            }
 
             // 2. STRONGEST
             const sortedStrongestFull = Object.entries(freqSignals).map(([f, data]) => ({ f, avg: (data.total / data.count).toFixed(1), count: data.count })).filter(item => item.count > 1).sort((a, b) => b.avg - a.avg || b.count - a.count);
             const strongestToDisplay = showAllStrongest ? sortedStrongestFull : sortedStrongestFull.slice(0, 10);
             const btnStrongest = document.getElementById('toggleStrongestBtn');
-            if (sortedStrongestFull.length === 0) { document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`; btnStrongest.style.display = 'none';
+            
+            if (sortedStrongestFull.length === 0) { 
+                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`; 
+                btnStrongest.style.display = 'none';
             } else {
-                document.getElementById('topStrongestList').innerHTML = strongestToDisplay.map((item, i) => { let sName = getStationName(item.f); let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; return `<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-${item.avg})</span></li>`; }).join('');
-                if (sortedStrongestFull.length > 10) { btnStrongest.style.display = 'block'; btnStrongest.innerText = showAllStrongest ? "Show Top 10" : `Show All (${sortedStrongestFull.length})`; } else { btnStrongest.style.display = 'none'; }
+                document.getElementById('topStrongestList').innerHTML = strongestToDisplay.map((item, i) => { 
+                    let sName = getStationName(item.f); 
+                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                    return `<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-${item.avg})</span></li>`; 
+                }).join('');
+                if (sortedStrongestFull.length > 10) { 
+                    btnStrongest.style.display = 'block'; 
+                    btnStrongest.innerText = showAllStrongest ? "Show Top 10" : `Show All (${sortedStrongestFull.length})`; 
+                } else { 
+                    btnStrongest.style.display = 'none'; 
+                }
             }
 
-            // 3. OVERALL SCORE (NEW)
+            // 3. OVERALL SCORE
             const overallScores = [];
             Object.keys(freqCounts).forEach(f => {
                 if (freqSignals[f] && freqSignals[f].count > 0) {
-                    let count = freqCounts[f]; let avg = freqSignals[f].total / freqSignals[f].count; let score = count * avg;
+                    let count = freqCounts[f]; 
+                    let avg = freqSignals[f].total / freqSignals[f].count; 
+                    let score = count * avg;
                     overallScores.push({ f, score: Math.round(score), count, avg: avg.toFixed(1) });
                 }
             });
+            
             overallScores.sort((a, b) => b.score - a.score);
             const overallToDisplay = showAllOverall ? overallScores : overallScores.slice(0, 10);
             const btnOverall = document.getElementById('toggleOverallBtn');
-            if (overallScores.length === 0) { document.getElementById('topOverallList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>`; btnOverall.style.display = 'none';
+            
+            if (overallScores.length === 0) { 
+                document.getElementById('topOverallList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>`; 
+                btnOverall.style.display = 'none';
             } else {
-                document.getElementById('topOverallList').innerHTML = overallToDisplay.map((item, i) => { let sName = getStationName(item.f); let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; return `<li style="margin-bottom: 5px;"><strong style="color:#10b981;">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Score: ${item.score})</span></li>`; }).join('');
-                if (overallScores.length > 10) { btnOverall.style.display = 'block'; btnOverall.innerText = showAllOverall ? "Show Top 10" : `Show All (${overallScores.length})`; } else { btnOverall.style.display = 'none'; }
+                document.getElementById('topOverallList').innerHTML = overallToDisplay.map((item, i) => { 
+                    let sName = getStationName(item.f); 
+                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                    return `<li style="margin-bottom: 5px;"><strong style="color:#10b981;">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Score: ${item.score})</span></li>`; 
+                }).join('');
+                
+                if (overallScores.length > 10) { 
+                    btnOverall.style.display = 'block'; 
+                    btnOverall.innerText = showAllOverall ? "Show Top 10" : `Show All (${overallScores.length})`; 
+                } else { 
+                    btnOverall.style.display = 'none'; 
+                }
             }
 
-            const freqSelect = document.getElementById('analyticsFreqSelect'); const currentVal = freqSelect.value; const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
-            freqSelect.innerHTML = `<option value="ALL">All Frequencies Overview</option>` + uniqueFreqs.map(f => { let sName = getStationName(f); let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`; return `<option value="${f}">${displayTxt}</option>`; }).join('');
-            if (uniqueFreqs.includes(currentVal)) freqSelect.value = currentVal; else if (currentVal === "ALL" || !currentVal) freqSelect.value = "ALL";
+            const freqSelect = document.getElementById('analyticsFreqSelect'); 
+            const currentVal = freqSelect.value; 
+            const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
+            
+            freqSelect.innerHTML = `<option value="ALL">All Frequencies Overview</option>` + uniqueFreqs.map(f => { 
+                let sName = getStationName(f); 
+                let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`; 
+                return `<option value="${f}">${displayTxt}</option>`; 
+            }).join('');
+            
+            if (uniqueFreqs.includes(currentVal)) {
+                freqSelect.value = currentVal;
+            } else if (currentVal === "ALL" || !currentVal) {
+                freqSelect.value = "ALL";
+            }
             const selectedFreq = freqSelect.value;
 
             const timeBuckets = { "Morning (06-12)": 0, "Afternoon (12-18)": 0, "Evening (18-00)": 0, "Night (00-06)": 0 };
@@ -693,7 +1211,10 @@
                 let f = parseFloat(l.freq).toFixed(3);
                 if (selectedFreq === "ALL" || selectedFreq === f) {
                     let hour = new Date(l.date).getHours();
-                    if (hour >= 6 && hour < 12) timeBuckets["Morning (06-12)"]++; else if (hour >= 12 && hour < 18) timeBuckets["Afternoon (12-18)"]++; else if (hour >= 18 && hour < 24) timeBuckets["Evening (18-00)"]++; else timeBuckets["Night (00-06)"]++;
+                    if (hour >= 6 && hour < 12) timeBuckets["Morning (06-12)"]++; 
+                    else if (hour >= 12 && hour < 18) timeBuckets["Afternoon (12-18)"]++; 
+                    else if (hour >= 18 && hour < 24) timeBuckets["Evening (18-00)"]++; 
+                    else timeBuckets["Night (00-06)"]++;
                 }
             });
             document.getElementById('timeOfDayStats').innerHTML = Object.entries(timeBuckets).map(([period, count]) => `<div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);"><div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">${period}</div><div style="font-size:1.8em; font-weight:bold; color:var(--primary);">${count}</div><div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div></div>`).join('');
@@ -702,38 +1223,63 @@
         }
 
         function updateCharts(selectedFreq, bandLogs) {
-            const ctxSignal = document.getElementById('signalChart'); const ctxTraffic = document.getElementById('trafficChart');
-            const wrapper = document.getElementById('chartsWrapper'); const msg = document.getElementById('noChartMsg');
+            const ctxSignal = document.getElementById('signalChart'); 
+            const ctxTraffic = document.getElementById('trafficChart');
+            const wrapper = document.getElementById('chartsWrapper'); 
+            const msg = document.getElementById('noChartMsg');
+            
             if (!ctxSignal || !ctxTraffic) return;
-            if (signalChartInstance) signalChartInstance.destroy(); if (trafficChartInstance) trafficChartInstance.destroy();
-            if (selectedFreq === "ALL") { wrapper.style.display = 'none'; msg.style.display = 'block'; return; }
-            wrapper.style.display = 'block'; msg.style.display = 'none';
+            if (signalChartInstance) signalChartInstance.destroy(); 
+            if (trafficChartInstance) trafficChartInstance.destroy();
+            
+            if (selectedFreq === "ALL") { 
+                wrapper.style.display = 'none'; 
+                msg.style.display = 'block'; 
+                return; 
+            }
+            wrapper.style.display = 'block'; 
+            msg.style.display = 'none';
 
-            const chartType = document.getElementById('chartTypeSelect').value; const isScatter = chartType === 'scatter';
+            const chartType = document.getElementById('chartTypeSelect').value; 
+            const isScatter = chartType === 'scatter';
             const filteredLogs = bandLogs.filter(l => parseFloat(l.freq).toFixed(3) === selectedFreq);
             const radiosUsed = [...new Set(filteredLogs.map(l => l.radio))];
+            
             const radioColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
             const radioColorsAlpha = ['rgba(37, 99, 235, 0.4)', 'rgba(16, 185, 129, 0.4)', 'rgba(245, 158, 11, 0.4)', 'rgba(239, 68, 68, 0.4)', 'rgba(139, 92, 246, 0.4)'];
 
-            let finalSignalDatasets = []; let trafficDatasets = [];
+            let finalSignalDatasets = []; 
+            let trafficDatasets = [];
 
             if (isScatter) {
                 finalSignalDatasets = radiosUsed.map((radio, index) => {
                     const dataPoints = [];
-                    filteredLogs.filter(l => l.radio === radio).forEach(l => { const d = new Date(l.date); const timeVal = d.getHours() + (d.getMinutes() / 60); const sig = parseInt(l.signal); if (!isNaN(sig)) dataPoints.push({ x: timeVal, y: sig }); });
+                    filteredLogs.filter(l => l.radio === radio).forEach(l => { 
+                        const d = new Date(l.date); 
+                        const timeVal = d.getHours() + (d.getMinutes() / 60); 
+                        const sig = parseInt(l.signal); 
+                        if (!isNaN(sig)) dataPoints.push({ x: timeVal, y: sig }); 
+                    });
                     return { label: radio || "Unknown Radio", data: dataPoints, backgroundColor: radioColorsAlpha[index % radioColorsAlpha.length], borderColor: radioColors[index % radioColors.length], pointRadius: 6, pointHoverRadius: 8 };
                 });
             } else {
                 finalSignalDatasets = radiosUsed.map((radio, index) => {
                     const dataPoints = Array(24).fill(null); 
-                    filteredLogs.filter(l => l.radio === radio).forEach(l => { const hour = new Date(l.date).getHours(); const sig = parseInt(l.signal); if (!isNaN(sig)) { if (dataPoints[hour] === null || sig > dataPoints[hour]) { dataPoints[hour] = sig; } } });
+                    filteredLogs.filter(l => l.radio === radio).forEach(l => { 
+                        const hour = new Date(l.date).getHours(); 
+                        const sig = parseInt(l.signal); 
+                        if (!isNaN(sig)) { if (dataPoints[hour] === null || sig > dataPoints[hour]) { dataPoints[hour] = sig; } } 
+                    });
                     return { label: radio || "Unknown Radio", data: dataPoints, borderColor: radioColors[index % radioColors.length], backgroundColor: radioColors[index % radioColors.length], borderWidth: 2, pointRadius: 4, tension: 0.3, spanGaps: true };
                 });
             }
 
             trafficDatasets = radiosUsed.map((radio, index) => {
                 const countPoints = Array(24).fill(0);
-                filteredLogs.filter(l => l.radio === radio).forEach(l => { const hour = new Date(l.date).getHours(); countPoints[hour] += 1; });
+                filteredLogs.filter(l => l.radio === radio).forEach(l => { 
+                    const hour = new Date(l.date).getHours(); 
+                    countPoints[hour] += 1; 
+                });
                 return { label: radio || "Unknown Radio", data: countPoints, backgroundColor: radioColors[index % radioColors.length], borderColor: radioColors[index % radioColors.length], borderWidth: 1 };
             });
 
@@ -752,7 +1298,6 @@
             });
         }
 
-        // --- MEMORY BANK LOGIC ---
         function renderMemoryBank() {
             const grid = document.getElementById('memoryGrid');
             if(!grid) return;
@@ -770,13 +1315,25 @@
                 const isMoving = (activeMoveSourceCh === cleanCh) ? 'moving-source' : '';
 
                 if (log) {
-                    let isConf = log.confirmed !== false; let icon = isConf ? '✅' : '⏳';
-                    let fDisplay = parseFloat(log.freq); fDisplay = isNaN(fDisplay) ? "0.000" : fDisplay.toFixed(3);
+                    let isConf = log.confirmed !== false; 
+                    let icon = isConf ? '✅' : '⏳';
+                    let fDisplay = parseFloat(log.freq); 
+                    fDisplay = isNaN(fDisplay) ? "0.000" : fDisplay.toFixed(3);
                     let stName = log.station || log.notes || 'No Name';
                     
                     return `
                         <div class="memory-slot ${isMoving}" ${dragAttr} 
-                            ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" ondragend="handleDragEnd(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropSlot(event, '${cleanCh}')" onclick="handleSlotClick(this, event, '${log.id}', '${cleanCh}')" oncontextmenu="handleSlotRightClick(this, event)" ontouchstart="handleTouchStart(this, event)" ontouchend="handleTouchEnd(this, event)" ontouchmove="handleTouchMove(this, event)" title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
+                            ondragstart="dragSlot(event, '${log.id}', '${cleanCh}')" 
+                            ondragend="handleDragEnd(event)" 
+                            ondragover="allowDrop(event)" 
+                            ondragleave="dragLeave(event)" 
+                            ondrop="dropSlot(event, '${cleanCh}')" 
+                            onclick="handleSlotClick(this, event, '${log.id}', '${cleanCh}')" 
+                            oncontextmenu="handleSlotRightClick(this, event)" 
+                            ontouchstart="handleTouchStart(this, event)" 
+                            ontouchend="handleTouchEnd(this, event)" 
+                            ontouchmove="handleTouchMove(this, event)" 
+                            title="Click to edit, Drag to swap/move, Right-click/Long-press to clear">
                             <span class="status-icon">${icon}</span><span class="ch-num">${chLabel}</span><span class="freq">${fDisplay}</span><span class="station">${stName}</span>
                             <div class="action-overlay">
                                 <button class="action-btn btn-move-slot" onclick="event.stopPropagation(); initiateMove('${log.id}', '${cleanCh}')">🔄<span>Move</span></button>
@@ -792,15 +1349,40 @@
             }
 
             if (selectedRadio.includes("Realistic Pro 2006")) {
-                const channelMap = {}; radioLogs.forEach(l => { channelMap[String(l.channel).toUpperCase()] = l; });
-                for (let bank = 0; bank < 10; bank++) { html += `<div class="bank-header">Bank ${bank + 1} (Ch ${bank * 40 + 1} - ${(bank + 1) * 40})</div>`; for (let i = 1; i <= 40; i++) { let chNum = bank * 40 + i; html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]); } }
-                html += `<div class="bank-header">Monitor Memory (Scratchpad)</div>`; for (let i = 1; i <= 10; i++) html += renderSlot(`M${i}`, channelMap[`M${i}`]);
+                const channelMap = {}; 
+                radioLogs.forEach(l => { channelMap[String(l.channel).toUpperCase()] = l; });
+                for (let bank = 0; bank < 10; bank++) { 
+                    html += `<div class="bank-header">Bank ${bank + 1} (Ch ${bank * 40 + 1} - ${(bank + 1) * 40})</div>`; 
+                    for (let i = 1; i <= 40; i++) { 
+                        let chNum = bank * 40 + i; 
+                        html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]); 
+                    } 
+                }
+                html += `<div class="bank-header">Monitor Memory (Scratchpad)</div>`; 
+                for (let i = 1; i <= 10; i++) html += renderSlot(`M${i}`, channelMap[`M${i}`]);
             } else if (selectedRadio.includes("Malahit DSP2")) {
-                const channelMap = {}; radioLogs.forEach(l => { channelMap[String(l.channel)] = l; });
-                for (let page = 1; page <= 5; page++) { html += `<div class="bank-header">Page ${page} (Ch ${(page-1)*10 + 1} - ${page*10})</div>`; for (let i = 1; i <= 10; i++) { let chNum = (page - 1) * 10 + i; html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]); } }
+                const channelMap = {}; 
+                radioLogs.forEach(l => { channelMap[String(l.channel)] = l; });
+                for (let page = 1; page <= 5; page++) { 
+                    html += `<div class="bank-header">Page ${page} (Ch ${(page-1)*10 + 1} - ${page*10})</div>`; 
+                    for (let i = 1; i <= 10; i++) { 
+                        let chNum = (page - 1) * 10 + i; 
+                        html += renderSlot(`CH ${chNum}`, channelMap[chNum.toString()]); 
+                    } 
+                }
             } else {
-                const channelMap = {}; let maxCh = 100; radioLogs.forEach(l => { let parsed = parseInt(l.channel); if(!isNaN(parsed)) { channelMap[parsed] = l; if(parsed > maxCh) maxCh = parsed; } });
-                if (maxCh > 400) maxCh = 400; html += `<div class="bank-header">Standard Memory Channels</div>`; for (let i = 1; i <= maxCh; i++) html += renderSlot(`CH ${i}`, channelMap[i]);
+                const channelMap = {}; 
+                let maxCh = 100; 
+                radioLogs.forEach(l => { 
+                    let parsed = parseInt(l.channel); 
+                    if(!isNaN(parsed)) { 
+                        channelMap[parsed] = l; 
+                        if(parsed > maxCh) maxCh = parsed; 
+                    } 
+                });
+                if (maxCh > 400) maxCh = 400; 
+                html += `<div class="bank-header">Standard Memory Channels</div>`; 
+                for (let i = 1; i <= maxCh; i++) html += renderSlot(`CH ${i}`, channelMap[i]);
             }
             grid.innerHTML = html;
         }
@@ -840,59 +1422,153 @@
         function handleMobileSort(key) { currentSort.key = key; currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic'); renderTable(); }
 
         function handleSubmit() {
-            const editId = document.getElementById('editId').value; const freqVal = document.getElementById('freqInput').value; const radio = document.getElementById('radioInput').value; const channel = document.getElementById('channelInput').value; const antenna = document.getElementById('antennaInput').value; const mode = document.getElementById('modeInput').value; const station = document.getElementById('stationInput').value.replace(/,/g, ";").substring(0, 16); const signalVal = document.getElementById('signalInput').value; const trafficVal = document.getElementById('trafficInput').value; const notesText = document.getElementById('notesInput').value; const isConfirmed = document.getElementById('confirmedInput').checked;
+            const editId = document.getElementById('editId').value; 
+            const freqVal = document.getElementById('freqInput').value; 
+            const radio = document.getElementById('radioInput').value; 
+            const channel = document.getElementById('channelInput').value; 
+            const antenna = document.getElementById('antennaInput').value; 
+            const mode = document.getElementById('modeInput').value; 
+            const station = document.getElementById('stationInput').value.replace(/,/g, ";").substring(0, 16); 
+            const signalVal = document.getElementById('signalInput').value; 
+            const trafficVal = document.getElementById('trafficInput').value; 
+            const notesText = document.getElementById('notesInput').value; 
+            const isConfirmed = document.getElementById('confirmedInput').checked;
+
             if (!freqVal || isNaN(parseFloat(freqVal))) return alert("Enter a valid frequency");
+            
             const logEntry = { freq: parseFloat(freqVal), radio: radio, channel: channel, antenna: antenna, mode: mode, station: station, signal: signalVal, traffic: trafficVal, notes: notesText, confirmed: isConfirmed };
-            if (editId) { db.ref('radioLogs/' + editId).update(logEntry); cancelEdit(); } else { logEntry.date = new Date().toISOString(); logsRef.push(logEntry); }
-            if (isConfirmed && station.trim() !== "") { const freqKey = parseFloat(freqVal).toFixed(3); const dictMatch = appSettings.dictionary.find(d => d.f === freqKey); if (!dictMatch) { appSettings.dictionary.push({f: freqKey, n: station.trim()}); appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f)); settingsRef.child('dictionary').set(appSettings.dictionary); } }
+            
+            if (editId) { 
+                db.ref('radioLogs/' + editId).update(logEntry); 
+                cancelEdit(); 
+            } else { 
+                logEntry.date = new Date().toISOString(); 
+                logsRef.push(logEntry); 
+            }
+            
+            if (isConfirmed && station.trim() !== "") { 
+                const freqKey = parseFloat(freqVal).toFixed(3); 
+                const dictMatch = appSettings.dictionary.find(d => d.f === freqKey); 
+                if (!dictMatch) { 
+                    appSettings.dictionary.push({f: freqKey, n: station.trim()}); 
+                    appSettings.dictionary.sort((a, b) => parseFloat(a.f) - parseFloat(b.f)); 
+                    settingsRef.child('dictionary').set(appSettings.dictionary); 
+                } 
+            }
             resetForm();
         }
 
         function startEdit(id) {
             const log = cloudLogs.find(l => l.id === id); if (!log) return;
             switchView('logbook'); expandForm(); 
-            document.getElementById('editId').value = log.id; document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3); document.getElementById('radioInput').value = log.radio || ""; document.getElementById('channelInput').value = log.channel || ""; document.getElementById('antennaInput').value = log.antenna || ""; document.getElementById('modeInput').value = log.mode; document.getElementById('stationInput').value = log.station || ""; document.getElementById('notesInput').value = log.notes || ""; document.getElementById('confirmedInput').checked = log.confirmed !== false; 
-            let parsedSignal = parseInt(log.signal); if (isNaN(parsedSignal) || parsedSignal < 1 || parsedSignal > 10) { parsedSignal = 5; } setSMeter(parsedSignal);
-            document.getElementById('submitBtn').innerText = "Save Changes"; document.getElementById('submitBtn').classList.add('btn-save'); document.getElementById('formCard').classList.add('editing-mode'); window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('editId').value = log.id; 
+            document.getElementById('freqInput').value = parseFloat(log.freq).toFixed(3); 
+            document.getElementById('radioInput').value = log.radio || ""; 
+            document.getElementById('channelInput').value = log.channel || ""; 
+            document.getElementById('antennaInput').value = log.antenna || ""; 
+            document.getElementById('modeInput').value = log.mode; 
+            document.getElementById('stationInput').value = log.station || ""; 
+            document.getElementById('notesInput').value = log.notes || ""; 
+            document.getElementById('confirmedInput').checked = log.confirmed !== false; 
+            
+            let parsedSignal = parseInt(log.signal); 
+            if (isNaN(parsedSignal) || parsedSignal < 1 || parsedSignal > 10) { parsedSignal = 5; } 
+            setSMeter(parsedSignal);
+            
+            document.getElementById('submitBtn').innerText = "Save Changes"; 
+            document.getElementById('submitBtn').classList.add('btn-save'); 
+            document.getElementById('formCard').classList.add('editing-mode'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function cancelEdit() { document.getElementById('editId').value = ""; document.getElementById('submitBtn').innerText = "Add to Log"; document.getElementById('submitBtn').classList.remove('btn-save'); document.getElementById('formCard').classList.remove('editing-mode'); setSMeter(5); document.getElementById('channelInput').value = ""; document.getElementById('confirmedInput').checked = true; }
+        function cancelEdit() { 
+            document.getElementById('editId').value = ""; 
+            document.getElementById('submitBtn').innerText = "Add to Log"; 
+            document.getElementById('submitBtn').classList.remove('btn-save'); 
+            document.getElementById('formCard').classList.remove('editing-mode'); 
+            setSMeter(5); 
+            document.getElementById('channelInput').value = ""; 
+            document.getElementById('confirmedInput').checked = true; 
+        }
 
         function duplicateLog(id) {
             const logToCopy = cloudLogs.find(l => l.id === id); if (!logToCopy) return;
             const freqDisplay = parseFloat(logToCopy.freq).toFixed(3);
-            if(confirm(`Duplicate log entry for ${freqDisplay} MHz?`)) { const duplicatedLog = { freq: logToCopy.freq, radio: logToCopy.radio || "", channel: logToCopy.channel || "", antenna: logToCopy.antenna || "", mode: logToCopy.mode || "AM", station: logToCopy.station || "", signal: logToCopy.signal || "5", traffic: logToCopy.traffic || "1", notes: logToCopy.notes || "", confirmed: logToCopy.confirmed !== false, date: new Date().toISOString() }; logsRef.push(duplicatedLog); }
+            if(confirm(`Duplicate log entry for ${freqDisplay} MHz?`)) { 
+                const duplicatedLog = { freq: logToCopy.freq, radio: logToCopy.radio || "", channel: logToCopy.channel || "", antenna: logToCopy.antenna || "", mode: logToCopy.mode || "AM", station: logToCopy.station || "", signal: logToCopy.signal || "5", traffic: logToCopy.traffic || "1", notes: logToCopy.notes || "", confirmed: logToCopy.confirmed !== false, date: new Date().toISOString() }; 
+                logsRef.push(duplicatedLog); 
+            }
         }
 
         function resetForm() { document.getElementById('freqInput').value = ''; document.getElementById('stationInput').value = ''; document.getElementById('notesInput').value = ''; document.getElementById('channelInput').value = ''; document.getElementById('radioInput').value = appSettings.defaultRadio || appSettings.radios[0]; document.getElementById('antennaInput').value = appSettings.defaultAntenna || appSettings.antennas[0]; setSMeter(5); document.getElementById('confirmedInput').checked = true; }
+        
         function toggleConfirm(id, currentStatus) { db.ref('radioLogs/' + id).update({ confirmed: currentStatus }); }
 
         function renderTable() {
-            const tbody = document.querySelector('#logTable tbody'); const searchTerm = document.getElementById('searchInput').value.toLowerCase(); const statusFilter = document.getElementById('statusFilter').value; tbody.innerHTML = '';
-            const freqCounts = {}; cloudLogs.forEach(l => { if (l.freq) { let f = parseFloat(l.freq).toFixed(3); freqCounts[f] = (freqCounts[f] || 0) + 1; } }); let maxHits = Math.max(...Object.values(freqCounts), 1);
-            let displayLogs = cloudLogs.map(log => { let f = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000"; let hits = freqCounts[f] || 1; let calculatedTraffic = Math.ceil((hits / maxHits) * 10); return { ...log, autoTraffic: calculatedTraffic }; });
-            if (activeRadioFilter !== 'All') displayLogs = displayLogs.filter(log => log.radio === activeRadioFilter);
-            if (statusFilter === 'Confirmed') displayLogs = displayLogs.filter(log => log.confirmed !== false); else if (statusFilter === 'Unconfirmed') displayLogs = displayLogs.filter(log => log.confirmed === false);
+            const tbody = document.querySelector('#logTable tbody'); 
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase(); 
+            const statusFilter = document.getElementById('statusFilter').value; 
+            tbody.innerHTML = '';
+            
+            const freqCounts = {}; 
+            cloudLogs.forEach(l => { if (l.freq) { let f = parseFloat(l.freq).toFixed(3); freqCounts[f] = (freqCounts[f] || 0) + 1; } }); 
+            let maxHits = Math.max(...Object.values(freqCounts), 1);
+            
+            let displayLogs = cloudLogs.map(log => { 
+                let f = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000"; 
+                let hits = freqCounts[f] || 1; 
+                let calculatedTraffic = Math.ceil((hits / maxHits) * 10); 
+                return { ...log, autoTraffic: calculatedTraffic }; 
+            });
+
+            if (activeRadioFilter !== 'All') { displayLogs = displayLogs.filter(log => log.radio === activeRadioFilter); }
+            if (statusFilter === 'Confirmed') { displayLogs = displayLogs.filter(log => log.confirmed !== false); } 
+            else if (statusFilter === 'Unconfirmed') { displayLogs = displayLogs.filter(log => log.confirmed === false); }
             
             displayLogs.sort((a, b) => {
-                if (currentSort.key === 'channel') { let hasA = (a.channel !== "" && a.channel != null); let hasB = (b.channel !== "" && b.channel != null); if (hasA && !hasB) return -1; if (!hasA && hasB) return 1; if (!hasA && !hasB) return 0; let valA = parseInt(a.channel); let valB = parseInt(b.channel); return currentSort.desc ? valB - valA : valA - valB; }
+                if (currentSort.key === 'channel') { 
+                    let hasA = (a.channel !== "" && a.channel != null); 
+                    let hasB = (b.channel !== "" && b.channel != null); 
+                    if (hasA && !hasB) return -1; if (!hasA && hasB) return 1; if (!hasA && !hasB) return 0; 
+                    let valA = parseInt(a.channel); let valB = parseInt(b.channel); 
+                    return currentSort.desc ? valB - valA : valA - valB; 
+                }
                 let valA = a[currentSort.key] || ""; let valB = b[currentSort.key] || "";
-                if (currentSort.key === 'traffic') { valA = a.autoTraffic || 0; valB = b.autoTraffic || 0; } else if (currentSort.key === 'signal' || currentSort.key === 'freq') { valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0; }
+                if (currentSort.key === 'traffic') { valA = a.autoTraffic || 0; valB = b.autoTraffic || 0; } 
+                else if (currentSort.key === 'signal' || currentSort.key === 'freq') { valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0; }
                 if (currentSort.key === 'traffic' || currentSort.key === 'signal' || currentSort.key === 'freq') { return currentSort.desc ? valB - valA : valA - valB; }
                 if (valA < valB) return currentSort.desc ? 1 : -1; if (valA > valB) return currentSort.desc ? -1 : 1; return 0;
             });
 
             let count = 0;
             displayLogs.forEach(log => {
-                const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000"; const formattedDate = formatRadioDate(log.date);
-                let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : ""; let displayTraffic = `<div style="display:flex; align-items:center;" title="Auto-Calculated">T-${log.autoTraffic} ${generateMiniTraffic(log.autoTraffic)}</div>`;
-                let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : ""; let displayNotes = log.notes ? `<div class="expandable-note" onclick="toggleNote(this, event)" title="Tap to expand/collapse">${log.notes}</div>` : "";
-                let isConf = log.confirmed !== false; let confIcon = isConf ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
+                const freqDisplay = log.freq ? parseFloat(log.freq).toFixed(3) : "0.000"; 
+                const formattedDate = formatRadioDate(log.date);
+                
+                let displaySignal = log.signal ? `<div style="display:flex; align-items:center;">S-${log.signal} ${generateMiniMeter(log.signal)}</div>` : ""; 
+                let displayTraffic = `<div style="display:flex; align-items:center;" title="Auto-Calculated">T-${log.autoTraffic} ${generateMiniTraffic(log.autoTraffic)}</div>`;
+                
+                let channelBadge = log.channel ? `<span class="inline-pill ch-pill">Ch. ${log.channel}</span>` : ""; 
+                let displayNotes = log.notes ? `<div class="expandable-note" onclick="toggleNote(this, event)" title="Tap to expand/collapse">${log.notes}</div>` : "";
+                
+                let isConf = log.confirmed !== false; 
+                let confIcon = isConf ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
+                
                 let clickableFreq = `<strong style="color:var(--primary); cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
 
-                const matches = freqDisplay.includes(searchTerm) || (log.radio || "").toLowerCase().includes(searchTerm) || (log.channel || "").toLowerCase().includes(searchTerm) || (log.station || "").toLowerCase().includes(searchTerm) || (log.mode || "").toLowerCase().includes(searchTerm) || (log.notes || "").toLowerCase().includes(searchTerm);
-                if (!matches && searchTerm !== "") return; count++; const row = document.createElement('tr');
+                // Safe String cast to prevent crash if numeric data is found
+                const strRadio = String(log.radio || "").toLowerCase();
+                const strChannel = String(log.channel || "").toLowerCase();
+                const strStation = String(log.station || "").toLowerCase();
+                const strMode = String(log.mode || "").toLowerCase();
+                const strNotes = String(log.notes || "").toLowerCase();
+
+                const matches = freqDisplay.includes(searchTerm) || strRadio.includes(searchTerm) || strChannel.includes(searchTerm) || strStation.includes(searchTerm) || strMode.includes(searchTerm) || strNotes.includes(searchTerm);
+
+                if (!matches && searchTerm !== "") return; 
+                count++; 
                 
+                const row = document.createElement('tr');
                 row.innerHTML = `<td data-label="UTC Time">${formattedDate}</td><td data-label="Freq (MHz)"><div class="flex-wrapper">${confIcon} ${clickableFreq} ${log.mode ? `<span class="inline-pill mobile-mode">${log.mode}</span>` : ""}</div></td><td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td><td data-label="Station">${log.station || ""}</td><td data-label="Radio / Ch."><div class="flex-wrapper">${log.radio || ""} ${channelBadge}</div></td><td data-label="Antenna">${log.antenna || ""}</td><td data-label="Signal">${displaySignal}</td><td data-label="Traffic">${displayTraffic}</td><td data-label="Notes" class="notes-cell">${displayNotes}</td><td class="action-btns"><button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button><button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button><button class="delete-btn" onclick="deleteLog('${log.id}')">Del</button></td>`;
                 tbody.appendChild(row);
             });
