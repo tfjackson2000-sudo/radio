@@ -23,6 +23,8 @@
             --text-sub: #555555;
             --border-color: #dddddd;
             --table-hover: #f9fafb;
+            /* NEW: Color for unconfirmed list items in analytics */
+            --unconfirmed-text: #ef4444; /* Bright Red */
         }
 
         [data-theme="dark"] {
@@ -37,6 +39,8 @@
             --text-sub: #9ca3af;
             --border-color: #374151;
             --table-hover: #2d3748;
+            /* NEW: Dark mode unconfirmed color (slightly lighter red) */
+            --unconfirmed-text: #f87171;
         }
 
         *, *::before, *::after { 
@@ -312,6 +316,9 @@
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
         #scrollTopBtn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
+        /* NEW: Class for styling unconfirmed list items in analytics */
+        .analytics-unconfirmed { color: var(--unconfirmed-text); }
 
         /* ==================================================== */
         /* MOBILE CARD LAYOUT                                   */
@@ -1145,20 +1152,21 @@
         let showAllStrongest = false; 
         let showAllOverall = false; 
 
-        const getStationName = (f) => { 
+        // UPDATED: Now returns an object with source information
+        const getStationData = (f) => { 
             if (appSettings && appSettings.dictionary) {
                 let match = appSettings.dictionary.find(d => d.f === f); 
-                if (match) return match.n; 
+                if (match) return { name: match.n, confirmed: true }; 
             }
             
             if (typeof cloudLogs !== 'undefined' && cloudLogs.length > 0) {
                 let fallbackLog = cloudLogs.find(l => l.freq && parseFloat(l.freq).toFixed(3) === f && l.station && l.station.trim() !== "");
                 if (fallbackLog) {
-                    return fallbackLog.station + " (Unconfirmed)";
+                    return { name: fallbackLog.station, confirmed: false };
                 }
             }
             
-            return "Unknown Station"; 
+            return { name: "Unknown Station", confirmed: false }; 
         };
 
         logsRef.on('value', (snapshot) => {
@@ -1331,12 +1339,13 @@
             
             let busiestHtml = "";
             freqsToDisplay.forEach((f, i) => {
-                let sName = getStationName(f[0]); 
-                let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
+                let sData = getStationData(f[0]); 
+                let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : "";
+                let uClass = !sData.confirmed ? "analytics-unconfirmed" : "";
                 busiestHtml += `
                     <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
-                        <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span class="${uClass}" style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
                         <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
                     </li>`;
             });
@@ -1356,17 +1365,18 @@
             const btnStrongest = document.getElementById('toggleStrongestBtn');
             
             if (sortedStrongestFull.length === 0) { 
-                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`; 
+                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to see average signal strength.</span></li>`; 
                 btnStrongest.style.display = 'none';
             } else {
                 let strongestHtml = "";
                 strongestToDisplay.forEach((item, i) => { 
-                    let sName = getStationName(item.f); 
-                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                    let sData = getStationData(item.f); 
+                    let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : ""; 
+                    let uClass = !sData.confirmed ? "analytics-unconfirmed" : "";
                     strongestHtml += `
                         <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                             <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
-                            <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span class="${uClass}" style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                             <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
                         </li>`;
                 });
@@ -1403,12 +1413,13 @@
                 } else {
                     let overallHtml = "";
                     overallToDisplay.forEach((item, i) => { 
-                        let sName = getStationName(item.f); 
-                        let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
+                        let sData = getStationData(item.f); 
+                        let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : ""; 
+                        let uClass = !sData.confirmed ? "analytics-unconfirmed" : "";
                         overallHtml += `
                             <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                                 <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
-                                <span style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span class="${uClass}" style="cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                                 <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
                             </li>`;
                     });
@@ -1429,8 +1440,8 @@
             
             let dropdownHtml = `<option value="ALL">All Frequencies Overview</option>`;
             uniqueFreqs.forEach(f => { 
-                let sName = getStationName(f); 
-                let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`; 
+                let sData = getStationData(f); 
+                let displayTxt = sData.name !== "Unknown Station" ? `${f} MHz - ${sData.name}` : `${f} MHz`; 
                 dropdownHtml += `<option value="${f}">${displayTxt}</option>`; 
             });
             freqSelect.innerHTML = dropdownHtml;
