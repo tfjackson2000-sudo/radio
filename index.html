@@ -82,9 +82,7 @@
             font-size: 0.85em;
         }
 
-        .mobile-mode { 
-            display: none; 
-        }
+        .mobile-mode { display: none; }
 
         /* --- TABS --- */
         .tab-btn { 
@@ -498,7 +496,10 @@
             </div>
             
             <input type="hidden" id="trafficInput" value="1">
-            <div class="form-group" style="grid-column: 1 / -1;"><label>Additional Notes</label><input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear..."></div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Additional Notes</label>
+                <input type="text" id="notesInput" placeholder="e.g. Fading, Both sides clear...">
+            </div>
             <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px; grid-column: 1 / -1; margin-top: 5px;">
                 <input type="checkbox" id="confirmedInput" checked style="width: 22px; height: 22px; cursor: pointer; flex-shrink: 0;">
                 <label for="confirmedInput" style="margin: 0; cursor: pointer; font-size: 0.95em;">✅ <strong>Confirmed Active</strong> (Uncheck to save to Local DB for testing)</label>
@@ -555,6 +556,7 @@
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+            
             <div class="input-card" style="margin-bottom: 0;">
                 <h3 style="margin-top: 0; color: var(--primary);">🔥 Busiest Frequencies</h3>
                 <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Total Log Count</p>
@@ -564,14 +566,22 @@
 
             <div class="input-card" style="margin-bottom: 0;">
                 <h3 style="margin-top: 0; color: var(--edit-color);">💪 Strongest Signals</h3>
-                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter (Min 2 logs)</p>
+                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter</p>
                 <ul id="topStrongestList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleStrongestBtn" onclick="toggleStrongest()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: var(--edit-color); padding: 10px; font-weight: bold;">Show All</button>
+            </div>
+
+            <div class="input-card" style="margin-bottom: 0;">
+                <h3 style="margin-top: 0; color: #10b981;">🏆 Top Overall</h3>
+                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Combined Activity & Signal Score</p>
+                <ul id="topOverallList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
+                <button id="toggleOverallBtn" onclick="toggleOverall()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: #10b981; padding: 10px; font-weight: bold;">Show All</button>
             </div>
 
             <div class="input-card" style="margin-bottom: 0; grid-column: 1 / -1;" id="graphsCard">
                 <h3 style="margin-top: 0; color: var(--primary);">📈 24-Hour Performance Graphs</h3>
                 <p style="margin: 0 0 15px 0; font-size: 0.85em; color: var(--text-sub);">Click a frequency in the logbook or top lists to instantly view its performance across different radios.</p>
+                
                 <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
                     <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px; flex-grow: 1;"></select>
                     <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
@@ -657,7 +667,14 @@
         const logsRef = db.ref('radioLogs');
         const settingsRef = db.ref('settings');
 
-        let appSettings = { radios: [], antennas: [], modes: [], defaultRadio: "", defaultAntenna: "", dictionary: [] };
+        let appSettings = { 
+            radios: [], 
+            antennas: [], 
+            modes: [], 
+            defaultRadio: "", 
+            defaultAntenna: "", 
+            dictionary: [] 
+        };
 
         settingsRef.on('value', (snapshot) => {
             let data = snapshot.val() || {};
@@ -707,6 +724,7 @@
             const nameInput = document.getElementById('newDictName');
             const freq = parseFloat(freqInput.value).toFixed(3); 
             const name = nameInput.value.trim().substring(0, 16);
+            
             if (isNaN(freq) || !name) return alert("Please enter a valid frequency and name.");
             
             appSettings.dictionary = appSettings.dictionary.filter(item => item.f !== freq); 
@@ -745,9 +763,11 @@
         function renderDictionary() {
             const listEl = document.getElementById('dictionaryList'); 
             const countEl = document.getElementById('dictCount');
+            
             if (countEl && appSettings.dictionary) {
                 countEl.innerText = `(${appSettings.dictionary.length} entries)`;
             }
+            
             if(!listEl) return;
             
             let html = "";
@@ -767,10 +787,12 @@
         function renderDictSidebar() {
             const sb = document.getElementById('memorySidebarDict');
             if(!sb) return;
+            
             if (!appSettings.dictionary || appSettings.dictionary.length === 0) { 
                 sb.innerHTML = '<div style="font-size: 0.85em; color: var(--text-sub);">No dictionary items yet.</div>'; 
                 return; 
             }
+            
             const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
             const dragAttr = isTouch ? '' : 'draggable="true"';
 
@@ -863,6 +885,7 @@
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions'));
             activeMoveSourceId = logId; 
             activeMoveSourceCh = currentCh;
+            
             document.getElementById('moveSourceText').innerText = currentCh; 
             document.getElementById('moveModeBanner').style.display = 'flex';
             renderMemoryBank();
@@ -878,6 +901,7 @@
         function executeMoveOrSwap(targetCh) {
             const targetChStr = String(targetCh).trim(); 
             const sourceChStr = String(activeMoveSourceCh).trim();
+            
             if (targetChStr === sourceChStr) { 
                 cancelMoveMode(); 
                 return; 
@@ -899,26 +923,31 @@
         function dragDict(ev, freq, nameEnc) { 
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'dict', freq: freq, name: decodeURIComponent(nameEnc)})); 
         }
+        
         function dragSlot(ev, logId, channel) { 
             ev.target.classList.remove('show-actions'); 
             document.querySelectorAll('.memory-slot').forEach(s => s.classList.remove('show-actions')); 
             ev.dataTransfer.setData("text/plain", JSON.stringify({type: 'slot', logId: logId, channel: channel})); 
         }
+        
         function handleDragEnd(ev) { 
             document.querySelectorAll('.memory-slot').forEach(s => { 
                 s.classList.remove('show-actions'); 
                 s.classList.remove('drag-over'); 
             }); 
         }
+        
         function allowDrop(ev) { 
             ev.preventDefault(); 
             let slot = ev.target.closest('.memory-slot'); 
             if(slot) slot.classList.add('drag-over'); 
         }
+        
         function dragLeave(ev) { 
             let slot = ev.target.closest('.memory-slot'); 
             if(slot) slot.classList.remove('drag-over'); 
         }
+        
         function dropSlot(ev, targetChannel) {
             ev.preventDefault(); 
             let slot = ev.target.closest('.memory-slot'); 
@@ -963,7 +992,10 @@
         });
 
         function openAssignModal(channel, radio) {
-            if (activeMoveSourceId) { executeMoveOrSwap(channel); return; }
+            if (activeMoveSourceId) { 
+                executeMoveOrSwap(channel); 
+                return; 
+            }
             
             document.getElementById('assignModalCh').innerText = channel; 
             document.getElementById('assignModalRadio').value = radio; 
@@ -1003,6 +1035,7 @@
 
         function exportForUniden() {
             const uniqueFreqs = {};
+            
             if (appSettings.dictionary && appSettings.dictionary.length > 0) {
                 appSettings.dictionary.forEach(dictItem => { 
                     let fVal = parseFloat(dictItem.f); 
@@ -1013,6 +1046,7 @@
                     } 
                 });
             }
+            
             cloudLogs.forEach(log => {
                 if(log.freq) { 
                     let fVal = parseFloat(log.freq); 
@@ -1026,6 +1060,7 @@
                     } 
                 }
             });
+            
             const sortedFreqs = Object.values(uniqueFreqs).sort((a, b) => parseFloat(a.frequency) - parseFloat(b.frequency));
             if (sortedFreqs.length === 0) return alert("No valid frequencies found for Uniden export (≥ 25 MHz).");
             
@@ -1105,6 +1140,13 @@
         let trafficChartInstance = null; 
         let showAllBusiest = false; 
         let showAllStrongest = false; 
+        let showAllOverall = false; 
+
+        const getStationName = (f) => { 
+            if (!appSettings || !appSettings.dictionary) return "Unknown Station";
+            let match = appSettings.dictionary.find(d => d.f === f); 
+            return match ? match.n : "Unknown Station"; 
+        };
 
         logsRef.on('value', (snapshot) => {
             try {
@@ -1112,6 +1154,7 @@
                 snapshot.forEach((childSnapshot) => {
                     let log = childSnapshot.val(); 
                     log.id = childSnapshot.key; 
+                    
                     if (!log.signal && log.notes) { 
                         let parsedNote = parseInt(log.notes); 
                         if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && String(log.notes).length <= 2) { 
@@ -1234,6 +1277,11 @@
             renderAnalytics(); 
         }
 
+        function toggleOverall() { 
+            showAllOverall = !showAllOverall; 
+            renderAnalytics(); 
+        }
+
         function renderAnalytics() {
             if (cloudLogs.length === 0) return;
             
@@ -1271,15 +1319,15 @@
             let busiestHtml = "";
             freqsToDisplay.forEach((f, i) => {
                 let sName = getStationName(f[0]); 
-                let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : "";
-                busiestHtml += `<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(${f[1]} logs)</span></li>`;
+                let nameDisplay = sName !== "Unknown Station" ? " - " + sName : "";
+                busiestHtml += '<li style="margin-bottom: 5px;"><strong style="color:var(--primary);">#' + (i+1) + ':</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor(\'' + f[0] + '\')">' + f[0] + ' MHz' + nameDisplay + '</span> <span style="color:var(--text-sub); font-size:0.85em;">(' + f[1] + ' logs)</span></li>';
             });
             document.getElementById('topFreqsList').innerHTML = busiestHtml;
             
             const btnBusiest = document.getElementById('toggleBusiestBtn');
             if (sortedFreqs.length > 10) { 
                 btnBusiest.style.display = 'block'; 
-                btnBusiest.innerText = showAllBusiest ? "Show Top 10" : `Show All (${sortedFreqs.length})`; 
+                btnBusiest.innerText = showAllBusiest ? "Show Top 10" : "Show All (" + sortedFreqs.length + ")"; 
             } else { 
                 btnBusiest.style.display = 'none'; 
             }
@@ -1290,22 +1338,60 @@
             const btnStrongest = document.getElementById('toggleStrongestBtn');
             
             if (sortedStrongestFull.length === 0) { 
-                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`; 
+                document.getElementById('topStrongestList').innerHTML = '<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>'; 
                 btnStrongest.style.display = 'none';
             } else {
                 let strongestHtml = "";
                 strongestToDisplay.forEach((item, i) => { 
                     let sName = getStationName(item.f); 
-                    let nameDisplay = sName !== "Unknown Station" ? ` - ${sName}` : ""; 
-                    strongestHtml += `<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#${i+1}:</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-${item.avg})</span></li>`; 
+                    let nameDisplay = sName !== "Unknown Station" ? " - " + sName : ""; 
+                    strongestHtml += '<li style="margin-bottom: 5px;"><strong style="color:var(--edit-color);">#' + (i+1) + ':</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor(\'' + item.f + '\')">' + item.f + ' MHz' + nameDisplay + '</span> <span style="color:var(--text-sub); font-size:0.85em;">(Avg S-' + item.avg + ')</span></li>'; 
                 });
                 document.getElementById('topStrongestList').innerHTML = strongestHtml;
                 
                 if (sortedStrongestFull.length > 10) { 
                     btnStrongest.style.display = 'block'; 
-                    btnStrongest.innerText = showAllStrongest ? "Show Top 10" : `Show All (${sortedStrongestFull.length})`; 
+                    btnStrongest.innerText = showAllStrongest ? "Show Top 10" : "Show All (" + sortedStrongestFull.length + ")"; 
                 } else { 
                     btnStrongest.style.display = 'none'; 
+                }
+            }
+
+            // 3. OVERALL SCORE
+            const overallScores = [];
+            Object.keys(freqCounts).forEach(f => {
+                if (freqSignals[f] && freqSignals[f].count > 0) {
+                    let count = freqCounts[f]; 
+                    let avg = freqSignals[f].total / freqSignals[f].count; 
+                    let score = count * avg;
+                    overallScores.push({ f: f, score: Math.round(score), count: count, avg: avg.toFixed(1) });
+                }
+            });
+            
+            overallScores.sort((a, b) => b.score - a.score);
+            const overallToDisplay = showAllOverall ? overallScores : overallScores.slice(0, 10);
+            const btnOverall = document.getElementById('toggleOverallBtn');
+            const listOverall = document.getElementById('topOverallList');
+            
+            if (listOverall && btnOverall) {
+                if (overallScores.length === 0) { 
+                    listOverall.innerHTML = '<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to generate a combined score.</span></li>'; 
+                    btnOverall.style.display = 'none';
+                } else {
+                    let overallHtml = "";
+                    overallToDisplay.forEach((item, i) => { 
+                        let sName = getStationName(item.f); 
+                        let nameDisplay = sName !== "Unknown Station" ? " - " + sName : ""; 
+                        overallHtml += '<li style="margin-bottom: 5px;"><strong style="color:#10b981;">#' + (i+1) + ':</strong> <span style="cursor:pointer; text-decoration:underline; font-weight:bold;" onclick="openAnalyticsFor(\'' + item.f + '\')">' + item.f + ' MHz' + nameDisplay + '</span> <span style="color:var(--text-sub); font-size:0.85em;">(Score: ' + item.score + ')</span></li>'; 
+                    });
+                    listOverall.innerHTML = overallHtml;
+                    
+                    if (overallScores.length > 10) { 
+                        btnOverall.style.display = 'block'; 
+                        btnOverall.innerText = showAllOverall ? "Show Top 10" : "Show All (" + overallScores.length + ")"; 
+                    } else { 
+                        btnOverall.style.display = 'none'; 
+                    }
                 }
             }
 
@@ -1313,11 +1399,11 @@
             const currentVal = freqSelect.value; 
             const uniqueFreqs = Object.keys(freqCounts).sort((a, b) => parseFloat(a) - parseFloat(b));
             
-            let dropdownHtml = `<option value="ALL">All Frequencies Overview</option>`;
+            let dropdownHtml = '<option value="ALL">All Frequencies Overview</option>';
             uniqueFreqs.forEach(f => { 
                 let sName = getStationName(f); 
-                let displayTxt = sName !== "Unknown Station" ? `${f} MHz - ${sName}` : `${f} MHz`; 
-                dropdownHtml += `<option value="${f}">${displayTxt}</option>`; 
+                let displayTxt = sName !== "Unknown Station" ? f + " MHz - " + sName : f + " MHz"; 
+                dropdownHtml += '<option value="' + f + '">' + displayTxt + '</option>'; 
             });
             freqSelect.innerHTML = dropdownHtml;
             
@@ -1343,7 +1429,7 @@
             
             let timeHtml = "";
             Object.entries(timeBuckets).forEach(([period, count]) => {
-                timeHtml += `<div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);"><div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">${period}</div><div style="font-size:1.8em; font-weight:bold; color:var(--primary);">${count}</div><div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div></div>`;
+                timeHtml += '<div style="background:var(--table-hover); padding:15px 10px; border-radius:8px; border:1px solid var(--border-color);"><div style="font-size:0.85em; color:var(--text-sub); margin-bottom:5px; font-weight:bold;">' + period + '</div><div style="font-size:1.8em; font-weight:bold; color:var(--primary);">' + count + '</div><div style="font-size:0.75em; text-transform:uppercase; color:var(--text-sub);">Logs</div></div>';
             });
             document.getElementById('timeOfDayStats').innerHTML = timeHtml;
 
@@ -1712,7 +1798,7 @@
                     else if (i < 8) colorClass = "active-yellow"; 
                     else colorClass = "active-red"; 
                 } 
-                html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`; 
+                html += '<div class="mini-bar ' + colorClass + '" data-val="' + i + '"></div>'; 
             } 
             html += '</div>'; 
             return html; 
@@ -1724,7 +1810,7 @@
             let html = '<div class="mini-traffic">'; 
             for (let i = 1; i <= 10; i++) { 
                 let colorClass = (i <= num) ? "active" : ""; 
-                html += `<div class="mini-t-block ${colorClass}"></div>`; 
+                html += '<div class="mini-t-block ' + colorClass + '"></div>'; 
             } 
             html += '</div>'; 
             return html; 
