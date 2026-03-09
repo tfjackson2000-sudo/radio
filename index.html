@@ -91,8 +91,8 @@
         .memory-sidebar { flex: 0 0 250px; max-height: 65vh; overflow-y: auto; background: var(--card-bg); border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         .memory-main { flex: 1; min-width: 0; }
         
-        .dict-drag-item { padding: 10px; border: 1px solid var(--border-color); margin-bottom: 8px; border-radius: 6px; cursor: grab; background: var(--bg-color); font-size: 0.9em; transition: 0.2s; }
-        .dict-drag-item:active { cursor: grabbing; transform: scale(0.98); }
+        .dict-drag-item { padding: 10px; border: 1px solid var(--border-color); margin-bottom: 8px; border-radius: 6px; cursor: pointer; background: var(--bg-color); font-size: 0.9em; transition: 0.2s; }
+        .dict-drag-item:active { transform: scale(0.98); }
         .dict-drag-item:hover { border-color: var(--primary); }
 
         .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
@@ -255,9 +255,6 @@
         
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
         #scrollTopBtn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-
-        /* Class for styling unconfirmed list items in analytics */
-        .analytics-unconfirmed { color: var(--unconfirmed-text) !important; }
 
         /* ==================================================== */
         /* MOBILE CARD LAYOUT                                   */
@@ -1149,14 +1146,20 @@
         };
 
         const getStationData = (f) => { 
+            // 1. Check if it's in the Master Dictionary
             if (appSettings && appSettings.dictionary) {
                 let match = appSettings.dictionary.find(d => d.f === f); 
                 if (match) return { name: match.n, confirmed: true }; 
             }
+            
+            // 2. If not, look through logs for a borrowed name
             if (typeof cloudLogs !== 'undefined' && cloudLogs.length > 0) {
                 let fallbackLog = cloudLogs.find(l => l.freq && parseFloat(l.freq).toFixed(3) === f && l.station && l.station.trim() !== "");
-                if (fallbackLog) return { name: fallbackLog.station, confirmed: false };
+                if (fallbackLog) {
+                    return { name: fallbackLog.station, confirmed: false };
+                }
             }
+            
             return { name: "Unknown Station", confirmed: false }; 
         };
 
@@ -1339,7 +1342,7 @@
                 busiestHtml += `
                     <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
-                        <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
                         <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
                     </li>`;
             });
@@ -1373,7 +1376,7 @@
                     strongestHtml += `
                         <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                             <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
-                            <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                             <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
                         </li>`;
                 });
@@ -1419,7 +1422,7 @@
                         overallHtml += `
                             <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                                 <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
-                                <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                                 <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
                             </li>`;
                     });
@@ -1678,7 +1681,7 @@
                     fDisplay = isNaN(fDisplay) ? "0.000" : fDisplay.toFixed(3);
                     let stName = log.station || log.notes || 'No Name';
                     
-                    let freqColor = isConf ? "var(--text-main)" : "var(--unconfirmed-text) !important";
+                    let freqColor = isConf ? "var(--text-main)" : "var(--unconfirmed-text)";
                     
                     return `
                         <div class="memory-slot ${isMoving}" ${dragAttr} 
@@ -2105,9 +2108,8 @@
                 let isConf = log.confirmed !== false; 
                 let confIcon = isConf ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
                 
-                // NEW: Use !important to guarantee the red color applies
-                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text) !important";
-                let clickableFreq = `<strong class="analytics-unconfirmed" style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
+                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
+                let clickableFreq = `<strong style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
 
                 const strRadio = String(log.radio || "").toLowerCase();
                 const strChannel = String(log.channel || "").toLowerCase();
