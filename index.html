@@ -1351,7 +1351,7 @@
             }
 
             // 2. SIGNAL STRENGTH
-            const sortedStrongestFull = Object.entries(freqSignals).map(([f, data]) => ({ f, avg: (data.total / data.count).toFixed(1), count: data.count })).filter(item => item.count > 1).sort((a, b) => b.avg - a.avg || b.count - a.count);
+            const sortedStrongestFull = Object.entries(freqSignals).map(([f, data]) => ({ f, avg: (data.total / data.count).toFixed(1), count: data.count })).sort((a, b) => b.avg - a.avg || b.count - a.count);
             const strongestToDisplay = showAllStrongest ? sortedStrongestFull : sortedStrongestFull.slice(0, 10);
             const btnStrongest = document.getElementById('toggleStrongestBtn');
             
