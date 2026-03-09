@@ -41,10 +41,30 @@
 
         *, *::before, *::after { box-sizing: border-box; }
 
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-main); max-width: 1200px; margin: 0 auto; padding: 15px; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+            transition: background 0.3s, color 0.3s;
+            overflow-x: hidden; 
+        }
+
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         h1 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        .theme-toggle { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85em; }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
         .mobile-mode { display: none; }
 
         /* --- TABS --- */
@@ -57,13 +77,21 @@
         .memory-layout { display: flex; gap: 20px; align-items: flex-start; }
         .memory-sidebar { flex: 0 0 250px; max-height: 65vh; overflow-y: auto; background: var(--card-bg); border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         .memory-main { flex: 1; min-width: 0; }
+        
         .dict-drag-item { padding: 10px; border: 1px solid var(--border-color); margin-bottom: 8px; border-radius: 6px; cursor: grab; background: var(--bg-color); font-size: 0.9em; transition: 0.2s; }
         .dict-drag-item:active { cursor: grabbing; transform: scale(0.98); }
         .dict-drag-item:hover { border-color: var(--primary); }
 
         .memory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; max-height: 65vh; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; }
-        .memory-slot { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden; }
+        
+        .memory-slot { 
+            background: var(--card-bg); border: 1px solid var(--border-color); 
+            border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; 
+            transition: 0.2s; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overflow: hidden;
+        }
         .memory-slot:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
         .memory-slot[draggable="true"] { cursor: grab; }
         .memory-slot[draggable="true"]:active { cursor: grabbing; }
         .drag-over { border: 2px dashed var(--primary) !important; background-color: rgba(37, 99, 235, 0.1) !important; transform: scale(1.02); }
@@ -74,16 +102,33 @@
         .memory-slot .status-icon { position: absolute; top: 6px; right: 8px; font-size: 0.9em; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); pointer-events: none; }
         
         /* ACTION OVERLAY (MOVE / CLEAR) */
-        .memory-slot .action-overlay { display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; overflow: hidden; }
-        .memory-slot.show-actions .action-overlay { opacity: 1; pointer-events: auto; }
-        .action-btn { flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+        .memory-slot .action-overlay {
+            display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10;
+            overflow: hidden;
+        }
+        .memory-slot.show-actions .action-overlay {
+            opacity: 1; pointer-events: auto;
+        }
+        .action-btn {
+            flex: 1; border: none; color: white; font-weight: bold; font-size: 0.9em; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+        }
         .btn-move-slot { background: rgba(37, 99, 235, 0.95); }
         .btn-clear-slot { background: rgba(239, 68, 68, 0.95); }
         .action-btn:active { filter: brightness(0.8); }
 
         /* --- MOVE MODE BANNER --- */
-        #moveModeBanner { display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000; align-items: center; gap: 15px; width: max-content; font-size: 0.9em; }
-        #moveModeBanner button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold; }
+        #moveModeBanner {
+            display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 12px 20px; border-radius: 30px;
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000;
+            align-items: center; gap: 15px; width: max-content; font-size: 0.9em;
+        }
+        #moveModeBanner button {
+            background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px;
+            border-radius: 15px; cursor: pointer; font-weight: bold;
+        }
         .moving-source { opacity: 0.5; border: 2px dashed var(--primary) !important; transform: scale(0.95); }
 
         .empty-slot { opacity: 0.6; border: 1px dashed var(--border-color); background: transparent; box-shadow: none; cursor: pointer; }
@@ -94,17 +139,32 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
         .modal-box { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border-color); }
 
-        .input-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; border: 2px solid transparent; }
+        .input-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            border: 2px solid transparent;
+        }
         .editing-mode { border: 2px solid var(--edit-color); }
         [data-theme="dark"] .editing-mode { background: #2e263d; }
+
         .card-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .card-header h2 { margin: 0; font-size: 1.1em; color: var(--primary); }
         .card-header span { font-weight: bold; font-size: 0.9em; opacity: 0.7; }
+        
         .form-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; transition: opacity 0.2s ease; }
         .form-body.collapsed { display: none; }
+
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-sub); }
-        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; background-color: var(--card-bg); color: var(--text-main); height: 44px; width: 100%; }
+        
+        input, select {
+            padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 16px; background-color: var(--card-bg);
+            color: var(--text-main); height: 44px; width: 100%;
+        }
 
         .s-meter-container { display: flex; gap: 3px; height: 44px; padding: 5px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 100%; align-items: flex-end; }
         .s-meter-bar { flex: 1; background-color: #e5e7eb; cursor: pointer; transition: background-color 0.1s; border-radius: 2px 2px 0 0; }
@@ -113,26 +173,57 @@
         .s-meter-bar.active-green { background-color: #10b981; }
         .s-meter-bar.active-yellow { background-color: #f59e0b; }
         .s-meter-bar.active-red { background-color: #ef4444; }
-        .s-meter-bar[data-val="1"] { height: 20%; } .s-meter-bar[data-val="2"] { height: 25%; } .s-meter-bar[data-val="3"] { height: 35%; } .s-meter-bar[data-val="4"] { height: 45%; } .s-meter-bar[data-val="5"] { height: 55%; } .s-meter-bar[data-val="6"] { height: 65%; } .s-meter-bar[data-val="7"] { height: 75%; } .s-meter-bar[data-val="8"] { height: 85%; } .s-meter-bar[data-val="9"] { height: 95%; } .s-meter-bar[data-val="10"] { height: 100%; }
+
+        .s-meter-bar[data-val="1"] { height: 20%; }
+        .s-meter-bar[data-val="2"] { height: 25%; }
+        .s-meter-bar[data-val="3"] { height: 35%; }
+        .s-meter-bar[data-val="4"] { height: 45%; }
+        .s-meter-bar[data-val="5"] { height: 55%; }
+        .s-meter-bar[data-val="6"] { height: 65%; }
+        .s-meter-bar[data-val="7"] { height: 75%; }
+        .s-meter-bar[data-val="8"] { height: 85%; }
+        .s-meter-bar[data-val="9"] { height: 95%; }
+        .s-meter-bar[data-val="10"] { height: 100%; }
 
         .mini-meter, .mini-traffic { display: inline-flex; gap: 1.5px; height: 18px; width: 40px; margin-left: 8px; }
-        .mini-meter { align-items: flex-end; } .mini-traffic { align-items: center; }
+        .mini-meter { align-items: flex-end; }
+        .mini-traffic { align-items: center; }
+
         .mini-bar, .mini-t-block { flex: 1; background-color: #e5e7eb; }
-        .mini-bar { border-radius: 1px 1px 0 0; } .mini-t-block { height: 60%; border-radius: 1px; }
+        .mini-bar { border-radius: 1px 1px 0 0; }
+        .mini-t-block { height: 60%; border-radius: 1px; }
+
         [data-theme="dark"] .mini-bar, [data-theme="dark"] .mini-t-block { background-color: #374151; }
-        .mini-bar.active-green { background-color: #10b981; } .mini-bar.active-yellow { background-color: #f59e0b; } .mini-bar.active-red { background-color: #ef4444; }
+        .mini-bar.active-green { background-color: #10b981; }
+        .mini-bar.active-yellow { background-color: #f59e0b; }
+        .mini-bar.active-red { background-color: #ef4444; }
         .mini-t-block.active { background-color: var(--traffic-color); }
-        .mini-bar[data-val="1"] { height: 20%; } .mini-bar[data-val="2"] { height: 25%; } .mini-bar[data-val="3"] { height: 35%; } .mini-bar[data-val="4"] { height: 45%; } .mini-bar[data-val="5"] { height: 55%; } .mini-bar[data-val="6"] { height: 65%; } .mini-bar[data-val="7"] { height: 75%; } .mini-bar[data-val="8"] { height: 85%; } .mini-bar[data-val="9"] { height: 95%; } .mini-bar[data-val="10"] { height: 100%; }
+
+        .mini-bar[data-val="1"] { height: 20%; }
+        .mini-bar[data-val="2"] { height: 25%; }
+        .mini-bar[data-val="3"] { height: 35%; }
+        .mini-bar[data-val="4"] { height: 45%; }
+        .mini-bar[data-val="5"] { height: 55%; }
+        .mini-bar[data-val="6"] { height: 65%; }
+        .mini-bar[data-val="7"] { height: 75%; }
+        .mini-bar[data-val="8"] { height: 85%; }
+        .mini-bar[data-val="9"] { height: 95%; }
+        .mini-bar[data-val="10"] { height: 100%; }
 
         .btn-main { grid-column: 1 / -1; background-color: var(--primary); color: white; border: none; padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .btn-save { background-color: var(--edit-color) !important; }
+
         .search-container { margin-bottom: 15px; display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
         #searchInput { flex-grow: 1; min-width: 200px; }
         .mobile-only { display: none; }
+
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .controls h2 { margin: 0; }
+        
         .btn-clear { background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
+
         .danger-zone { margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-color); display: flex; justify-content: flex-end; }
+
         .radio-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; align-items: center; }
         .filter-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); cursor: pointer; font-size: 0.85em; font-weight: 600; transition: all 0.2s ease; }
         .filter-btn:hover { background: #e5e7eb; }
@@ -140,6 +231,7 @@
         .filter-btn.active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
         .filter-count { font-weight: normal; opacity: 0.6; font-size: 0.9em; }
         .filter-btn.active .filter-count { opacity: 0.9; }
+
         .inline-pill { display: inline-block; margin-left: 8px; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
         .ch-pill { background: var(--ch-color); color: white; border-radius: 12px; margin-left: 6px; }
         [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
@@ -151,7 +243,10 @@
         [data-theme="dark"] .expandable-note { background-color: rgba(59, 130, 246, 0.1); }
         [data-theme="dark"] .expandable-note:hover { background-color: rgba(59, 130, 246, 0.15); }
         
-        @media screen and (max-width: 800px) { .expandable-note.expanded { -webkit-line-clamp: unset; display: block; padding-top: 4px; padding-bottom: 4px; } }
+        @media screen and (max-width: 800px) {
+            .expandable-note.expanded { -webkit-line-clamp: unset; display: block; padding-top: 4px; padding-bottom: 4px; }
+        }
+
         @media screen and (min-width: 801px) {
             .expandable-note.expanded { position: absolute; z-index: 9999; top: 100%; right: 0; left: auto; min-width: 280px; max-width: 350px; background: var(--card-bg) !important; border: 2px solid var(--primary); border-radius: 8px; padding: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); white-space: normal; -webkit-line-clamp: unset; overflow: visible; display: block; margin-top: 10px; }
             .expandable-note.expanded::before { content: ''; position: absolute; bottom: 100%; right: 15px; left: auto; border-width: 8px; border-style: solid; border-color: transparent transparent var(--primary) transparent; }
@@ -169,12 +264,14 @@
         th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } 
         td:nth-child(7), td:nth-child(8) { font-weight: bold; text-align: left; }
         th:nth-child(10), td:nth-child(10) { width: 135px; text-align: center; } 
+
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 10; }
         th:hover { background-color: #1d4ed8; }
         th::after { content: ' ↕'; opacity: 0.3; font-size: 0.8em; position: absolute; right: 5px; }
         th.sort-asc::after { content: ' ▲'; opacity: 1; }
         th.sort-desc::after { content: ' ▼'; opacity: 1; }
         tr:hover { background-color: var(--table-hover); }
+        
         .ch-sort { color: var(--ch-color); padding-left: 6px; font-weight: 800; cursor: pointer; transition: 0.2s; }
         .ch-sort:hover { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 
@@ -182,6 +279,7 @@
         .edit-btn { color: var(--edit-color); border: 1px solid var(--edit-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         .dup-btn { color: var(--dup-color); border: 1px solid var(--dup-color); background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         .delete-btn { color: #ef4444; border: 1px solid #ef4444; background: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        
         .footer-stats { margin-top: 15px; font-size: 0.85em; color: var(--text-sub); text-align: right; }
         #scrollTopBtn { display: none; position: fixed; bottom: 20px; right: 20px; z-index: 99; border: none; background-color: var(--primary); color: white; cursor: pointer; padding: 10px; border-radius: 50%; width: 45px; height: 45px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
@@ -190,16 +288,20 @@
         /* ==================================================== */
         @media screen and (max-width: 800px) {
             .settings-tab { margin-left: 0; } 
+            
             .memory-layout { flex-direction: column; }
             .memory-sidebar { width: 100%; flex: none; max-height: 200px; padding: 10px; border-bottom: 2px solid var(--primary); margin-bottom: 15px; border-radius: 8px; } 
             .memory-main { width: 100%; }
             .memory-grid { grid-template-columns: repeat(2, 1fr); padding-right: 0; }
+
             .search-container { flex-direction: column; gap: 10px; width: 100%; }
             #statusFilter { width: 100% !important; }
             .mobile-only { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); }
+
             .table-container { background: transparent; box-shadow: none; overflow-y: visible; max-height: none; padding: 0; }
             table, tbody, tr, th, td { display: block; width: 100% !important; box-sizing: border-box; }
             thead { display: none; } 
+
             tr { margin-bottom: 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 15px; }
             td { display: grid !important; grid-template-columns: 105px 1fr; gap: 10px; align-items: center; text-align: left !important; border-bottom: 1px solid var(--border-color); padding: 10px 0; white-space: normal !important; overflow: visible !important; word-wrap: break-word; }
             td::before { content: attr(data-label); font-weight: bold; color: var(--text-sub); text-transform: uppercase; font-size: 0.8em; text-align: left; }
@@ -207,6 +309,7 @@
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
+
             .mobile-mode { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
             [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
             .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -249,7 +352,7 @@
                     <label>Radios</label>
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input type="text" id="newRadioAdmin" placeholder="Add Radio...">
-                        <button onclick="addSetting('radios', 'newRadioAdmin')" style="background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0 15px;">Add</button>
+                        <button onclick="addSetting('radios', 'newRadioAdmin')" class="btn-main" style="margin:0; padding:0 15px; width:auto;">Add</button>
                     </div>
                     <ul id="radiosAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
                 </div>
@@ -257,7 +360,7 @@
                     <label>Antennas</label>
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input type="text" id="newAntennaAdmin" placeholder="Add Antenna...">
-                        <button onclick="addSetting('antennas', 'newAntennaAdmin')" style="background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0 15px;">Add</button>
+                        <button onclick="addSetting('antennas', 'newAntennaAdmin')" class="btn-main" style="margin:0; padding:0 15px; width:auto;">Add</button>
                     </div>
                     <ul id="antennasAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
                 </div>
@@ -265,7 +368,7 @@
                     <label>Modes</label>
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input type="text" id="newModeAdmin" placeholder="Add Mode...">
-                        <button onclick="addSetting('modes', 'newModeAdmin')" style="background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 0 15px;">Add</button>
+                        <button onclick="addSetting('modes', 'newModeAdmin')" class="btn-main" style="margin:0; padding:0 15px; width:auto;">Add</button>
                     </div>
                     <ul id="modesAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
                 </div>
@@ -435,7 +538,7 @@
 
             <div class="input-card" style="margin-bottom: 0;">
                 <h3 style="margin-top: 0; color: var(--edit-color);">💪 Strongest Signals</h3>
-                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter (Min 2 logs)</p>
+                <p style="margin: 0; font-size: 0.85em; color: var(--text-sub);">Based on Average S-Meter</p>
                 <ul id="topStrongestList" style="list-style: none; padding: 0; margin-top: 10px; line-height: 1.8;"></ul>
                 <button id="toggleStrongestBtn" onclick="toggleStrongest()" class="btn-clear" style="width: 100%; margin-top: 10px; display: none; background-color: var(--edit-color); padding: 10px; font-weight: bold;">Show All</button>
             </div>
@@ -451,25 +554,16 @@
                 <h3 style="margin-top: 0; color: var(--primary);">📈 24-Hour Performance Graphs</h3>
                 <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
                     <select id="analyticsFreqSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; min-width: 200px; flex-grow: 1;"></select>
-                    <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
-                        <option value="line">Signal: Line Graph (Hourly Max)</option>
-                        <option value="scatter">Signal: Heatmap Scatter (Every Log)</option>
-                    </select>
+                    <select id="chartTypeSelect" onchange="renderAnalytics()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;"><option value="line">Signal: Line Graph (Hourly Max)</option><option value="scatter">Signal: Heatmap Scatter (Every Log)</option></select>
                 </div>
                 <div id="chartsWrapper" style="display: none;">
                     <h4 style="margin: 0 0 10px 0; color: var(--text-main); text-align: center;">Signal Strength (S-Meter)</h4>
-                    <div style="height: 250px; width: 100%; margin-bottom: 30px;">
-                        <canvas id="signalChart"></canvas>
-                    </div>
+                    <div style="height: 250px; width: 100%; margin-bottom: 30px;"><canvas id="signalChart"></canvas></div>
                     <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0;">
                     <h4 style="margin: 0 0 10px 0; color: var(--text-main); text-align: center;">Traffic Busyness (Total Logs)</h4>
-                    <div style="height: 200px; width: 100%;">
-                        <canvas id="trafficChart"></canvas>
-                    </div>
+                    <div style="height: 200px; width: 100%;"><canvas id="trafficChart"></canvas></div>
                 </div>
-                <div id="noChartMsg" style="text-align: center; padding: 30px; color: var(--text-sub); font-style: italic;">
-                    Select a specific frequency above to view its 24-hour performance graphs.
-                </div>
+                <div id="noChartMsg" style="text-align: center; padding: 30px; color: var(--text-sub); font-style: italic;">Select a specific frequency above to view its 24-hour performance graphs.</div>
             </div>
 
             <div class="input-card" style="margin-bottom: 0; grid-column: 1 / -1;">
@@ -480,53 +574,21 @@
     </div>
 
     <div id="mainLogbookContainer">
-        <div class="controls">
-            <h2>Your Logs</h2>
-        </div>
-
+        <div class="controls"><h2>Your Logs</h2></div>
         <div class="radio-filters" id="radioFilterContainer"></div>
-
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="renderTable()">
-            <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;">
-                <option value="All">All Frequencies</option>
-                <option value="Confirmed">✅ Confirmed Only</option>
-                <option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option>
-            </select>
-            <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)">
-                <option value="date">Sort: Newest First</option>
-                <option value="freq">Sort: Frequency</option>
-                <option value="channel">Sort: Memory Channel</option>
-                <option value="traffic">Sort: Auto-Traffic</option>
-                <option value="signal">Sort: Best Signal</option>
-            </select>
+            <select id="statusFilter" onchange="renderTable()" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); font-weight: bold; width: auto; flex-shrink: 0;"><option value="All">All Frequencies</option><option value="Confirmed">✅ Confirmed Only</option><option value="Unconfirmed">⏳ Unconfirmed (DB) Only</option></select>
+            <select id="mobileSort" class="mobile-only" onchange="handleMobileSort(this.value)"><option value="date">Sort: Newest First</option><option value="freq">Sort: Frequency</option><option value="channel">Sort: Memory Channel</option><option value="traffic">Sort: Auto-Traffic</option><option value="signal">Sort: Best Signal</option></select>
         </div>
-
         <div class="table-container">
             <table id="logTable">
-                <thead>
-                    <tr>
-                        <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
-                        <th onclick="sortTable('freq', this)">Freq (MHz)</th>
-                        <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
-                        <th onclick="sortTable('station', this)">Station</th>
-                        <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
-                        <th onclick="sortTable('antenna', this)">Antenna</th>
-                        <th onclick="sortTable('signal', this)">Sig</th>
-                        <th onclick="sortTable('traffic', this)">Traf (Auto)</th>
-                        <th onclick="sortTable('notes', this)">Notes</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+                <thead><tr><th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th><th onclick="sortTable('freq', this)">Freq (MHz)</th><th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th><th onclick="sortTable('station', this)">Station</th><th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th><th onclick="sortTable('antenna', this)">Antenna</th><th onclick="sortTable('signal', this)">Sig</th><th onclick="sortTable('traffic', this)">Traf (Auto)</th><th onclick="sortTable('notes', this)">Notes</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
-
         <div class="footer-stats" id="logCounter">Total Logs: 0</div>
-
-        <div class="danger-zone">
-            <button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button>
-        </div>
+        <div class="danger-zone"><button class="btn-clear" onclick="clearData()">Clear All Cloud Data</button></div>
     </div> 
 
     <script>
@@ -978,8 +1040,6 @@
                 snapshot.forEach((childSnapshot) => {
                     let log = childSnapshot.val(); 
                     log.id = childSnapshot.key; 
-                    
-                    // Safety check to ensure strings are parsed correctly without crashing
                     if (!log.signal && log.notes) { 
                         let parsedNote = parseInt(log.notes); 
                         if (!isNaN(parsedNote) && parsedNote >= 1 && parsedNote <= 10 && String(log.notes).length <= 2) { 
@@ -1413,13 +1473,54 @@
 
         function generateMiniMeter(val) { let num = parseInt(val); if (isNaN(num) || num < 1) return ""; let html = '<div class="mini-meter">'; for (let i = 1; i <= 10; i++) { let colorClass = ""; if (i <= num) { if (i < 5) colorClass = "active-green"; else if (i < 8) colorClass = "active-yellow"; else colorClass = "active-red"; } html += `<div class="mini-bar ${colorClass}" data-val="${i}"></div>`; } html += '</div>'; return html; }
         function generateMiniTraffic(val) { let num = parseInt(val); if (isNaN(num) || num < 1) return ""; let html = '<div class="mini-traffic">'; for (let i = 1; i <= 10; i++) { let colorClass = (i <= num) ? "active" : ""; html += `<div class="mini-t-block ${colorClass}"></div>`; } html += '</div>'; return html; }
-        function toggleNote(element, event) { event.stopPropagation(); const isExpanded = element.classList.contains('expanded'); document.querySelectorAll('.expandable-note').forEach(note => { note.classList.remove('expanded'); }); if (!isExpanded) { element.classList.add('expanded'); } }
+        
+        function toggleNote(element, event) { 
+            event.stopPropagation(); 
+            const isExpanded = element.classList.contains('expanded'); 
+            document.querySelectorAll('.expandable-note').forEach(note => { note.classList.remove('expanded'); }); 
+            if (!isExpanded) { element.classList.add('expanded'); } 
+        }
+        
         document.addEventListener('DOMContentLoaded', () => { setSMeter(5); });
-        function toggleTheme() { const current = document.body.getAttribute('data-theme'); const target = current === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', target); document.getElementById('themeBtn').innerText = target === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'; localStorage.setItem('radioTheme', target); }
-        const savedTheme = localStorage.getItem('radioTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.body.setAttribute('data-theme', savedTheme); document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
-        function formatRadioDate(isoString) { if (!isoString) return ""; const date = new Date(isoString); const day = String(date.getDate()).padStart(2, '0'); const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; const month = monthNames[date.getMonth()]; const year = date.getFullYear(); const hours = String(date.getHours()).padStart(2, '0'); const minutes = String(date.getMinutes()).padStart(2, '0'); return `${day} ${month} ${year} ${hours}:${minutes}`; }
-        function sortTable(key, element) { if (currentSort.key === key) { currentSort.desc = !currentSort.desc; } else { currentSort.key = key; currentSort.desc = false; } document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc')); if(element) element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc'); document.getElementById('mobileSort').value = key; renderTable(); }
-        function handleMobileSort(key) { currentSort.key = key; currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic'); renderTable(); }
+        
+        function toggleTheme() { 
+            const current = document.body.getAttribute('data-theme'); 
+            const target = current === 'light' ? 'dark' : 'light'; 
+            document.body.setAttribute('data-theme', target); 
+            document.getElementById('themeBtn').innerText = target === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'; 
+            localStorage.setItem('radioTheme', target); 
+        }
+        
+        const savedTheme = localStorage.getItem('radioTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); 
+        document.body.setAttribute('data-theme', savedTheme); 
+        document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+        
+        function formatRadioDate(isoString) { 
+            if (!isoString) return ""; 
+            const date = new Date(isoString); 
+            const day = String(date.getDate()).padStart(2, '0'); 
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; 
+            const month = monthNames[date.getMonth()]; 
+            const year = date.getFullYear(); 
+            const hours = String(date.getHours()).padStart(2, '0'); 
+            const minutes = String(date.getMinutes()).padStart(2, '0'); 
+            return `${day} ${month} ${year} ${hours}:${minutes}`; 
+        }
+        
+        function sortTable(key, element) { 
+            if (currentSort.key === key) { currentSort.desc = !currentSort.desc; } 
+            else { currentSort.key = key; currentSort.desc = false; } 
+            document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc')); 
+            if(element) element.classList.add(currentSort.desc ? 'sort-desc' : 'sort-asc'); 
+            document.getElementById('mobileSort').value = key; 
+            renderTable(); 
+        }
+        
+        function handleMobileSort(key) { 
+            currentSort.key = key; 
+            currentSort.desc = (key === 'date' || key === 'signal' || key === 'traffic'); 
+            renderTable(); 
+        }
 
         function handleSubmit() {
             const editId = document.getElementById('editId').value; 
@@ -1500,9 +1601,20 @@
             }
         }
 
-        function resetForm() { document.getElementById('freqInput').value = ''; document.getElementById('stationInput').value = ''; document.getElementById('notesInput').value = ''; document.getElementById('channelInput').value = ''; document.getElementById('radioInput').value = appSettings.defaultRadio || appSettings.radios[0]; document.getElementById('antennaInput').value = appSettings.defaultAntenna || appSettings.antennas[0]; setSMeter(5); document.getElementById('confirmedInput').checked = true; }
+        function resetForm() { 
+            document.getElementById('freqInput').value = ''; 
+            document.getElementById('stationInput').value = ''; 
+            document.getElementById('notesInput').value = ''; 
+            document.getElementById('channelInput').value = ''; 
+            document.getElementById('radioInput').value = appSettings.defaultRadio || appSettings.radios[0]; 
+            document.getElementById('antennaInput').value = appSettings.defaultAntenna || appSettings.antennas[0]; 
+            setSMeter(5); 
+            document.getElementById('confirmedInput').checked = true; 
+        }
         
-        function toggleConfirm(id, currentStatus) { db.ref('radioLogs/' + id).update({ confirmed: currentStatus }); }
+        function toggleConfirm(id, currentStatus) { 
+            db.ref('radioLogs/' + id).update({ confirmed: currentStatus }); 
+        }
 
         function renderTable() {
             const tbody = document.querySelector('#logTable tbody'); 
@@ -1511,7 +1623,12 @@
             tbody.innerHTML = '';
             
             const freqCounts = {}; 
-            cloudLogs.forEach(l => { if (l.freq) { let f = parseFloat(l.freq).toFixed(3); freqCounts[f] = (freqCounts[f] || 0) + 1; } }); 
+            cloudLogs.forEach(l => { 
+                if (l.freq) { 
+                    let f = parseFloat(l.freq).toFixed(3); 
+                    freqCounts[f] = (freqCounts[f] || 0) + 1; 
+                } 
+            }); 
             let maxHits = Math.max(...Object.values(freqCounts), 1);
             
             let displayLogs = cloudLogs.map(log => { 
@@ -1556,20 +1673,49 @@
                 
                 let clickableFreq = `<strong style="color:var(--primary); cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
 
-                // Safe String cast to prevent crash if numeric data is found
                 const strRadio = String(log.radio || "").toLowerCase();
                 const strChannel = String(log.channel || "").toLowerCase();
                 const strStation = String(log.station || "").toLowerCase();
                 const strMode = String(log.mode || "").toLowerCase();
                 const strNotes = String(log.notes || "").toLowerCase();
 
-                const matches = freqDisplay.includes(searchTerm) || strRadio.includes(searchTerm) || strChannel.includes(searchTerm) || strStation.includes(searchTerm) || strMode.includes(searchTerm) || strNotes.includes(searchTerm);
+                const matches = freqDisplay.includes(searchTerm) || 
+                                strRadio.includes(searchTerm) || 
+                                strChannel.includes(searchTerm) || 
+                                strStation.includes(searchTerm) || 
+                                strMode.includes(searchTerm) || 
+                                strNotes.includes(searchTerm);
 
                 if (!matches && searchTerm !== "") return; 
                 count++; 
                 
                 const row = document.createElement('tr');
-                row.innerHTML = `<td data-label="UTC Time">${formattedDate}</td><td data-label="Freq (MHz)"><div class="flex-wrapper">${confIcon} ${clickableFreq} ${log.mode ? `<span class="inline-pill mobile-mode">${log.mode}</span>` : ""}</div></td><td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td><td data-label="Station">${log.station || ""}</td><td data-label="Radio / Ch."><div class="flex-wrapper">${log.radio || ""} ${channelBadge}</div></td><td data-label="Antenna">${log.antenna || ""}</td><td data-label="Signal">${displaySignal}</td><td data-label="Traffic">${displayTraffic}</td><td data-label="Notes" class="notes-cell">${displayNotes}</td><td class="action-btns"><button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button><button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button><button class="delete-btn" onclick="deleteLog('${log.id}')">Del</button></td>`;
+                row.innerHTML = `
+                    <td data-label="UTC Time">${formattedDate}</td>
+                    <td data-label="Freq (MHz)">
+                        <div class="flex-wrapper">
+                            ${confIcon} ${clickableFreq}
+                            ${log.mode ? `<span class="inline-pill mobile-mode">${log.mode}</span>` : ""}
+                        </div>
+                    </td>
+                    <td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td>
+                    <td data-label="Station">${log.station || ""}</td>
+                    <td data-label="Radio / Ch.">
+                        <div class="flex-wrapper">
+                            ${log.radio || ""}
+                            ${channelBadge}
+                        </div>
+                    </td>
+                    <td data-label="Antenna">${log.antenna || ""}</td>
+                    <td data-label="Signal">${displaySignal}</td>
+                    <td data-label="Traffic">${displayTraffic}</td>
+                    <td data-label="Notes" class="notes-cell">${displayNotes}</td>
+                    <td class="action-btns">
+                        <button class="edit-btn" onclick="startEdit('${log.id}')">Edit</button>
+                        <button class="dup-btn" onclick="duplicateLog('${log.id}')">Dup</button>
+                        <button class="delete-btn" onclick="deleteLog('${log.id}')">Del</button>
+                    </td>
+                `;
                 tbody.appendChild(row);
             });
             document.getElementById('logCounter').innerText = "Total Displayed: " + count;
@@ -1579,7 +1725,13 @@
         function clearData() { if(confirm("WARNING: Wipe ALL logs from Firebase Cloud? This cannot be undone.")) { logsRef.remove(); } }
 
         let mybutton = document.getElementById("scrollTopBtn");
-        window.onscroll = function() { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { mybutton.style.display = "block"; } else { mybutton.style.display = "none"; } };
+        window.onscroll = function() { 
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { 
+                mybutton.style.display = "block"; 
+            } else { 
+                mybutton.style.display = "none"; 
+            } 
+        };
         function topFunction() { window.scrollTo({top: 0, behavior: 'smooth'}); }
     </script>
 </body>
