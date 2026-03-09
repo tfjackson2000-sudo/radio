@@ -23,7 +23,7 @@
             --text-sub: #555555;
             --border-color: #dddddd;
             --table-hover: #f9fafb;
-            --unconfirmed-text: #ef4444; /* Bright Red */
+            --unconfirmed-text: #ef4444; 
         }
 
         [data-theme="dark"] {
@@ -38,7 +38,7 @@
             --text-sub: #9ca3af;
             --border-color: #374151;
             --table-hover: #2d3748;
-            --unconfirmed-text: #f87171; /* Lighter Red for Dark Mode */
+            --unconfirmed-text: #f87171; 
         }
 
         *, *::before, *::after { 
@@ -83,8 +83,6 @@
             cursor: pointer;
             font-size: 0.85em;
         }
-
-        .mobile-mode { display: none; }
 
         /* --- TABS --- */
         .tab-btn { 
@@ -266,6 +264,11 @@
         .inline-pill { display: inline-block; margin-left: 8px; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
         .ch-pill { background: var(--ch-color); color: white; border-radius: 12px; margin-left: 6px; }
         [data-theme="dark"] .inline-pill:not(.ch-pill) { background: #374151; color: #9ca3af; }
+        
+        /* NEW: Universal Mode Badge styling */
+        .mode-badge { display: inline-block; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        [data-theme="dark"] .mode-badge { background: #374151; color: #9ca3af; }
+
         .flex-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
         td.notes-cell { overflow: visible !important; position: relative; } 
@@ -340,10 +343,7 @@
             td:nth-child(7), td:nth-child(8) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
-            table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: block !important; } /* Restored mode column visibility on mobile */
-
-            .mobile-mode { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
-            [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
+            
             .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
             td:last-child::before { display: none; }
@@ -636,7 +636,7 @@
                     <tr>
                         <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
                         <th onclick="sortTable('freq', this)">Freq (MHz)</th>
-                        <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
+                        <th onclick="sortTable('mode', this)">Mode</th>
                         <th onclick="sortTable('station', this)">Station</th>
                         <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
                         <th onclick="sortTable('antenna', this)">Antenna</th>
@@ -1339,13 +1339,13 @@
                 let sData = getStationData(f[0]); 
                 let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : "";
                 
-                // NEW: Use !important to guarantee the red color applies
-                let freqColor = sData.confirmed ? "var(--primary)" : "var(--unconfirmed-text) !important";
+                let isConf = sData.confirmed;
+                let freqColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
                 
                 busiestHtml += `
                     <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
-                        <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
                         <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
                     </li>`;
             });
@@ -1365,7 +1365,7 @@
             const btnStrongest = document.getElementById('toggleStrongestBtn');
             
             if (sortedStrongestFull.length === 0) { 
-                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log a frequency multiple times to see its average signal strength.</span></li>`; 
+                document.getElementById('topStrongestList').innerHTML = `<li><span style="color:var(--text-sub); font-size:0.9em; font-style:italic;">Log frequencies to see average signal strength.</span></li>`; 
                 btnStrongest.style.display = 'none';
             } else {
                 let strongestHtml = "";
@@ -1373,13 +1373,13 @@
                     let sData = getStationData(item.f); 
                     let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : ""; 
                     
-                    // NEW: Use !important to guarantee the red color applies
-                    let freqColor = sData.confirmed ? "var(--edit-color)" : "var(--unconfirmed-text) !important";
+                    let isConf = sData.confirmed;
+                    let freqColor = isConf ? "var(--edit-color)" : "var(--unconfirmed-text)";
                     
                     strongestHtml += `
                         <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                             <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
-                            <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                             <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
                         </li>`;
                 });
@@ -1419,13 +1419,13 @@
                         let sData = getStationData(item.f); 
                         let nameDisplay = sData.name !== "Unknown Station" ? ` - ${sData.name}` : ""; 
                         
-                        // NEW: Use !important to guarantee the red color applies
-                        let freqColor = sData.confirmed ? "#10b981" : "var(--unconfirmed-text) !important";
+                        let isConf = sData.confirmed;
+                        let freqColor = isConf ? "#10b981" : "var(--unconfirmed-text)";
                         
                         overallHtml += `
                             <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                                 <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
-                                <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                                 <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
                             </li>`;
                     });
@@ -1684,7 +1684,7 @@
                     fDisplay = isNaN(fDisplay) ? "0.000" : fDisplay.toFixed(3);
                     let stName = log.station || log.notes || 'No Name';
                     
-                    let freqColor = isConf ? "var(--text-main)" : "var(--unconfirmed-text) !important";
+                    let freqColor = isConf ? "var(--text-main)" : "var(--unconfirmed-text)";
                     
                     return `
                         <div class="memory-slot ${isMoving}" ${dragAttr} 
@@ -2110,9 +2110,8 @@
                 let isConf = log.confirmed !== false; 
                 let confIcon = isConf ? `<span title="Confirmed Working! (Click to revert)" style="cursor:pointer; font-size:1.1em;" onclick="toggleConfirm('${log.id}', false)">✅</span>` : `<span title="Local DB: Not Yet Confirmed (Click to mark confirmed!)" style="cursor:pointer; font-size:1.1em; opacity:0.5; filter: grayscale(100%);" onclick="toggleConfirm('${log.id}', true)">⏳</span>`;
                 
-                // NEW: Use !important to guarantee the red color applies
-                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text) !important";
-                let clickableFreq = `<strong class="analytics-unconfirmed" style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
+                let linkColor = isConf ? "var(--primary)" : "var(--unconfirmed-text)";
+                let clickableFreq = `<strong style="color:${linkColor}; cursor:pointer; text-decoration:underline;" onclick="openAnalyticsFor('${freqDisplay}')" title="View Signal Graph">${freqDisplay}</strong>`;
 
                 const strRadio = String(log.radio || "").toLowerCase();
                 const strChannel = String(log.channel || "").toLowerCase();
@@ -2138,7 +2137,7 @@
                             ${confIcon} ${clickableFreq}
                         </div>
                     </td>
-                    <td data-label="Mode" class="hide-on-mobile">${log.mode || ""}</td>
+                    <td data-label="Mode">${log.mode ? `<span class="mode-badge">${log.mode}</span>` : ""}</td>
                     <td data-label="Station">${log.station || ""}</td>
                     <td data-label="Radio / Ch.">
                         <div class="flex-wrapper">
