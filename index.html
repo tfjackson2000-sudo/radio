@@ -1145,10 +1145,23 @@
         let showAllStrongest = false; 
         let showAllOverall = false; 
 
+        // UPDATED: Get Station Name now looks for unconfirmed logs as a backup!
         const getStationName = (f) => { 
-            if (!appSettings || !appSettings.dictionary) return "Unknown Station";
-            let match = appSettings.dictionary.find(d => d.f === f); 
-            return match ? match.n : "Unknown Station"; 
+            // 1. Check Dictionary First
+            if (appSettings && appSettings.dictionary) {
+                let match = appSettings.dictionary.find(d => d.f === f); 
+                if (match) return match.n; 
+            }
+            
+            // 2. Check for Unconfirmed Logs as Backup
+            if (typeof cloudLogs !== 'undefined' && cloudLogs.length > 0) {
+                let fallbackLog = cloudLogs.find(l => l.freq && parseFloat(l.freq).toFixed(3) === f && l.station && l.station.trim() !== "");
+                if (fallbackLog) {
+                    return fallbackLog.station + " (Unconfirmed)";
+                }
+            }
+            
+            return "Unknown Station"; 
         };
 
         logsRef.on('value', (snapshot) => {
