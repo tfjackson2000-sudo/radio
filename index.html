@@ -202,6 +202,7 @@
         #searchInput { flex-grow: 1; min-width: 200px; }
         .mobile-only { display: none; }
         .mobile-chevron { display: none; }
+        .mobile-mode-badge { display: none; }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .controls h2 { margin: 0; }
@@ -316,7 +317,9 @@
             td:nth-child(7), td:nth-child(8) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
-            table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: block !important; } 
+            table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
+            .mobile-mode-badge { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-left: 6px; }
+            [data-theme="dark"] .mobile-mode-badge { background: #374151; color: #9ca3af; }
 
             .mobile-mode { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
             [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
@@ -616,7 +619,7 @@
                     <tr>
                         <th id="dateHeader" class="sort-desc" onclick="sortTable('date', this)">UTC Time</th>
                         <th onclick="sortTable('freq', this)">Freq (MHz)</th>
-                        <th onclick="sortTable('mode', this)">Mode</th>
+                        <th class="hide-on-mobile" onclick="sortTable('mode', this)">Mode</th>
                         <th onclick="sortTable('station', this)">Station</th>
                         <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
                         <th onclick="sortTable('antenna', this)">Antenna</th>
@@ -2149,12 +2152,13 @@
                         ${formattedDate}
                         <span class="mobile-chevron">▼</span>
                     </td>
-                    <td data-label="Freq (MHz)">
+                   <td data-label="Freq (MHz)">
                         <div class="flex-wrapper">
                             ${confIcon} ${clickableFreq}
+                            ${log.mode ? `<span class="mobile-mode-badge">${log.mode}</span>` : ""}
                         </div>
                     </td>
-                    <td data-label="Mode">
+                    <td data-label="Mode" class="hide-on-mobile">
                         <div class="flex-wrapper">
                             ${log.mode ? `<span class="mode-badge">${log.mode}</span>` : ""}
                         </div>
