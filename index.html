@@ -75,6 +75,9 @@
         }
 
         .mobile-mode { display: none; }
+        .mobile-only { display: none; }
+        .mobile-chevron { display: none; }
+        .mobile-mode-badge { display: none; }
 
         /* --- TABS --- */
         .tabs-container {
@@ -200,9 +203,6 @@
 
         .search-container { margin-bottom: 15px; display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
         #searchInput { flex-grow: 1; min-width: 200px; }
-        .mobile-only { display: none; }
-        .mobile-chevron { display: none; }
-        .mobile-mode-badge { display: none; }
 
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .controls h2 { margin: 0; }
@@ -312,17 +312,16 @@
             tr { margin-bottom: 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 15px; cursor: pointer; position: relative; }
             tr.mobile-collapsed td:nth-child(n+5) { display: none !important; }
             .mobile-chevron { display: block; position: absolute; right: 15px; top: 12px; font-size: 1.2em; color: var(--primary); font-weight: bold; pointer-events: none; }
+
             td { display: grid !important; grid-template-columns: 105px 1fr; gap: 10px; align-items: center; text-align: left !important; border-bottom: 1px solid var(--border-color); padding: 10px 0; white-space: normal !important; overflow: visible !important; word-wrap: break-word; }
             td::before { content: attr(data-label); font-weight: bold; color: var(--text-sub); text-transform: uppercase; font-size: 0.8em; text-align: left; }
             td:nth-child(7), td:nth-child(8) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
+
             .mobile-mode-badge { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-left: 6px; }
             [data-theme="dark"] .mobile-mode-badge { background: #374151; color: #9ca3af; }
-
-            .mobile-mode { display: inline-block !important; padding: 2px 6px; background: #e5e7eb; color: var(--text-sub); border-radius: 4px; font-size: 0.8em; font-weight: bold; }
-            [data-theme="dark"] .mobile-mode { background: #374151; color: #9ca3af; }
             
             .freq-wrapper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
             td:last-child { display: flex !important; border-bottom: none; justify-content: center; padding-top: 15px; }
@@ -1233,19 +1232,7 @@
 
             const modeSelect = document.getElementById('modeInput'); 
             const stationInput = document.getElementById('stationInput'); 
-            const radioSelect = document.getElementById('radioInput');
-            const antennaSelect = document.getElementById('antennaInput');
             const freqKey = freqVal.toFixed(3);
-
-            // --- NEW: Auto-switch Radio and Antenna for Shortwave (< 30 MHz) ---
-            if (freqVal < 30.000) {
-                // Safely check if Malahit and GA800 exist in your hardware lists
-                let hasMalahit = Array.from(radioSelect.options).some(o => o.value === "Malahit DSP2");
-                let hasGA800 = Array.from(antennaSelect.options).some(o => o.value === "GA800");
-                
-                if (hasMalahit) radioSelect.value = "Malahit DSP2";
-                if (hasGA800) antennaSelect.value = "GA800";
-            }
 
             const dictMatch = appSettings.dictionary.find(d => d.f === freqKey);
             if (dictMatch) {
@@ -1257,14 +1244,12 @@
             } else {
                 const existingLog = cloudLogs.find(l => parseFloat(l.freq).toFixed(3) === freqKey);
                 if (existingLog) { 
-                    // Let existing logs keep their saved mode/station
                     if (existingLog.mode) modeSelect.value = existingLog.mode; 
                     if (!stationInput.value && existingLog.station) stationInput.value = existingLog.station; 
                     return; 
                 }
             }
 
-            // Auto-Mode standard rules (< 10 MHz = LSB, > 10 MHz = USB)
             if (freqVal < 10.000) modeSelect.value = "LSB"; 
             else if (freqVal < 30.000) modeSelect.value = "USB"; 
             else if (freqVal >= 108.000 && freqVal <= 136.975) modeSelect.value = "AM"; 
@@ -1715,19 +1700,11 @@
                             ondragleave="dragLeave(event)" 
                             ondrop="dropSlot(event, '${cleanCh}')" 
                             onclick="handleSlotClick(this, event, '${log.id}', '${cleanCh}')" 
-                            oncontextmenu="handleSlotRightClick(this, event)" 
-                            ontouchstart="handleTouchStart(this, event)" 
-                            ontouchend="handleTouchEnd(this, event)" 
-                            ontouchmove="handleTouchMove(this, event)" 
                             title="Click to edit, Drag to swap/move, Drag to Trash to clear">
                             <span class="status-icon">${icon}</span>
                             <span class="ch-num">${chLabel}</span>
                             <span class="freq" style="color: ${freqColor};">${fDisplay}</span>
                             <span class="station">${stName}</span>
-                            <div class="action-overlay">
-                                <button class="action-btn btn-clear-slot" onclick="event.stopPropagation(); unassignChannel('${log.id}', '${cleanCh}')">🗑️<span>Clear</span></button>
-                                <button class="action-btn btn-cancel-slot" onclick="event.stopPropagation(); closeSlotActions(this)">❌<span>Cancel</span></button>
-                            </div>
                         </div>`;
                 } else {
                     return `
@@ -2149,12 +2126,11 @@
                                 strNotes.includes(searchTerm);
 
                 if (!matches && searchTerm !== "") return; 
-               count++; 
+                count++; 
                 
                 const row = document.createElement('tr');
-                row.className = 'mobile-collapsed'; // Start collapsed on mobile
+                row.className = 'mobile-collapsed';
                 
-                // Toggle card on click, but ignore clicks on buttons or links
                 row.onclick = function(e) {
                     if (window.innerWidth <= 800 && !e.target.closest('button') && !e.target.closest('strong') && !e.target.classList.contains('expandable-note')) {
                         this.classList.toggle('mobile-collapsed');
@@ -2168,7 +2144,7 @@
                         ${formattedDate}
                         <span class="mobile-chevron">▼</span>
                     </td>
-                   <td data-label="Freq (MHz)">
+                    <td data-label="Freq (MHz)">
                         <div class="flex-wrapper">
                             ${confIcon} ${clickableFreq}
                             ${log.mode ? `<span class="mobile-mode-badge">${log.mode}</span>` : ""}
