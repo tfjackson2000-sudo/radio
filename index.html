@@ -249,12 +249,13 @@
         th:nth-child(1), td:nth-child(1) { width: 140px; } 
         th:nth-child(2), td:nth-child(2) { width: 110px; }  
         th:nth-child(3), td:nth-child(3) { width: 70px; }  
-        th:nth-child(4), td:nth-child(4), th:nth-child(9), td:nth-child(9) { width: auto; white-space: normal; word-wrap: break-word; } 
+        th:nth-child(4), td:nth-child(4), th:nth-child(10), td:nth-child(10) { width: auto; white-space: normal; word-wrap: break-word; } 
         th:nth-child(5), td:nth-child(5) { width: 160px; } 
         th:nth-child(6), td:nth-child(6) { width: 80px; }  
-        th:nth-child(7), th:nth-child(8) { width: 95px; text-align: left; } 
-        td:nth-child(7), td:nth-child(8) { font-weight: bold; text-align: left; }
-        th:nth-child(10), td:nth-child(10) { width: 135px; text-align: center; } 
+        th:nth-child(7), td:nth-child(7) { width: 100px; } 
+        th:nth-child(8), th:nth-child(9) { width: 95px; text-align: left; } 
+        td:nth-child(8), td:nth-child(9) { font-weight: bold; text-align: left; }
+        th:nth-child(11), td:nth-child(11) { width: 135px; text-align: center; } 
 
         th { background-color: var(--primary); color: white; font-size: 0.8em; text-transform: uppercase; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 10; }
         th:hover { background-color: #1d4ed8; }
@@ -315,7 +316,7 @@
 
             td { display: grid !important; grid-template-columns: 105px 1fr; gap: 10px; align-items: center; text-align: left !important; border-bottom: 1px solid var(--border-color); padding: 10px 0; white-space: normal !important; overflow: visible !important; word-wrap: break-word; }
             td::before { content: attr(data-label); font-weight: bold; color: var(--text-sub); text-transform: uppercase; font-size: 0.8em; text-align: left; }
-            td:nth-child(7), td:nth-child(8) { text-align: left; } 
+            td:nth-child(8), td:nth-child(9) { text-align: left; } 
             td:nth-child(4), td.notes-cell { align-items: start; }
             td.notes-cell { grid-template-columns: 1fr; gap: 4px; }
             table tr td.hide-on-mobile, table tr th.hide-on-mobile { display: none !important; } 
@@ -376,6 +377,14 @@
                     <ul id="antennasAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
                 </div>
                 <div>
+                    <label>Locations</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" id="newLocationAdmin" placeholder="Add Location...">
+                        <button onclick="addSetting('locations', 'newLocationAdmin')" class="btn-main" style="margin:0; padding:0 15px; width:auto;">Add</button>
+                    </div>
+                    <ul id="locationsAdminList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px;"></ul>
+                </div>
+                <div>
                     <label>Modes</label>
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input type="text" id="newModeAdmin" placeholder="Add Mode...">
@@ -398,6 +407,10 @@
                     <label>Default Antenna</label>
                     <select id="defaultAntennaSelect" onchange="setDefault('Antenna', this.value)"></select>
                 </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label>Default Location</label>
+                    <select id="defaultLocationSelect" onchange="setDefault('Location', this.value)"></select>
+                </div>
             </div>
         </div>
 
@@ -418,7 +431,8 @@
             <h4 style="margin: 0 0 10px 0; color: var(--edit-color);">🪄 Database Tools</h4>
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="exportForUniden()" class="btn-main" style="background-color: #10b981; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download Uniden UBC1260DN Export</button>
+                <button onclick="exportForUniden()" class="btn-main" style="background-color: #10b981; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download Uniden Export (.csv)</button>
+                <button onclick="exportForSdrPlusPlus()" class="btn-main" style="background-color: #3b82f6; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download SDR++ Export (.json)</button>
             </div>
         </div>
     </div>
@@ -449,6 +463,10 @@
             <div class="form-group">
                 <label>Antenna</label>
                 <select id="antennaInput"></select>
+            </div>
+            <div class="form-group">
+                <label>Location</label>
+                <select id="locationInput"></select>
             </div>
             <div class="form-group">
                 <label>Mode</label>
@@ -622,6 +640,7 @@
                         <th onclick="sortTable('station', this)">Station</th>
                         <th onclick="sortTable('radio', this)">Radio <span class="ch-sort" onclick="event.stopPropagation(); sortTable('channel', this.parentElement)">[Ch. ↕]</span></th>
                         <th onclick="sortTable('antenna', this)">Antenna</th>
+                        <th onclick="sortTable('location', this)">Location</th>
                         <th onclick="sortTable('signal', this)">Sig</th>
                         <th onclick="sortTable('traffic', this)">Traf (Auto)</th>
                         <th onclick="sortTable('notes', this)">Notes</th>
@@ -654,9 +673,11 @@
         let appSettings = { 
             radios: [], 
             antennas: [], 
+            locations: [],
             modes: [], 
             defaultRadio: "", 
             defaultAntenna: "", 
+            defaultLocation: "",
             dictionary: [] 
         };
 
@@ -665,9 +686,11 @@
             appSettings = {
                 radios: data.radios || ["Malahit DSP2", "Realistic Pro 2006", "Baofeng DM1701"],
                 antennas: data.antennas || ["GA800", "Whip", "X30N"],
+                locations: data.locations || ["Loft Center", "Loft Window", "Desk", "Outside"],
                 modes: data.modes || ["AM", "FM", "USB", "LSB", "CW", "FT8", "DMR", "Other"],
                 defaultRadio: data.defaultRadio || "Realistic Pro 2006",
                 defaultAntenna: data.defaultAntenna || "X30N",
+                defaultLocation: data.defaultLocation || "Loft Center",
                 dictionary: data.dictionary || [
                     {f:"125.855",n:"Bristol Lulsgate"}, {f:"119.155",n:"Bristol Radar"}, {f:"119.250",n:"Cardiff Radar"},
                     {f:"133.100",n:"Cardiff Director"}, {f:"125.850",n:"Bristol Radar"}, {f:"133.850",n:"Bristol Approach"},
@@ -774,11 +797,6 @@
         function renderDictSidebar() {
             const sb = document.getElementById('memorySidebarDict');
             if(!sb) return;
-            
-            if (!appSettings.dictionary || appSettings.dictionary.length === 0) { 
-                sb.innerHTML = '<div style="font-size: 0.85em; color: var(--text-sub);">No dictionary items yet.</div>'; 
-                return; 
-            }
             
             const dragAttr = 'draggable="true"';
 
@@ -1030,7 +1048,7 @@
                 const parts = val.split('|'); 
                 const freq = parseFloat(parts[0]); 
                 const name = decodeURIComponent(parts[1]);
-                logsRef.push({ freq: freq, station: name, radio: radio, channel: channel, antenna: appSettings.defaultAntenna || appSettings.antennas[0], mode: (freq < 30) ? "USB" : ((freq >= 108 && freq <= 137) ? "AM" : "FM"), signal: "5", traffic: "1", notes: "", confirmed: true, date: new Date().toISOString() });
+                logsRef.push({ freq: freq, station: name, radio: radio, channel: channel, antenna: appSettings.defaultAntenna || appSettings.antennas[0], location: appSettings.defaultLocation || appSettings.locations[0], mode: (freq < 30) ? "USB" : ((freq >= 108 && freq <= 137) ? "AM" : "FM"), signal: "5", traffic: "1", notes: "", confirmed: true, date: new Date().toISOString() });
                 closeAssignModal();
             } else { 
                 alert('Please select a frequency first.'); 
@@ -1091,8 +1109,87 @@
             document.body.removeChild(link);
         }
 
+        // --- NEW: SDR++ EXPORT FUNCTION ---
+        function exportForSdrPlusPlus() {
+            const sdrBookmarks = {};
+            const usedFreqs = new Set();
+
+            function getSdrMode(modeStr) {
+                let m = (modeStr || "FM").toUpperCase();
+                if (m === 'AM') return { mode: 2, bw: 10000.0 };
+                if (m === 'WFM') return { mode: 0, bw: 150000.0 };
+                if (m === 'NFM' || m === 'FM') return { mode: 1, bw: 12500.0 };
+                if (m === 'LSB') return { mode: 4, bw: 3000.0 };
+                if (m === 'USB') return { mode: 5, bw: 3000.0 };
+                if (m === 'CW') return { mode: 6, bw: 500.0 };
+                if (m === 'DSB') return { mode: 3, bw: 6000.0 };
+                if (m === 'RAW') return { mode: 7, bw: 10000.0 };
+                return { mode: 1, bw: 12500.0 }; // Default to NFM
+            }
+
+            // 1. Grab dictionary items
+            if (appSettings.dictionary && appSettings.dictionary.length > 0) {
+                appSettings.dictionary.forEach(dictItem => {
+                    let fVal = parseFloat(dictItem.f);
+                    if (!isNaN(fVal)) {
+                        let name = dictItem.n.trim();
+                        if (sdrBookmarks[name]) name = `${name} (${dictItem.f})`; // Deduplicate names
+                        
+                        let modeStr = (fVal < 30) ? "USB" : ((fVal >= 108 && fVal <= 137) ? "AM" : "FM");
+                        let mb = getSdrMode(modeStr);
+                        let freqHz = Math.round(fVal * 1000000);
+                        
+                        sdrBookmarks[name] = { bandwidth: mb.bw, frequency: freqHz, mode: mb.mode };
+                        usedFreqs.add(freqHz);
+                    }
+                });
+            }
+
+            // 2. Grab valid logged frequencies not already in dictionary
+            cloudLogs.forEach(log => {
+                if (log.freq) {
+                    let fVal = parseFloat(log.freq);
+                    if (!isNaN(fVal)) {
+                        let freqHz = Math.round(fVal * 1000000);
+                        if (!usedFreqs.has(freqHz)) {
+                            let name = (log.station || `Freq ${fVal.toFixed(4)}`).trim();
+                            if (sdrBookmarks[name]) name = `${name} (${fVal.toFixed(4)})`;
+                            
+                            let mb = getSdrMode(log.mode);
+                            sdrBookmarks[name] = { bandwidth: mb.bw, frequency: freqHz, mode: mb.mode };
+                            usedFreqs.add(freqHz);
+                        }
+                    }
+                }
+            });
+
+            if (Object.keys(sdrBookmarks).length === 0) return alert("No valid frequencies found for SDR++ export.");
+
+            const sdrConfig = {
+                bookmarkDisplayMode: 1,
+                lists: {
+                    "Radio Logger Pro": {
+                        bookmarks: sdrBookmarks,
+                        showOnWaterfall: true
+                    }
+                },
+                selectedList: "Radio Logger Pro"
+            };
+
+            const jsonString = JSON.stringify(sdrConfig, null, 4);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "frequency_manager_config.json");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function renderAdminLists() {
-            ['radios', 'antennas', 'modes'].forEach(type => {
+            ['radios', 'antennas', 'locations', 'modes'].forEach(type => {
                 const listEl = document.getElementById(type + 'AdminList');
                 if(listEl) {
                     let html = "";
@@ -1107,28 +1204,38 @@
         function updateDropdowns() {
             const rSelect = document.getElementById('radioInput'); 
             const aSelect = document.getElementById('antennaInput'); 
+            const lSelect = document.getElementById('locationInput'); 
             const mSelect = document.getElementById('modeInput');
             const curR = rSelect ? rSelect.value : ""; 
             const curA = aSelect ? aSelect.value : ""; 
+            const curL = lSelect ? lSelect.value : ""; 
             const curM = mSelect ? mSelect.value : "";
 
             if (rSelect) rSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
             if (aSelect) aSelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (lSelect) lSelect.innerHTML = appSettings.locations.map(i => `<option value="${i}">${i}</option>`).join('');
             if (mSelect) mSelect.innerHTML = appSettings.modes.map(i => `<option value="${i}">${i}</option>`).join('');
 
             const defRSelect = document.getElementById('defaultRadioSelect'); 
             const defASelect = document.getElementById('defaultAntennaSelect');
+            const defLSelect = document.getElementById('defaultLocationSelect');
             
             if (defRSelect) defRSelect.innerHTML = appSettings.radios.map(i => `<option value="${i}">${i}</option>`).join('');
             if (defASelect) defASelect.innerHTML = appSettings.antennas.map(i => `<option value="${i}">${i}</option>`).join('');
+            if (defLSelect) defLSelect.innerHTML = appSettings.locations.map(i => `<option value="${i}">${i}</option>`).join('');
+            
             if (defRSelect) defRSelect.value = appSettings.defaultRadio; 
             if (defASelect) defASelect.value = appSettings.defaultAntenna;
+            if (defLSelect) defLSelect.value = appSettings.defaultLocation;
 
             if (appSettings.radios.includes(curR)) rSelect.value = curR; 
             else if (rSelect) rSelect.value = appSettings.defaultRadio || appSettings.radios[0];
             
             if (appSettings.antennas.includes(curA)) aSelect.value = curA; 
             else if (aSelect) aSelect.value = appSettings.defaultAntenna || appSettings.antennas[0];
+
+            if (appSettings.locations.includes(curL)) lSelect.value = curL; 
+            else if (lSelect) lSelect.value = appSettings.defaultLocation || appSettings.locations[0];
             
             if (appSettings.modes.includes(curM)) mSelect.value = curM;
 
@@ -1187,6 +1294,7 @@
                     }
                     if (!log.traffic) log.traffic = ""; 
                     if (!log.channel) log.channel = ""; 
+                    if (!log.location) log.location = "";
                     cloudLogs.push(log);
                 });
                 
@@ -1352,7 +1460,7 @@
                 busiestHtml += `
                     <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <strong style="color:var(--primary); flex-shrink: 0;">#${i+1}:</strong> 
-                        <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
+                        <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${f[0]}')">${f[0]} MHz${nameDisplay}</span> 
                         <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(${f[1]} logs)</span>
                     </li>`;
             });
@@ -1386,7 +1494,7 @@
                     strongestHtml += `
                         <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                             <strong style="color:var(--edit-color); flex-shrink: 0;">#${i+1}:</strong> 
-                            <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                            <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                             <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Avg S-${item.avg})</span>
                         </li>`;
                 });
@@ -1432,7 +1540,7 @@
                         overallHtml += `
                             <li style="margin-bottom: 5px; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
                                 <strong style="color:#10b981; flex-shrink: 0;">#${i+1}:</strong> 
-                                <span style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
+                                <span class="analytics-unconfirmed" style="color:${freqColor}; cursor:pointer; text-decoration:underline; font-weight:bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1;" onclick="openAnalyticsFor('${item.f}')">${item.f} MHz${nameDisplay}</span> 
                                 <span style="color:var(--text-sub); font-size:0.85em; flex-shrink: 0; margin-left: auto;">(Score: ${item.score})</span>
                             </li>`;
                     });
@@ -1925,6 +2033,7 @@
             const radio = document.getElementById('radioInput').value; 
             const channel = document.getElementById('channelInput').value; 
             const antenna = document.getElementById('antennaInput').value; 
+            const locationVal = document.getElementById('locationInput').value; 
             const mode = document.getElementById('modeInput').value; 
             const station = document.getElementById('stationInput').value.replace(/,/g, ";").substring(0, 16); 
             const signalVal = document.getElementById('signalInput').value; 
@@ -1939,6 +2048,7 @@
                 radio: radio, 
                 channel: channel, 
                 antenna: antenna, 
+                location: locationVal,
                 mode: mode, 
                 station: station, 
                 signal: signalVal, 
@@ -1978,6 +2088,7 @@
             document.getElementById('radioInput').value = log.radio || ""; 
             document.getElementById('channelInput').value = log.channel || ""; 
             document.getElementById('antennaInput').value = log.antenna || ""; 
+            document.getElementById('locationInput').value = log.location || ""; 
             document.getElementById('modeInput').value = log.mode; 
             document.getElementById('stationInput').value = log.station || ""; 
             document.getElementById('notesInput').value = log.notes || ""; 
@@ -2014,6 +2125,7 @@
                     radio: logToCopy.radio || "", 
                     channel: logToCopy.channel || "", 
                     antenna: logToCopy.antenna || "", 
+                    location: logToCopy.location || "",
                     mode: logToCopy.mode || "AM", 
                     station: logToCopy.station || "", 
                     signal: logToCopy.signal || "5", 
@@ -2033,6 +2145,7 @@
             document.getElementById('channelInput').value = ''; 
             document.getElementById('radioInput').value = appSettings.defaultRadio || appSettings.radios[0]; 
             document.getElementById('antennaInput').value = appSettings.defaultAntenna || appSettings.antennas[0]; 
+            document.getElementById('locationInput').value = appSettings.defaultLocation || appSettings.locations[0];
             setSMeter(5); 
             document.getElementById('confirmedInput').checked = true; 
         }
@@ -2116,12 +2229,14 @@
                 const strChannel = String(log.channel || "").toLowerCase();
                 const strStation = String(log.station || "").toLowerCase();
                 const strMode = String(log.mode || "").toLowerCase();
+                const strLocation = String(log.location || "").toLowerCase();
                 const strNotes = String(log.notes || "").toLowerCase();
 
                 const matches = freqDisplay.includes(searchTerm) || 
                                 strRadio.includes(searchTerm) || 
                                 strChannel.includes(searchTerm) || 
                                 strStation.includes(searchTerm) || 
+                                strLocation.includes(searchTerm) ||
                                 strMode.includes(searchTerm) || 
                                 strNotes.includes(searchTerm);
 
@@ -2163,6 +2278,7 @@
                         </div>
                     </td>
                     <td data-label="Antenna">${log.antenna || ""}</td>
+                    <td data-label="Location">${log.location || ""}</td>
                     <td data-label="Signal">${displaySignal}</td>
                     <td data-label="Traffic">${displayTraffic}</td>
                     <td data-label="Notes" class="notes-cell">${displayNotes}</td>
