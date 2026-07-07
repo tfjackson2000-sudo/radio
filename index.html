@@ -72,10 +72,11 @@
             padding: 15px; display: flex; justify-content: space-between; align-items: center;
             flex-wrap: wrap; gap: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        select, input[type="text"], input[type="number"] {
+        select, input[type="text"], input[type="number"], textarea {
             padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px;
             background: var(--bg-color); color: var(--text-main); font-size: 1em; font-weight: 500;
         }
+        textarea { resize: vertical; font-family: monospace; }
         .btn-main { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-main:hover { filter: brightness(1.1); }
         .btn-danger { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -207,23 +208,64 @@
     <!-- TOOLS & IMPORT VIEW -->
     <div id="view-tools" style="display: none;">
         <div class="tools-grid">
+            
             <!-- Data Transfer -->
             <div class="tool-card">
                 <h3>💾 Data Transfer (ProScan)</h3>
-                <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 20px;">Import a CSV from ProScan to overwrite your cloud memory, or export your cloud memory to load into the scanner.</p>
+                <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Import or Export data.</p>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Import Destination Route:</label>
+                    <select id="importModeSelector">
+                        <option value="csv">Use Exact Channel Numbers from CSV</option>
+                        <option value="1">Force Sequential Start -> Bank 1</option>
+                        <option value="2">Force Sequential Start -> Bank 2</option>
+                        <option value="3">Force Sequential Start -> Bank 3</option>
+                        <option value="4">Force Sequential Start -> Bank 4</option>
+                        <option value="5">Force Sequential Start -> Bank 5</option>
+                        <option value="6">Force Sequential Start -> Bank 6</option>
+                        <option value="7">Force Sequential Start -> Bank 7</option>
+                        <option value="8">Force Sequential Start -> Bank 8</option>
+                        <option value="9">Force Sequential Start -> Bank 9</option>
+                        <option value="10">Force Sequential Start -> Bank 10</option>
+                    </select>
+                </div>
+
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <button class="btn-main" style="background: var(--edit-color); color: black;" onclick="document.getElementById('csvImport').click()">📤 Import ProScan CSV</button>
                     <input type="file" id="csvImport" accept=".csv" style="display: none;" onchange="importCSV(event)">
-                    
                     <button class="btn-main" style="background: var(--secondary);" onclick="exportCSV()">📥 Download ProScan CSV Export</button>
                 </div>
+            </div>
+
+            <!-- Paste Column Tool -->
+            <div class="tool-card">
+                <h3>📋 Paste Column Data</h3>
+                <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Paste a list of values straight into a specific bank.</p>
+                <div class="form-grid" style="margin-bottom: 10px;">
+                    <div class="form-group">
+                        <label>Target Bank</label>
+                        <select id="pasteBank">
+                            <!-- Auto-populated by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Field</label>
+                        <select id="pasteField">
+                            <option value="freq">Frequency (MHz)</option>
+                            <option value="name">Alpha Tag / Name</option>
+                            <option value="tone">Tone / Color Code</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="pasteDataInput" rows="5" placeholder="Paste your list here... (One value per line)&#10;Line 1 -> Slot 1 of Bank&#10;Line 2 -> Slot 2 of Bank"></textarea>
+                <button class="btn-main" style="width: 100%; margin-top: 10px;" onclick="applyPastedData()">Paste & Apply Data</button>
             </div>
 
             <!-- Mass Operations -->
             <div class="tool-card">
                 <h3>📦 Mass Bank Operations</h3>
                 <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 15px;">Move, copy, or completely wipe 100-channel blocks.</p>
-                
                 <div class="form-grid" style="margin-bottom: 15px;">
                     <div class="form-group">
                         <label>Action</label>
@@ -235,15 +277,11 @@
                     </div>
                     <div class="form-group">
                         <label>Source Bank</label>
-                        <select id="massSource">
-                             <!-- Auto-populated by JS -->
-                        </select>
+                        <select id="massSource"></select>
                     </div>
                     <div class="form-group full-width" id="massTargetGroup">
                         <label>Target Destination Bank</label>
-                        <select id="massTarget">
-                             <!-- Auto-populated by JS -->
-                        </select>
+                        <select id="massTarget"></select>
                     </div>
                 </div>
                 <button class="btn-main" style="width: 100%;" onclick="executeMassAction()">Execute Operation</button>
@@ -370,7 +408,7 @@
         const db = firebase.database();
         
         const channelsRef = db.ref('ubcd260dn_memory');
-        const banksRef = db.ref('ubcd260dn_banks'); // New ref for bank names
+        const banksRef = db.ref('ubcd260dn_banks'); 
 
         // --- GLOBAL MEMORY ARRAYS ---
         let memory = new Array(1001).fill(null);
@@ -401,10 +439,12 @@
             const bSel = document.getElementById('bankSelector');
             const mSrc = document.getElementById('massSource');
             const mTgt = document.getElementById('massTarget');
+            const pBnk = document.getElementById('pasteBank');
             
             let curBank = bSel.value || "1";
             let curSrc = mSrc.value || "1";
             let curTgt = mTgt.value || "1";
+            let curPaste = pBnk.value || "1";
             
             let html = '';
             for(let i = 1; i <= 10; i++) {
@@ -417,12 +457,13 @@
             bSel.innerHTML = html; 
             mSrc.innerHTML = html; 
             mTgt.innerHTML = html;
+            pBnk.innerHTML = html;
             
             bSel.value = curBank; 
             mSrc.value = curSrc; 
             mTgt.value = curTgt;
+            pBnk.value = curPaste;
             
-            // Re-render grid just in case the label change affects view state
             renderBankGrid();
         }
 
@@ -655,6 +696,54 @@
             }
         }
 
+        // --- PASTE LIST DATA LOGIC ---
+        function applyPastedData() {
+            let bank = parseInt(document.getElementById('pasteBank').value);
+            let field = document.getElementById('pasteField').value;
+            let text = document.getElementById('pasteDataInput').value;
+            
+            if(!text.trim()) return alert("No data pasted!");
+            
+            let lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== "");
+            if(lines.length === 0) return;
+            if(lines.length > 100) return alert("You pasted more than 100 items! You can only paste up to 100 items per bank.");
+            
+            let startCh = (bank - 1) * 100 + 1;
+            let updates = {};
+            let applyCount = 0;
+            
+            let fieldDisplayName = document.getElementById('pasteField').options[document.getElementById('pasteField').selectedIndex].text;
+            if(!confirm(`Apply ${lines.length} items to Bank ${bank} as ${fieldDisplayName}?`)) return;
+            
+            for(let i=0; i<lines.length; i++) {
+                let chNum = startCh + i;
+                
+                // If channel exists, preserve its other data. Otherwise, build default shell.
+                let ch = memory[chNum] || { freq: "", name: "", mod: "AUTO", audio: "ALL", tone: "Search", delay: "2", lockout: "Unlocked", priority: "Off", att: "Off", notes: "" };
+                
+                let val = lines[i];
+                if (field === 'freq') {
+                    let fVal = parseFloat(val);
+                    if(isNaN(fVal)) continue; // skip text/headers if accidently pasted
+                    ch.freq = fVal.toFixed(4);
+                } else if (field === 'name') {
+                    ch.name = val.substring(0, 16);
+                } else if (field === 'tone') {
+                    ch.tone = val;
+                }
+                
+                updates[chNum] = ch;
+                applyCount++;
+            }
+            
+            channelsRef.update(updates).then(() => {
+                alert(`Successfully pasted and applied ${applyCount} items!`);
+                document.getElementById('pasteDataInput').value = '';
+                document.getElementById('bankSelector').value = bank;
+                renderBankGrid();
+            });
+        }
+
         // --- MASS OPERATIONS ---
         function toggleMassTargets() {
             let action = document.getElementById('massAction').value;
@@ -740,6 +829,12 @@
                 let colPri = header.findIndex(h => h.includes('priority'));
                 let colAtt = header.findIndex(h => h.includes('attenuator') || h.includes('att'));
 
+                let importMode = document.getElementById('importModeSelector').value;
+                let forceStartCh = -1;
+                if (importMode !== 'csv') {
+                    forceStartCh = (parseInt(importMode) - 1) * 100 + 1;
+                }
+
                 let updates = {};
                 let count = 0;
 
@@ -749,11 +844,20 @@
                     
                     let fVal = colFreq !== -1 ? parseFloat(cols[colFreq]) : NaN;
                     if (!isNaN(fVal)) {
-                        let chNum = colCh !== -1 ? parseInt(cols[colCh]) : NaN;
+                        let chNum;
                         
-                        // Find next empty if CSV doesn't specify channel
-                        if (isNaN(chNum) || chNum < 1 || chNum > 1000) {
-                            for(let n=1; n<=1000; n++) { if(!memory[n] && !updates[n]) { chNum = n; break; } }
+                        if (importMode === 'csv') {
+                            chNum = colCh !== -1 ? parseInt(cols[colCh]) : NaN;
+                            // Find next empty if CSV doesn't specify channel
+                            if (isNaN(chNum) || chNum < 1 || chNum > 1000) {
+                                for(let n=1; n<=1000; n++) { if(!memory[n] && !updates[n]) { chNum = n; break; } }
+                            }
+                        } else {
+                            chNum = forceStartCh++;
+                            if (chNum > 1000) {
+                                alert(`Memory full! Stopped importing after reaching Channel 1000.`);
+                                break; 
+                            }
                         }
                         
                         if (chNum >= 1 && chNum <= 1000) {
@@ -762,7 +866,7 @@
 
                             updates[chNum] = {
                                 freq: fVal.toFixed(4),
-                                name: colName !== -1 ? cols[colName].substring(0,16) : `Freq ${fVal.toFixed(4)}`,
+                                name: colName !== -1 && cols[colName] ? cols[colName].substring(0,16) : `Freq ${fVal.toFixed(4)}`,
                                 mod: mod,
                                 audio: colAudio !== -1 && cols[colAudio] ? cols[colAudio] : "ALL",
                                 tone: colTone !== -1 && cols[colTone] && cols[colTone].toUpperCase() !== "NONE" ? cols[colTone] : "Search",
