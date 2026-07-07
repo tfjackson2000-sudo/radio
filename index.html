@@ -281,7 +281,7 @@
                 </div>
                 <div class="form-group">
                     <label>Color Code / Tone</label>
-                    <input type="text" id="noteCC" placeholder="e.g. CC 1">
+                    <input type="text" id="noteCC" placeholder="e.g. 1">
                 </div>
                 <div class="form-group">
                     <label>Activity Status</label>
@@ -446,7 +446,7 @@
 
                 <div class="form-group full-width">
                     <label>Tone / Color Code</label>
-                    <input type="text" id="modTone" placeholder="Search, None, CC 1, DCS 023...">
+                    <input type="text" id="modTone" placeholder="Search, None, 1, 88.5...">
                 </div>
 
                 <div class="form-group">
@@ -524,6 +524,39 @@
         let bankNames = {};
         let scratchpad = [];
         let currentEditCh = null;
+
+        // --- SMART FORMATTERS ---
+        function formatTone(tone, mod) {
+            if (!tone) return "Search";
+            tone = tone.trim().toUpperCase();
+            if (tone === "NONE" || tone === "SEARCH" || tone === "") return "Search";
+
+            if (mod === "DMR") {
+                let match = tone.match(/\d+/);
+                if (match) return "CC " + match[0];
+                return "Search";
+            }
+
+            if (mod === "FM" || mod === "NFM" || mod === "AUTO" || mod === "WFM" || mod === "FMB") {
+                let numMatch = tone.match(/[\d.]+/);
+                if (numMatch) {
+                    let num = parseFloat(numMatch[0]);
+                    if (tone.includes('.') || (num >= 67.0 && num <= 254.1 && !Number.isInteger(num))) {
+                        return num.toFixed(1) + " Hz";
+                    }
+                    if (Number.isInteger(num)) {
+                        return "DCS " + String(num).padStart(3, '0');
+                    }
+                }
+            }
+            return tone; 
+        }
+
+        function formatFreq(freq) {
+            let f = parseFloat(freq);
+            if (isNaN(f)) return "";
+            return f.toFixed(4);
+        }
 
         // --- FETCH DATA ---
         banksRef.on('value', snap => {
@@ -714,15 +747,23 @@
 
         // --- NOTEBOOK LOGIC ---
         function addNotebookEntry() {
-            let freq = document.getElementById('noteFreq').value.trim();
-            let cc = document.getElementById('noteCC').value.trim();
+            let freqRaw = document.getElementById('noteFreq').value.trim();
+            let freq = formatFreq(freqRaw);
+            let ccRaw = document.getElementById('noteCC').value.trim();
             let status = document.getElementById('noteStatus').value;
             let notes = document.getElementById('noteText').value.trim();
 
-            if(!freq || isNaN(parseFloat(freq))) return alert("A valid frequency is required.");
+            if(!freq) return alert("A valid frequency is required.");
+            
+            // Smart format tone based on what they are likely doing
+            let modAssumption = "DMR"; // Default to DMR for notebook
+            if(ccRaw && (ccRaw.includes('.') || !isNaN(parseFloat(ccRaw)) && parseFloat(ccRaw) > 60)) {
+                 modAssumption = "FM"; // If they typed an analog tone, format as analog
+            }
+            let cc = formatTone(ccRaw, modAssumption);
 
             scratchpadRef.push({
-                freq: parseFloat(freq).toFixed(4), cc: cc, status: status, notes: notes, date: new Date().toISOString()
+                freq: freq, cc: cc, status: status, notes: notes, date: new Date().toISOString()
             });
 
             document.getElementById('noteFreq').value = '';
@@ -779,7 +820,12 @@
 
             document.getElementById('modFreq').value = item.freq;
             document.getElementById('modTone').value = item.cc || "";
-            document.getElementById('modModulation').value = 'DMR';
+            
+            if (item.cc && item.cc.startsWith("CC")) {
+                document.getElementById('modModulation').value = 'DMR';
+            } else {
+                document.getElementById('modModulation').value = 'AUTO';
+            }
             
             let combinedNotes = item.notes ? `[${item.status}] ${item.notes}` : `[${item.status}]`;
             document.getElementById('modNotes').value = combinedNotes;
@@ -826,18 +872,22 @@
         }
 
         function saveChannel() {
-            let freqVal = document.getElementById('modFreq').value.trim();
+            let freqRaw = document.getElementById('modFreq').value.trim();
             let targetCh = parseInt(document.getElementById('modTargetCh').value);
             
-            if(!freqVal || isNaN(parseFloat(freqVal))) return alert("A valid frequency is required to save.");
+            let freqVal = formatFreq(freqRaw);
+            if(!freqVal) return alert("A valid frequency is required to save.");
             if(targetCh < 1 || targetCh > 1000) return alert("Target channel must be between 1 and 1000.");
             
+            let modVal = document.getElementById('modModulation').value;
+            let toneRaw = document.getElementById('modTone').value;
+
             let chData = {
-                freq: parseFloat(freqVal).toFixed(4),
+                freq: freqVal,
                 name: document.getElementById('modName').value.trim().substring(0,16),
-                mod: document.getElementById('modModulation').value,
+                mod: modVal,
                 audio: document.getElementById('modAudio').value,
-                tone: document.getElementById('modTone').value.trim() || 'Search',
+                tone: formatTone(toneRaw, modVal),
                 delay: document.getElementById('modDelay').value,
                 lockout: document.getElementById('modLockout').value,
                 priority: document.getElementById('modPriority').value,
@@ -892,13 +942,13 @@
                 let ch = memory[chNum] || { freq: "", name: "", mod: "AUTO", audio: "ALL", tone: "Search", delay: "2", lockout: "Unlocked", priority: "Off", att: "Off", notes: "" };
                 let val = lines[i];
                 if (field === 'freq') {
-                    let fVal = parseFloat(val);
-                    if(isNaN(fVal)) continue; 
-                    ch.freq = fVal.toFixed(4);
+                    let fVal = formatFreq(val);
+                    if(!fVal) continue; 
+                    ch.freq = fVal;
                 } else if (field === 'name') {
                     ch.name = val.substring(0, 16);
                 } else if (field === 'tone') {
-                    ch.tone = val;
+                    ch.tone = formatTone(val, ch.mod);
                 }
                 updates[chNum] = ch;
                 applyCount++;
@@ -1002,8 +1052,9 @@
                     if (!lines[i].trim()) continue;
                     let cols = parseCSVRow(lines[i]).map(c => c.trim().replace(/^"|"$/g, ''));
                     
-                    let fVal = colFreq !== -1 ? parseFloat(cols[colFreq]) : NaN;
-                    if (!isNaN(fVal)) {
+                    let fValRaw = colFreq !== -1 ? cols[colFreq] : "";
+                    let fVal = formatFreq(fValRaw);
+                    if (fVal) {
                         let chNum;
                         
                         if (importMode === 'csv') {
@@ -1018,14 +1069,16 @@
                         
                         if (chNum >= 1 && chNum <= 1000) {
                             let mod = colMod !== -1 && cols[colMod] ? cols[colMod] : "AUTO";
-                            if (mod.toUpperCase() === "AUTO") mod = ((fVal < 30) ? "USB" : ((fVal >= 108 && fVal <= 137) ? "AM" : "FM"));
+                            if (mod.toUpperCase() === "AUTO") mod = ((parseFloat(fVal) < 30) ? "USB" : ((parseFloat(fVal) >= 108 && parseFloat(fVal) <= 137) ? "AM" : "FM"));
+
+                            let rawTone = colTone !== -1 && cols[colTone] ? cols[colTone] : "Search";
 
                             updates[chNum] = {
-                                freq: fVal.toFixed(4),
-                                name: colName !== -1 && cols[colName] ? cols[colName].substring(0,16) : `Freq ${fVal.toFixed(4)}`,
+                                freq: fVal,
+                                name: colName !== -1 && cols[colName] ? cols[colName].substring(0,16) : `Freq ${fVal}`,
                                 mod: mod,
                                 audio: colAudio !== -1 && cols[colAudio] ? cols[colAudio] : "ALL",
-                                tone: colTone !== -1 && cols[colTone] && cols[colTone].toUpperCase() !== "NONE" ? cols[colTone] : "Search",
+                                tone: formatTone(rawTone, mod),
                                 delay: colDly !== -1 && cols[colDly] ? cols[colDly] : "2",
                                 lockout: colLock !== -1 && cols[colLock].toLowerCase() === 'locked' ? "Locked" : "Unlocked",
                                 priority: colPri !== -1 && cols[colPri].toLowerCase() === 'on' ? "On" : "Off",
