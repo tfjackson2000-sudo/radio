@@ -664,16 +664,21 @@
             const startCh = (bankNum - 1) * 100 + 1;
             const endCh = bankNum * 100;
 
-            let tsvContent = "Channel\tChannel Name\tFrequency\tModulation\tAudio Type\tTone / Code\tDelay\tLockout\tPriority\tAttenuator\n";
+            // Notice we ONLY copy the 4 columns ProScan allows, and in a specific order!
+            let tsvContent = "Chan. Name\tFrequency\tMod.\tTone\n";
             let hasData = false;
 
+            // We MUST loop exactly 100 times to preserve empty slots, otherwise ProScan will shift everything up!
             for(let i = startCh; i <= endCh; i++) {
                 let ch = memory[i];
                 if (ch && ch.freq) {
                     let name = ch.name ? ch.name : '';
                     let tone = ch.tone ? ch.tone : 'Search';
-                    tsvContent += `${i}\t${name}\t${ch.freq}\t${ch.mod}\t${ch.audio}\t${tone}\t${ch.delay}\t${ch.lockout}\t${ch.priority}\t${ch.att}\n`;
+                    tsvContent += `${name}\t${ch.freq}\t${ch.mod}\t${tone}\n`;
                     hasData = true;
+                } else {
+                    // Output a perfectly blank row with just tabs so ProScan leaves this channel slot empty
+                    tsvContent += `\t\t\t\n`;
                 }
             }
 
@@ -682,7 +687,7 @@
             }
 
             navigator.clipboard.writeText(tsvContent).then(() => {
-                alert(`✅ Bank ${bankNum} copied to your clipboard!\n\nIn ProScan:\n1. Select Bank ${bankNum} on the left\n2. Click 'Get Clipboard'\n3. Make sure Delimiter is set to 'Tab'\n4. Check the column headers and click Import!`);
+                alert(`✅ Bank ${bankNum} copied to your clipboard!\n\nIn ProScan:\n1. Select Bank ${bankNum} on the left\n2. Click 'Get Clipboard'\n3. Set your 4 dropdown headers to:\n   - Chan. Name\n   - Frequency\n   - Mod.\n   - Tone\n\n4. Hit Import!`);
             }).catch(err => {
                 alert("Clipboard copy failed. Your browser might be blocking it.");
             });
