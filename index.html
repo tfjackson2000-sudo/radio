@@ -487,6 +487,10 @@
             document.getElementById('tab-banks').classList.toggle('active', view === 'banks');
             document.getElementById('tab-list').classList.toggle('active', view === 'list');
             document.getElementById('tab-tools').classList.toggle('active', view === 'tools');
+
+            // NEW: Automatically refresh the visuals if switching back to the view
+            if (view === 'banks') renderBankGrid();
+            if (view === 'list') renderTable();
         }
 
         // --- THEME ---
@@ -563,6 +567,8 @@
 
         // --- RENDER LIST VIEW TABLE ---
         function renderTable() {
+            if (document.getElementById('view-list').style.display === 'none') return;
+
             const tbody = document.getElementById('listTbody');
             if (!tbody) return;
             
