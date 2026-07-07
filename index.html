@@ -348,6 +348,14 @@
                 </div>
             </div>
 
+            <!-- Duplicate Scanner -->
+            <div class="tool-card">
+                <h3>🔍 Duplicate Scanner</h3>
+                <p class="text-muted" style="margin-bottom: 15px;">Scan your entire 1,000 channel memory for identical Frequency AND Tone combinations.</p>
+                <button class="btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="scanForDuplicates()">Scan for Duplicates</button>
+                <div id="duplicateResults" style="max-height: 150px; overflow-y: auto; font-size: 0.85em; padding-right: 5px;"></div>
+            </div>
+
             <!-- Paste Column Tool -->
             <div class="tool-card">
                 <h3>📋 Smart Paste</h3>
@@ -755,10 +763,9 @@
 
             if(!freq) return alert("A valid frequency is required.");
             
-            // Smart format tone based on what they are likely doing
-            let modAssumption = "DMR"; // Default to DMR for notebook
+            let modAssumption = "DMR"; 
             if(ccRaw && (ccRaw.includes('.') || !isNaN(parseFloat(ccRaw)) && parseFloat(ccRaw) > 60)) {
-                 modAssumption = "FM"; // If they typed an analog tone, format as analog
+                 modAssumption = "FM"; 
             }
             let cc = formatTone(ccRaw, modAssumption);
 
@@ -881,13 +888,30 @@
             
             let modVal = document.getElementById('modModulation').value;
             let toneRaw = document.getElementById('modTone').value;
+            let formattedTone = formatTone(toneRaw, modVal);
+
+            // Duplicate Check
+            let duplicateFound = false;
+            let dupCh = -1;
+            for(let i=1; i<=1000; i++) {
+                if(i !== currentEditCh && i !== targetCh && memory[i] && memory[i].freq === freqVal && memory[i].tone === formattedTone) {
+                    duplicateFound = true;
+                    dupCh = i;
+                    break;
+                }
+            }
+            if(duplicateFound) {
+                if(!confirm(`⚠️ Duplicate Warning:\n\n${freqVal} MHz with Tone/CC '${formattedTone}' already exists in Channel ${dupCh}.\n\nDo you want to save this duplicate anyway?`)) {
+                    return;
+                }
+            }
 
             let chData = {
                 freq: freqVal,
                 name: document.getElementById('modName').value.trim().substring(0,16),
                 mod: modVal,
                 audio: document.getElementById('modAudio').value,
-                tone: formatTone(toneRaw, modVal),
+                tone: formattedTone,
                 delay: document.getElementById('modDelay').value,
                 lockout: document.getElementById('modLockout').value,
                 priority: document.getElementById('modPriority').value,
@@ -915,6 +939,34 @@
         function clearChannel() {
             if(confirm(`Clear channel ${currentEditCh}?`)) {
                 channelsRef.child(currentEditCh).remove().then(() => { closeEditor(); });
+            }
+        }
+
+        // --- DUPLICATE SCANNER ---
+        function scanForDuplicates() {
+            let seen = {};
+            let duplicates = [];
+            
+            for(let i=1; i<=1000; i++) {
+                let ch = memory[i];
+                if(ch && ch.freq) {
+                    let key = ch.freq + "|" + (ch.tone || "Search");
+                    if(seen[key]) {
+                        duplicates.push(`CH ${i} duplicates CH ${seen[key]} (${ch.freq} MHz, Tone: ${ch.tone || 'Search'})`);
+                    } else {
+                        seen[key] = i;
+                    }
+                }
+            }
+            
+            let resDiv = document.getElementById('duplicateResults');
+            if(duplicates.length === 0) {
+                resDiv.innerHTML = '<div style="color: var(--secondary); font-weight: 600; margin-top: 15px; padding: 10px; background: rgba(16,185,129,0.1); border-radius: 8px;">✅ Excellent! No duplicate frequency/tone combinations found.</div>';
+            } else {
+                let html = `<div style="color: var(--danger); font-weight: 600; margin-top: 15px; padding: 10px; background: rgba(239,68,68,0.1); border-radius: 8px; margin-bottom: 10px;">⚠️ Found ${duplicates.length} duplicates:</div><ul style="padding-left: 20px; margin: 0; color: var(--text-sub); font-size: 0.9em; line-height: 1.6;">`;
+                duplicates.forEach(d => { html += `<li>${d}</li>`; });
+                html += '</ul>';
+                resDiv.innerHTML = html;
             }
         }
 
