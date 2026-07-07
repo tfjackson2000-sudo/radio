@@ -124,7 +124,12 @@
         .notebook-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; align-items: end; }
 
         /* --- BANK GRID --- */
-        .bank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 10px;}
+        .bank-grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); /* 5 columns perfectly factors into 100 */
+            gap: 12px; 
+            margin-top: 10px;
+        }
         .channel-slot {
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
             padding: 16px 12px; cursor: pointer; transition: all 0.2s ease; position: relative;
@@ -199,7 +204,13 @@
         /* Utility */
         .text-muted { color: var(--text-sub); font-size: 0.85em; }
 
+        /* Responsiveness for perfectly symmetrical grids */
+        @media screen and (max-width: 1100px) {
+            .bank-grid { grid-template-columns: repeat(4, 1fr); } /* 4 columns perfectly factors into 100 */
+        }
+
         @media screen and (max-width: 800px) {
+            .bank-grid { grid-template-columns: repeat(2, 1fr); } /* 2 columns perfectly factors into 100 */
             .tabs-container { width: 100%; display: flex; }
             .tab-btn { flex: 1 1 auto; text-align: center; padding: 10px; font-size: 0.85em; }
             .form-grid { grid-template-columns: 1fr; }
