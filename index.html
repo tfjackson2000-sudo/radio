@@ -83,6 +83,8 @@
         .btn-secondary { background: var(--table-hover); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-secondary:hover { border-color: var(--primary); }
 
+        .notebook-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; width: 100%; align-items: end; }
+
         /* --- BANK GRID --- */
         .bank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
         .channel-slot {
@@ -159,6 +161,7 @@
     <div class="tabs-container">
         <button id="tab-banks" class="tab-btn active" onclick="switchView('banks')">🗂️ Memory Banks</button>
         <button id="tab-list" class="tab-btn" onclick="switchView('list')">📋 List View</button>
+        <button id="tab-notebook" class="tab-btn" onclick="switchView('notebook')">📓 Monitor Log</button>
         <button id="tab-tools" class="tab-btn" onclick="switchView('tools')">⚙️ Import & Tools</button>
     </div>
 
@@ -201,6 +204,50 @@
                     </tr>
                 </thead>
                 <tbody id="listTbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- NOTEBOOK / MONITOR LOG VIEW -->
+    <div id="view-notebook" style="display: none;">
+        <div class="controls-card">
+            <div class="notebook-form">
+                <div class="form-group">
+                    <label>Frequency (MHz)</label>
+                    <input type="number" id="noteFreq" step="0.0001" placeholder="e.g. 446.0062">
+                </div>
+                <div class="form-group">
+                    <label>Color Code / Tone</label>
+                    <input type="text" id="noteCC" placeholder="e.g. CC 1">
+                </div>
+                <div class="form-group">
+                    <label>Activity Status</label>
+                    <select id="noteStatus">
+                        <option value="Voice Active">🔊 Voice Active</option>
+                        <option value="Digital Noise">⚙️ Digital Noise</option>
+                        <option value="Silence">🔇 Silence / Carrier</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <input type="text" id="noteText" placeholder="Who/What is it?">
+                </div>
+                <button class="btn-main" style="height: 42px;" onclick="addNotebookEntry()">📝 Add to Monitor Log</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="notebookTable">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Freq (MHz)</th>
+                        <th style="width: 100px;">Tone/CC</th>
+                        <th style="width: 150px;">Status</th>
+                        <th>Notes</th>
+                        <th style="width: 210px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="notebookTbody"></tbody>
             </table>
         </div>
     </div>
@@ -409,10 +456,12 @@
         
         const channelsRef = db.ref('ubcd260dn_memory');
         const banksRef = db.ref('ubcd260dn_banks'); 
+        const scratchpadRef = db.ref('ubcd260dn_scratchpad'); 
 
-        // --- GLOBAL MEMORY ARRAYS ---
+        // --- GLOBAL ARRAYS ---
         let memory = new Array(1001).fill(null);
         let bankNames = {};
+        let scratchpad = [];
         let currentEditCh = null;
 
         // --- FETCH BANK NAMES ---
@@ -432,6 +481,15 @@
             });
             renderBankGrid();
             renderTable();
+        });
+
+        // --- FETCH SCRATCHPAD DATA ---
+        scratchpadRef.on('value', snap => {
+            scratchpad = [];
+            snap.forEach(child => {
+                scratchpad.push({ id: child.key, ...child.val() });
+            });
+            renderNotebook();
         });
 
         // --- UPDATE DROPDOWNS DYNAMICALLY ---
@@ -483,14 +541,16 @@
             document.getElementById('view-banks').style.display = view === 'banks' ? 'block' : 'none';
             document.getElementById('view-list').style.display = view === 'list' ? 'block' : 'none';
             document.getElementById('view-tools').style.display = view === 'tools' ? 'block' : 'none';
+            document.getElementById('view-notebook').style.display = view === 'notebook' ? 'block' : 'none';
             
             document.getElementById('tab-banks').classList.toggle('active', view === 'banks');
             document.getElementById('tab-list').classList.toggle('active', view === 'list');
             document.getElementById('tab-tools').classList.toggle('active', view === 'tools');
+            document.getElementById('tab-notebook').classList.toggle('active', view === 'notebook');
 
-            // NEW: Automatically refresh the visuals if switching back to the view
             if (view === 'banks') renderBankGrid();
             if (view === 'list') renderTable();
+            if (view === 'notebook') renderNotebook();
         }
 
         // --- THEME ---
@@ -615,6 +675,87 @@
             tbody.innerHTML = html;
         }
 
+        // --- NOTEBOOK / SCRATCHPAD LOGIC ---
+        function addNotebookEntry() {
+            let freq = document.getElementById('noteFreq').value.trim();
+            let cc = document.getElementById('noteCC').value.trim();
+            let status = document.getElementById('noteStatus').value;
+            let notes = document.getElementById('noteText').value.trim();
+
+            if(!freq || isNaN(parseFloat(freq))) return alert("A valid frequency is required.");
+
+            scratchpadRef.push({
+                freq: parseFloat(freq).toFixed(4),
+                cc: cc,
+                status: status,
+                notes: notes,
+                date: new Date().toISOString()
+            });
+
+            document.getElementById('noteFreq').value = '';
+            document.getElementById('noteCC').value = '';
+            document.getElementById('noteText').value = '';
+        }
+
+        function renderNotebook() {
+            if (document.getElementById('view-notebook').style.display === 'none') return;
+            const tbody = document.getElementById('notebookTbody');
+            if (!tbody) return;
+
+            let html = '';
+            let sorted = [...scratchpad].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            sorted.forEach(item => {
+                let statusColor = "var(--text-sub)";
+                if(item.status === 'Voice Active') statusColor = "var(--secondary)";
+                else if(item.status === 'Digital Noise') statusColor = "var(--danger)";
+
+                html += `
+                    <tr>
+                        <td data-label="Freq (MHz)" style="font-weight:bold; color:var(--primary);">${item.freq}</td>
+                        <td data-label="Tone/CC">${item.cc || '-'}</td>
+                        <td data-label="Status" style="font-weight:bold; color:${statusColor};">${item.status}</td>
+                        <td data-label="Notes">${item.notes || '-'}</td>
+                        <td data-label="Actions" style="display:flex; gap:10px;">
+                            <button class="btn-main" style="padding: 6px 12px; font-size: 0.85em; flex-grow: 1;" onclick="sendToScanner('${item.id}')">➕ Send to Bank</button>
+                            <button class="btn-danger" style="padding: 6px 12px; font-size: 0.85em;" onclick="deleteNotebookEntry('${item.id}')">✖</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function deleteNotebookEntry(id) {
+            if(confirm("Delete this log entry?")) {
+                scratchpadRef.child(id).remove();
+            }
+        }
+
+        function sendToScanner(id) {
+            let item = scratchpad.find(x => x.id === id);
+            if(!item) return;
+
+            let ch = getNextEmpty();
+            if(ch === -1) return alert("All 1,000 memory channels are full! Please clear some space first.");
+
+            // Switch to banks view so the background makes sense when modal opens
+            let targetBank = Math.ceil(ch / 100);
+            document.getElementById('bankSelector').value = targetBank;
+            switchView('banks'); 
+            
+            // Open modal
+            openEditor(ch);
+
+            // Pre-fill with scratchpad data
+            document.getElementById('modFreq').value = item.freq;
+            document.getElementById('modTone').value = item.cc || "";
+            document.getElementById('modModulation').value = 'DMR';
+            
+            let combinedNotes = item.notes ? `[${item.status}] ${item.notes}` : `[${item.status}]`;
+            document.getElementById('modNotes').value = combinedNotes;
+        }
+
         // --- EDITOR MODAL ---
         function getNextEmpty() {
             for(let i=1; i<=1000; i++) { if(!memory[i] || !memory[i].freq) return i; }
@@ -624,7 +765,6 @@
         function quickAdd() {
             let ch = getNextEmpty();
             if(ch === -1) return alert("All 1,000 channels are full!");
-            // Auto jump to that bank view
             let bank = Math.ceil(ch / 100);
             document.getElementById('bankSelector').value = bank;
             renderBankGrid();
