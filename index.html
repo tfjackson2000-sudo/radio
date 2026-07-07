@@ -207,11 +207,11 @@
 
         /* Responsiveness for perfectly symmetrical grids */
         @media screen and (max-width: 1100px) {
-            .bank-grid { grid-template-columns: repeat(4, 1fr); } /* 4 columns perfectly factors into 100 */
+            .bank-grid { grid-template-columns: repeat(4, 1fr); } 
         }
 
         @media screen and (max-width: 800px) {
-            .bank-grid { grid-template-columns: repeat(2, 1fr); } /* 2 columns perfectly factors into 100 */
+            .bank-grid { grid-template-columns: repeat(2, 1fr); } 
             .tabs-container { width: 100%; display: flex; }
             .tab-btn { flex: 1 1 auto; text-align: center; padding: 10px; font-size: 0.85em; }
             .form-grid { grid-template-columns: 1fr; }
@@ -250,7 +250,10 @@
                 </select>
                 <button class="btn-secondary" onclick="renameBank()">Rename Bank</button>
             </div>
-            <button class="btn-main" onclick="quickAdd()">+ Quick Add</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-secondary" style="border-color: var(--secondary); color: var(--secondary);" onclick="copyBankForProScan()">📋 Copy Bank for ProScan</button>
+                <button class="btn-main" onclick="quickAdd()">+ Quick Add</button>
+            </div>
         </div>
         <p class="text-muted" style="text-align: right; margin-top: -10px; margin-bottom: 15px;">Drag and drop cards to swap channel slots.</p>
         <div id="bankGrid" class="bank-grid"></div>
@@ -654,6 +657,36 @@
         const savedTheme = localStorage.getItem('scannerTheme') || 'dark'; 
         document.body.setAttribute('data-theme', savedTheme); 
         document.getElementById('themeBtn').innerText = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+
+        // --- COPY BANK FOR PROSCAN ---
+        function copyBankForProScan() {
+            const bankNum = parseInt(document.getElementById('bankSelector').value);
+            const startCh = (bankNum - 1) * 100 + 1;
+            const endCh = bankNum * 100;
+
+            let tsvContent = "Channel\tChannel Name\tFrequency\tModulation\tAudio Type\tTone / Code\tDelay\tLockout\tPriority\tAttenuator\n";
+            let hasData = false;
+
+            for(let i = startCh; i <= endCh; i++) {
+                let ch = memory[i];
+                if (ch && ch.freq) {
+                    let name = ch.name ? ch.name : '';
+                    let tone = ch.tone ? ch.tone : 'Search';
+                    tsvContent += `${i}\t${name}\t${ch.freq}\t${ch.mod}\t${ch.audio}\t${tone}\t${ch.delay}\t${ch.lockout}\t${ch.priority}\t${ch.att}\n`;
+                    hasData = true;
+                }
+            }
+
+            if (!hasData) {
+                return alert(`Bank ${bankNum} is currently empty. Nothing to copy!`);
+            }
+
+            navigator.clipboard.writeText(tsvContent).then(() => {
+                alert(`✅ Bank ${bankNum} copied to your clipboard!\n\nIn ProScan:\n1. Select Bank ${bankNum} on the left\n2. Click 'Get Clipboard'\n3. Make sure Delimiter is set to 'Tab'\n4. Check the column headers and click Import!`);
+            }).catch(err => {
+                alert("Clipboard copy failed. Your browser might be blocking it.");
+            });
+        }
 
         // --- RENDER BANK GRID ---
         function renderBankGrid() {
