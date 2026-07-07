@@ -276,8 +276,8 @@
                         <th style="width: 140px;">Freq (MHz)</th>
                         <th>Alpha Tag</th>
                         <th class="hide-on-mobile">Mod / Tone</th>
+                        <th class="hide-on-mobile">Audio Type</th>
                         <th class="hide-on-mobile">Status</th>
-                        <th class="hide-on-mobile">Delay</th>
                         <th>Notes</th>
                     </tr>
                 </thead>
@@ -337,12 +337,12 @@
             <!-- Data Transfer -->
             <div class="tool-card">
                 <h3>💾 Sync with ProScan</h3>
-                <p class="text-muted" style="margin-bottom: 20px;">Import or Export CSV data formatted perfectly for ProScan.</p>
+                <p class="text-muted" style="margin-bottom: 20px;">Import or Export data formatted perfectly for ProScan's wizard.</p>
                 
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label>Import Routing Behavior:</label>
                     <select id="importModeSelector">
-                        <option value="csv">Use Exact Channel Numbers from CSV</option>
+                        <option value="csv">Use Exact Channel Numbers from File</option>
                         <option value="1">Force Sequential Start -> Bank 1</option>
                         <option value="2">Force Sequential Start -> Bank 2</option>
                         <option value="3">Force Sequential Start -> Bank 3</option>
@@ -357,9 +357,9 @@
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button class="btn-main" onclick="document.getElementById('csvImport').click()">📤 Import Data (Upload CSV)</button>
-                    <input type="file" id="csvImport" accept=".csv" style="display: none;" onchange="importCSV(event)">
-                    <button class="btn-secondary" onclick="exportCSV()">📥 Download Export (Save CSV)</button>
+                    <button class="btn-main" onclick="document.getElementById('csvImport').click()">📤 Import Data (Upload TXT/CSV)</button>
+                    <input type="file" id="csvImport" accept=".txt,.csv" style="display: none;" onchange="importCSV(event)">
+                    <button class="btn-secondary" onclick="exportCSV()">📥 Download Export (Save TXT)</button>
                 </div>
             </div>
 
@@ -446,7 +446,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Modulation</label>
+                    <label>Modulation (RF Base)</label>
                     <select id="modModulation">
                         <option value="AUTO">AUTO</option>
                         <option value="AM">AM</option>
@@ -454,8 +454,6 @@
                         <option value="NFM">NFM</option>
                         <option value="WFM">WFM</option>
                         <option value="FMB">FMB</option>
-                        <option value="DMR">DMR</option>
-                        <option value="NXDN">NXDN</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -464,6 +462,8 @@
                         <option value="ALL">ALL</option>
                         <option value="ANALOG">ANALOG</option>
                         <option value="DIGITAL">DIGITAL</option>
+                        <option value="DMR">DMR</option>
+                        <option value="NXDN">NXDN</option>
                     </select>
                 </div>
 
@@ -549,27 +549,28 @@
         let currentEditCh = null;
 
         // --- SMART FORMATTERS ---
-        function formatTone(tone, mod) {
+        function formatTone(tone, audio, mod) {
             if (!tone) return "Search";
             tone = tone.trim().toUpperCase();
             if (tone === "NONE" || tone === "SEARCH" || tone === "") return "Search";
 
-            if (mod === "DMR") {
+            let isDigital = (audio === "DIGITAL" || audio === "DMR" || audio === "NXDN" || tone.startsWith("CC"));
+
+            if (isDigital) {
                 let match = tone.match(/\d+/);
                 if (match) return "CC " + match[0];
                 return "Search";
             }
 
-            if (mod === "FM" || mod === "NFM" || mod === "AUTO" || mod === "WFM" || mod === "FMB") {
-                let numMatch = tone.match(/[\d.]+/);
-                if (numMatch) {
-                    let num = parseFloat(numMatch[0]);
-                    if (tone.includes('.') || (num >= 67.0 && num <= 254.1 && !Number.isInteger(num))) {
-                        return num.toFixed(1) + " Hz";
-                    }
-                    if (Number.isInteger(num)) {
-                        return "DCS " + String(num).padStart(3, '0');
-                    }
+            // Otherwise assume analog
+            let numMatch = tone.match(/[\d.]+/);
+            if (numMatch) {
+                let num = parseFloat(numMatch[0]);
+                if (tone.includes('.') || (num >= 67.0 && num <= 254.1 && !Number.isInteger(num))) {
+                    return num.toFixed(1) + " Hz";
+                }
+                if (Number.isInteger(num)) {
+                    return "DCS " + String(num).padStart(3, '0');
                 }
             }
             return tone; 
@@ -579,6 +580,14 @@
             let f = parseFloat(freq);
             if (isNaN(f)) return "";
             return f.toFixed(4);
+        }
+
+        function formatAudio(mod, currentAudio) {
+            if (!mod) return currentAudio || "ALL";
+            let m = mod.toUpperCase();
+            if (m === "DMR" || m === "NXDN") return "DIGITAL";
+            if (m === "AM" || m === "FM" || m === "NFM" || m === "WFM" || m === "FMB") return "ANALOG";
+            return currentAudio || "ALL";
         }
 
         // --- FETCH DATA ---
@@ -664,11 +673,9 @@
             const startCh = (bankNum - 1) * 100 + 1;
             const endCh = bankNum * 100;
 
-            // Notice we ONLY copy the 4 columns ProScan allows, and in a specific order!
             let tsvContent = "Chan. Name\tFrequency\tMod.\tTone\n";
             let hasData = false;
 
-            // We MUST loop exactly 100 times to preserve empty slots, otherwise ProScan will shift everything up!
             for(let i = startCh; i <= endCh; i++) {
                 let ch = memory[i];
                 if (ch && ch.freq) {
@@ -677,7 +684,6 @@
                     tsvContent += `${name}\t${ch.freq}\t${ch.mod}\t${tone}\n`;
                     hasData = true;
                 } else {
-                    // Output a perfectly blank row with just tabs so ProScan leaves this channel slot empty
                     tsvContent += `\t\t\t\n`;
                 }
             }
@@ -773,6 +779,7 @@
                 let freqDisplay = isEmpty ? '-' : ch.freq;
                 let nameDisplay = isEmpty ? '-' : (ch.name || '');
                 let modTone = isEmpty ? '-' : `<span class="pill">${ch.mod}</span> <span class="pill">${ch.tone || 'Search'}</span>`;
+                let audioDisplay = isEmpty ? '-' : (ch.audio || 'ALL');
                 let lockout = isEmpty ? '-' : (ch.lockout === 'Locked' ? '<span class="pill danger">🔒 Locked</span>' : '<span class="pill active" style="background:var(--bg-color); color:var(--text-sub); border-color:var(--border-color);">Unlocked</span>');
                 let notesDisplay = isEmpty ? '' : (ch.notes || '');
                 let rowClass = (ch && ch.lockout === 'Locked') ? 'locked' : '';
@@ -795,8 +802,8 @@
                         <td data-label="Freq" style="font-weight:800; color:var(--primary); font-size:1.1em;">${freqDisplay}</td>
                         <td data-label="Alpha Tag" style="font-weight:500;">${nameDisplay}</td>
                         <td data-label="Mod/Tone" class="hide-on-mobile">${modTone}</td>
+                        <td data-label="Audio Type" class="hide-on-mobile">${audioDisplay}</td>
                         <td data-label="L/O" class="hide-on-mobile">${lockout}</td>
-                        <td data-label="Delay" class="hide-on-mobile">${isEmpty ? '-' : (ch.delay||'2') + 's'}</td>
                         <td data-label="Notes" class="text-muted">${notesDisplay}</td>
                     </tr>`;
             }
@@ -813,11 +820,11 @@
 
             if(!freq) return alert("A valid frequency is required.");
             
-            let modAssumption = "DMR"; 
+            let audioAssumption = "DIGITAL"; 
             if(ccRaw && (ccRaw.includes('.') || !isNaN(parseFloat(ccRaw)) && parseFloat(ccRaw) > 60)) {
-                 modAssumption = "FM"; 
+                 audioAssumption = "ANALOG"; 
             }
-            let cc = formatTone(ccRaw, modAssumption);
+            let cc = formatTone(ccRaw, audioAssumption, "NFM");
 
             scratchpadRef.push({
                 freq: freq, cc: cc, status: status, notes: notes, date: new Date().toISOString()
@@ -878,10 +885,13 @@
             document.getElementById('modFreq').value = item.freq;
             document.getElementById('modTone').value = item.cc || "";
             
-            if (item.cc && item.cc.startsWith("CC")) {
-                document.getElementById('modModulation').value = 'DMR';
+            let ccUpper = item.cc ? item.cc.toUpperCase() : "";
+            if (ccUpper.startsWith("CC") || (!isNaN(parseInt(ccUpper)) && parseInt(ccUpper) < 60)) {
+                document.getElementById('modModulation').value = 'NFM';
+                document.getElementById('modAudio').value = 'DMR';
             } else {
                 document.getElementById('modModulation').value = 'AUTO';
+                document.getElementById('modAudio').value = 'ALL';
             }
             
             let combinedNotes = item.notes ? `[${item.status}] ${item.notes}` : `[${item.status}]`;
@@ -937,8 +947,9 @@
             if(targetCh < 1 || targetCh > 1000) return alert("Target channel must be between 1 and 1000.");
             
             let modVal = document.getElementById('modModulation').value;
+            let audioVal = document.getElementById('modAudio').value;
             let toneRaw = document.getElementById('modTone').value;
-            let formattedTone = formatTone(toneRaw, modVal);
+            let formattedTone = formatTone(toneRaw, audioVal, modVal);
 
             // Duplicate Check
             let duplicateFound = false;
@@ -960,7 +971,7 @@
                 freq: freqVal,
                 name: document.getElementById('modName').value.trim().substring(0,16),
                 mod: modVal,
-                audio: document.getElementById('modAudio').value,
+                audio: audioVal,
                 tone: formattedTone,
                 delay: document.getElementById('modDelay').value,
                 lockout: document.getElementById('modLockout').value,
@@ -1050,7 +1061,11 @@
                 } else if (field === 'name') {
                     ch.name = val.substring(0, 16);
                 } else if (field === 'tone') {
-                    ch.tone = formatTone(val, ch.mod);
+                    if (val.toUpperCase().startsWith("CC")) {
+                        ch.mod = "NFM";
+                        ch.audio = "DMR";
+                    }
+                    ch.tone = formatTone(val, ch.audio, ch.mod);
                 }
                 updates[chNum] = ch;
                 applyCount++;
@@ -1129,7 +1144,7 @@
             const reader = new FileReader();
             reader.onload = e => {
                 const lines = e.target.result.split(/\r?\n/);
-                if (lines.length < 2) return alert("Invalid or empty CSV.");
+                if (lines.length < 2) return alert("Invalid or empty file.");
 
                 let header = parseCSVRow(lines[0].toLowerCase());
                 let colCh = header.findIndex(h => h.includes('channel number') || h === 'channel' || h === 'ch');
@@ -1170,8 +1185,16 @@
                         }
                         
                         if (chNum >= 1 && chNum <= 1000) {
-                            let mod = colMod !== -1 && cols[colMod] ? cols[colMod] : "AUTO";
-                            if (mod.toUpperCase() === "AUTO") mod = ((parseFloat(fVal) < 30) ? "USB" : ((parseFloat(fVal) >= 108 && parseFloat(fVal) <= 137) ? "AM" : "FM"));
+                            let mod = colMod !== -1 && cols[colMod] ? cols[colMod].toUpperCase() : "AUTO";
+                            let rawAudio = colAudio !== -1 && cols[colAudio] ? cols[colAudio].toUpperCase() : "ALL";
+
+                            // Graceful fix for old CSVs where DMR was incorrectly placed in Modulation
+                            if (mod === "DMR" || mod === "NXDN") {
+                                rawAudio = mod;
+                                mod = "NFM";
+                            }
+                            
+                            if (mod === "AUTO") mod = ((parseFloat(fVal) < 30) ? "USB" : ((parseFloat(fVal) >= 108 && parseFloat(fVal) <= 137) ? "AM" : "FM"));
 
                             let rawTone = colTone !== -1 && cols[colTone] ? cols[colTone] : "Search";
 
@@ -1179,13 +1202,13 @@
                                 freq: fVal,
                                 name: colName !== -1 && cols[colName] ? cols[colName].substring(0,16) : `Freq ${fVal}`,
                                 mod: mod,
-                                audio: colAudio !== -1 && cols[colAudio] ? cols[colAudio] : "ALL",
-                                tone: formatTone(rawTone, mod),
+                                audio: rawAudio,
+                                tone: formatTone(rawTone, rawAudio, mod),
                                 delay: colDly !== -1 && cols[colDly] ? cols[colDly] : "2",
                                 lockout: colLock !== -1 && cols[colLock].toLowerCase() === 'locked' ? "Locked" : "Unlocked",
                                 priority: colPri !== -1 && cols[colPri].toLowerCase() === 'on' ? "On" : "Off",
                                 att: colAtt !== -1 && cols[colAtt].toLowerCase() === 'on' ? "On" : "Off",
-                                notes: "CSV Import"
+                                notes: "TXT/CSV Import"
                             };
                             count++;
                         }
@@ -1197,7 +1220,7 @@
                         channelsRef.update(updates).then(() => alert("Import Complete!"));
                     }
                 } else {
-                    alert("No valid frequencies found in CSV.");
+                    alert("No valid frequencies found in file.");
                 }
                 event.target.value = ''; 
             };
@@ -1220,11 +1243,11 @@
             
             if (exportCount === 0) return alert("Database is empty. Nothing to export.");
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
+            const blob = new Blob([csvContent], { type: 'text/plain;charset=utf-8;' }); 
             const link = document.createElement("a"); 
             const url = URL.createObjectURL(blob); 
             link.setAttribute("href", url); 
-            link.setAttribute("download", "UBCD260DN_ProScan_Export.csv"); 
+            link.setAttribute("download", "UBCD260DN_ProScan_Export.txt"); 
             link.style.visibility = 'hidden'; 
             document.body.appendChild(link); 
             link.click(); 
