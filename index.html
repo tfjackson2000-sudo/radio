@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Logger Pro (Cloud)</title>
     
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     
+    <!-- Chart.js for Analytics Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -343,6 +345,7 @@
         </div>
     </header>
 
+    <!-- View Tabs -->
     <div id="tabsContainer" class="tabs-container">
         <button id="tab-logbook" class="tab-btn active" onclick="switchView('logbook')">📋 Main Logbook</button>
         <button id="tab-memory" class="tab-btn" onclick="switchView('memory')">📻 Memory Banks</button>
@@ -351,6 +354,7 @@
         <button id="tab-settings" class="tab-btn settings-tab" onclick="switchView('settings')">⚙️ Settings</button>
     </div>
 
+    <!-- SETTINGS TAB -->
     <div id="settingsContainer" style="display: none; margin-bottom: 25px;">
         <div class="controls">
             <h2>⚙️ Settings & Administration</h2>
@@ -431,12 +435,16 @@
             <h4 style="margin: 0 0 10px 0; color: var(--edit-color);">🪄 Database Tools</h4>
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="document.getElementById('proscanImport').click()" class="btn-main" style="background-color: #f59e0b; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📤 Import ProScan CSV</button>
+                <input type="file" id="proscanImport" accept=".csv" style="display: none;" onchange="importFromProscan(event)">
+                
                 <button onclick="exportForUniden()" class="btn-main" style="background-color: #10b981; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download Uniden Export (.csv)</button>
                 <button onclick="exportForSdrPlusPlus()" class="btn-main" style="background-color: #3b82f6; font-size: 1em; padding: 10px 15px; margin-top: 0; margin-bottom: 10px; width: auto;">📥 Download SDR++ Export (.json)</button>
             </div>
         </div>
     </div>
 
+    <!-- MAIN LOG ENTRY FORM -->
     <div id="formCard" class="input-card">
         <div class="card-header" onclick="toggleForm()">
             <h2>📝 Log Entry</h2>
@@ -507,6 +515,7 @@
         </div>
     </div>
 
+    <!-- MEMORY BANK VIEW -->
     <div id="memoryBankContainer" style="display: none; margin-bottom: 25px;">
         <div class="controls">
             <h2>📻 Memory Banks</h2>
@@ -520,6 +529,7 @@
                 <div id="memorySidebarDict"></div>
             </div>
             <div class="memory-main">
+                <!-- TRASH BIN -->
                 <div id="memoryTrashBin" class="trash-bin" ondragover="allowDropTrash(event)" ondragleave="dragLeaveTrash(event)" ondrop="dropTrash(event)">
                     🗑️ Drag a channel here to clear it
                 </div>
@@ -528,11 +538,13 @@
         </div>
     </div>
 
+    <!-- MOVE MODE BANNER -->
     <div id="moveModeBanner">
         <span>Tap destination for CH <span id="moveSourceText"></span></span>
         <button onclick="cancelMoveMode()">Cancel</button>
     </div>
 
+    <!-- QUICK ASSIGN MODAL -->
     <div id="assignModal" class="modal-overlay" style="display: none;">
         <div class="modal-box">
             <h3 style="margin-top: 0; color: var(--primary);">Assign Channel <span id="assignModalCh"></span></h3>
@@ -547,6 +559,7 @@
         </div>
     </div>
 
+    <!-- ANALYTICS VIEW -->
     <div id="analyticsContainer" style="display: none; margin-bottom: 25px;">
         <div class="controls" style="margin-bottom: 15px;">
             <h2 style="margin-bottom: 10px;">📊 Dashboard & Analytics</h2>
@@ -612,6 +625,7 @@
         </div>
     </div>
 
+    <!-- MAIN LOGBOOK WRAPPER -->
     <div id="mainLogbookContainer">
         <div class="controls"><h2>Your Logs</h2></div>
         <div class="radio-filters" id="radioFilterContainer"></div>
@@ -1102,14 +1116,122 @@
             const link = document.createElement("a"); 
             const url = URL.createObjectURL(blob); 
             link.setAttribute("href", url); 
-            link.setAttribute("download", "Uniden_UBC1260DN_Export.csv"); 
+            link.setAttribute("download", "Uniden_Export.csv"); 
             link.style.visibility = 'hidden'; 
             document.body.appendChild(link); 
             link.click(); 
             document.body.removeChild(link);
         }
 
-        // --- NEW: SDR++ EXPORT FUNCTION ---
+        // --- NEW: CSV PARSER HELPER ---
+        function parseCSVRow(str) {
+            let arr = [];
+            let quote = false;
+            let col = '';
+            for (let i = 0; i < str.length; i++) {
+                let c = str[i];
+                if (c === '"' && str[i+1] === '"') { col += '"'; i++; } 
+                else if (c === '"') { quote = !quote; }
+                else if (c === ',' && !quote) { arr.push(col); col = ''; }
+                else { col += c; }
+            }
+            arr.push(col);
+            return arr;
+        }
+
+        // --- NEW: IMPORT PROSCAN CSV FUNCTION ---
+        function importFromProscan(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/);
+                if (lines.length < 2) return alert("File appears to be empty or not a valid CSV.");
+
+                let header = lines[0].toLowerCase();
+                let colFreq = -1;
+                let colName = -1;
+                let colMode = -1;
+
+                const headers = parseCSVRow(header);
+                headers.forEach((h, i) => {
+                    const cleanH = h.trim();
+                    if (cleanH === 'frequency' || cleanH === 'freq') colFreq = i;
+                    if (cleanH === 'name' || cleanH === 'channel name' || cleanH === 'alpha tag' || cleanH === 'system') colName = i;
+                    if (cleanH === 'mode' || cleanH === 'modulation' || cleanH === 'mod') colMode = i;
+                });
+
+                if (colFreq === -1) {
+                    let cols = parseCSVRow(lines[1]);
+                    for(let j=0; j<cols.length; j++) {
+                        if(!isNaN(parseFloat(cols[j])) && cols[j].includes('.')) { colFreq = j; break; }
+                    }
+                    if (colFreq === -1) return alert("Could not find a Frequency column in this CSV. Make sure you exported from ProScan with headers.");
+                }
+
+                let importCount = 0;
+                const newDictItems = [];
+
+                if (!appSettings.radios.includes("UBCD260DN")) {
+                    appSettings.radios.push("UBCD260DN");
+                    settingsRef.child('radios').set(appSettings.radios);
+                }
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    let cols = parseCSVRow(lines[i]).map(c => c.trim());
+
+                    if (cols.length > colFreq && cols[colFreq]) {
+                        let fVal = parseFloat(cols[colFreq]);
+                        if (!isNaN(fVal)) {
+                            let freqKey = fVal.toFixed(3);
+                            let name = colName !== -1 && cols[colName] ? cols[colName].substring(0, 16) : `ProScan ${freqKey}`;
+                            let mode = colMode !== -1 && cols[colMode] ? cols[colMode] : ((fVal < 30) ? "USB" : ((fVal >= 108 && fVal <= 137) ? "AM" : "FM"));
+                            if(mode.toUpperCase() === "AUTO") mode = ((fVal < 30) ? "USB" : ((fVal >= 108 && fVal <= 137) ? "AM" : "FM"));
+                            
+                            if (!appSettings.dictionary.some(d => parseFloat(d.f) === fVal)) {
+                                newDictItems.push({f: freqKey, n: name});
+                            }
+
+                            logsRef.push({
+                                freq: fVal,
+                                station: name,
+                                radio: "UBCD260DN",
+                                channel: "",
+                                antenna: appSettings.defaultAntenna || (appSettings.antennas.length > 0 ? appSettings.antennas[0] : ""),
+                                location: appSettings.defaultLocation || (appSettings.locations.length > 0 ? appSettings.locations[0] : ""),
+                                mode: mode,
+                                signal: "5",
+                                traffic: "1",
+                                notes: "Imported from ProScan",
+                                confirmed: true,
+                                date: new Date().toISOString()
+                            });
+                            importCount++;
+                        }
+                    }
+                }
+
+                if (newDictItems.length > 0) {
+                    appSettings.dictionary = [...appSettings.dictionary, ...newDictItems];
+                    const uniqueDict = [];
+                    const seenF = new Set();
+                    appSettings.dictionary.forEach(d => {
+                        if(!seenF.has(d.f)) { seenF.add(d.f); uniqueDict.push(d); }
+                    });
+                    uniqueDict.sort((a, b) => parseFloat(a.f) - parseFloat(b.f));
+                    settingsRef.child('dictionary').set(uniqueDict);
+                }
+
+                alert(`Successfully imported ${importCount} frequencies from ProScan! They have been added to your Logbook and Dictionary.`);
+                event.target.value = ''; 
+            };
+            reader.readAsText(file);
+        }
+
         function exportForSdrPlusPlus() {
             const sdrBookmarks = {};
             const usedFreqs = new Set();
@@ -1357,15 +1479,6 @@
                     return; 
                 }
             }
-
-            if (freqVal < 10.000) modeSelect.value = "LSB"; 
-            else if (freqVal < 30.000) modeSelect.value = "USB"; 
-            else if (freqVal >= 108.000 && freqVal <= 136.975) modeSelect.value = "AM"; 
-            else if (freqVal >= 156.000 && freqVal <= 162.025) modeSelect.value = "FM"; 
-            else if (freqVal >= 446.000 && freqVal <= 446.200) modeSelect.value = "FM"; 
-            else if (freqVal >= 144.000 && freqVal <= 146.000) modeSelect.value = "FM"; 
-            else if (freqVal >= 430.000 && freqVal <= 440.000) modeSelect.value = "FM"; 
-            else if (freqVal >= 26.965 && freqVal <= 27.991) modeSelect.value = "FM"; 
         }
 
         function switchView(view) {
