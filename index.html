@@ -79,6 +79,8 @@
         .btn-main { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-main:hover { filter: brightness(1.1); }
         .btn-danger { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-secondary { background: var(--table-hover); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-secondary:hover { border-color: var(--primary); }
 
         /* --- BANK GRID --- */
         .bank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
@@ -164,18 +166,10 @@
         <div class="controls-card">
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <label style="font-weight:bold; color:var(--text-sub);">Select Bank:</label>
-                <select id="bankSelector" onchange="renderBankGrid()" style="font-weight: bold; color: var(--primary); min-width: 180px;">
-                    <option value="1">Bank 1 (CH 1 - 100)</option>
-                    <option value="2">Bank 2 (CH 101 - 200)</option>
-                    <option value="3">Bank 3 (CH 201 - 300)</option>
-                    <option value="4">Bank 4 (CH 301 - 400)</option>
-                    <option value="5">Bank 5 (CH 401 - 500)</option>
-                    <option value="6">Bank 6 (CH 501 - 600)</option>
-                    <option value="7">Bank 7 (CH 601 - 700)</option>
-                    <option value="8">Bank 8 (CH 701 - 800)</option>
-                    <option value="9">Bank 9 (CH 801 - 900)</option>
-                    <option value="10">Bank 10 (CH 901 - 1000)</option>
+                <select id="bankSelector" onchange="renderBankGrid()" style="font-weight: bold; color: var(--primary); min-width: 200px;">
+                    <!-- Auto-populated by JS -->
                 </select>
+                <button class="btn-secondary" onclick="renameBank()">✏️ Rename</button>
             </div>
             <button class="btn-main" onclick="quickAdd()">➕ Quick Add (Next Empty)</button>
         </div>
@@ -242,21 +236,13 @@
                     <div class="form-group">
                         <label>Source Bank</label>
                         <select id="massSource">
-                            <option value="1">Bank 1</option><option value="2">Bank 2</option>
-                            <option value="3">Bank 3</option><option value="4">Bank 4</option>
-                            <option value="5">Bank 5</option><option value="6">Bank 6</option>
-                            <option value="7">Bank 7</option><option value="8">Bank 8</option>
-                            <option value="9">Bank 9</option><option value="10">Bank 10</option>
+                             <!-- Auto-populated by JS -->
                         </select>
                     </div>
                     <div class="form-group full-width" id="massTargetGroup">
                         <label>Target Destination Bank</label>
                         <select id="massTarget">
-                            <option value="1">Bank 1</option><option value="2">Bank 2</option>
-                            <option value="3">Bank 3</option><option value="4">Bank 4</option>
-                            <option value="5">Bank 5</option><option value="6">Bank 6</option>
-                            <option value="7">Bank 7</option><option value="8">Bank 8</option>
-                            <option value="9">Bank 9</option><option value="10">Bank 10</option>
+                             <!-- Auto-populated by JS -->
                         </select>
                     </div>
                 </div>
@@ -266,7 +252,7 @@
             <!-- Danger Zone -->
             <div class="tool-card" style="border-color: var(--danger);">
                 <h3 style="color: var(--danger); border-color: var(--danger);">⚠️ Danger Zone</h3>
-                <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 20px;">This will completely wipe all 1,000 channels from your cloud database. This cannot be undone.</p>
+                <p style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 20px;">This will completely wipe all 1,000 channels and custom bank names from your cloud database. This cannot be undone.</p>
                 <button class="btn-danger" style="width: 100%;" onclick="factoryReset()">Factory Reset (Wipe All Memory)</button>
             </div>
         </div>
@@ -362,8 +348,8 @@
             </div>
 
             <div class="modal-actions">
-                <button class="btn-clear" onclick="clearChannel()" style="margin-right: auto;">🗑️ Clear Slot</button>
-                <button class="btn-clear" style="background: var(--text-sub);" onclick="closeEditor()">Cancel</button>
+                <button class="btn-clear" onclick="clearChannel()" style="margin-right: auto; padding: 10px 15px;">🗑️ Clear Slot</button>
+                <button class="btn-secondary" onclick="closeEditor()">Cancel</button>
                 <button class="btn-main" onclick="saveChannel()">💾 Save Channel</button>
             </div>
         </div>
@@ -382,13 +368,22 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        
         const channelsRef = db.ref('ubcd260dn_memory');
+        const banksRef = db.ref('ubcd260dn_banks'); // New ref for bank names
 
-        // --- GLOBAL MEMORY ARRAY (Index 1 to 1000) ---
+        // --- GLOBAL MEMORY ARRAYS ---
         let memory = new Array(1001).fill(null);
+        let bankNames = {};
         let currentEditCh = null;
 
-        // --- FETCH DATA ---
+        // --- FETCH BANK NAMES ---
+        banksRef.on('value', snap => {
+            bankNames = snap.val() || {};
+            updateBankDropdowns();
+        });
+
+        // --- FETCH CHANNEL DATA ---
         channelsRef.on('value', snap => {
             memory = new Array(1001).fill(null);
             snap.forEach(child => {
@@ -400,6 +395,47 @@
             renderBankGrid();
             renderTable();
         });
+
+        // --- UPDATE DROPDOWNS DYNAMICALLY ---
+        function updateBankDropdowns() {
+            const bSel = document.getElementById('bankSelector');
+            const mSrc = document.getElementById('massSource');
+            const mTgt = document.getElementById('massTarget');
+            
+            let curBank = bSel.value || "1";
+            let curSrc = mSrc.value || "1";
+            let curTgt = mTgt.value || "1";
+            
+            let html = '';
+            for(let i = 1; i <= 10; i++) {
+                let start = (i - 1) * 100 + 1;
+                let end = i * 100;
+                let customName = bankNames[i] ? ` - ${bankNames[i]}` : '';
+                html += `<option value="${i}">Bank ${i}${customName} (CH ${start} - ${end})</option>`;
+            }
+            
+            bSel.innerHTML = html; 
+            mSrc.innerHTML = html; 
+            mTgt.innerHTML = html;
+            
+            bSel.value = curBank; 
+            mSrc.value = curSrc; 
+            mTgt.value = curTgt;
+            
+            // Re-render grid just in case the label change affects view state
+            renderBankGrid();
+        }
+
+        // --- RENAME BANK FEATURE ---
+        function renameBank() {
+            const currentBank = document.getElementById('bankSelector').value;
+            const existingName = bankNames[currentBank] || "";
+            const newName = prompt(`Enter a custom name for Bank ${currentBank} (or clear the box to remove the name):`, existingName);
+            
+            if (newName !== null) {
+                banksRef.child(currentBank).set(newName.trim().substring(0, 25));
+            }
+        }
 
         // --- UI NAVIGATION ---
         function switchView(view) {
@@ -662,8 +698,12 @@
         }
 
         function factoryReset() {
-            if(confirm("CRITICAL WARNING: This will completely delete all 1,000 channels from your cloud database. Are you absolutely sure?")) {
-                channelsRef.remove().then(() => alert("Cloud memory wiped."));
+            if(confirm("CRITICAL WARNING: This will completely delete all 1,000 channels AND custom bank names from your cloud database. Are you absolutely sure?")) {
+                channelsRef.remove().then(() => {
+                    banksRef.remove().then(() => {
+                        alert("Cloud memory and bank names wiped.");
+                    });
+                });
             }
         }
 
